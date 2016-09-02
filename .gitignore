@@ -1,0 +1,8 @@
+testing/
+result
+/*/result
+<<<<<<< HEAD
+haskell/links
+=======
+*.swp
+>>>>>>> d3edf37458199fb76e8325d5f7ef021189645a86
