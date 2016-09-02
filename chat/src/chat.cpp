@@ -35,7 +35,7 @@ void saveState(Tox* tox) {
     size_t size = tox_get_savedata_size(tox);
     uint8_t* savedata = new uint8_t[size];
     tox_get_savedata(tox, savedata);
-    int fd = open("savedata", O_TRUNC|O_WRONLY|O_CREAT, 0644);
+    int fd = open("/tmp/savedata", O_TRUNC|O_WRONLY|O_CREAT, 0644);
     assert(fd);
     ssize_t written = write(fd, savedata, size);
     assert(written > 0);
@@ -45,32 +45,32 @@ void saveState(Tox* tox) {
 void connection_status(Tox*           tox,
                        TOX_CONNECTION connection_status,
                        void*          user_data) {
-  uint8_t toxid[TOX_ADDRESS_SIZE];
-  tox_self_get_address(tox,toxid);
-  char tox_printable_id[TOX_ADDRESS_SIZE * 2 + 1];
-  memset(tox_printable_id, 0, sizeof(tox_printable_id));
-  to_hex(tox_printable_id, toxid,TOX_ADDRESS_SIZE);
+    uint8_t toxid[TOX_ADDRESS_SIZE];
+    tox_self_get_address(tox,toxid);
+    char tox_printable_id[TOX_ADDRESS_SIZE * 2 + 1];
+    memset(tox_printable_id, 0, sizeof(tox_printable_id));
+    to_hex(tox_printable_id, toxid,TOX_ADDRESS_SIZE);
 
-  char buffer[128];
-  const char *msg = 0;
+    char buffer[128];
+    const char *msg = 0;
 
-  switch (connection_status) {
-  case TOX_CONNECTION_NONE:
-    msg = "offline";
-    puts("connection lost");
-    break;
-  case TOX_CONNECTION_TCP:
-    msg = "connected via tcp";
-    puts("tcp connection established");
-    break;
-  case TOX_CONNECTION_UDP:
-    msg = "connected via udp";
-    puts("udp connection established");
-    break;
-  }
-  if(msg) { snprintf(buffer,120,"STATUS=%s, id=%s",msg,tox_printable_id); }
-  saveState(tox);
-  fflush(stdout);
+    switch (connection_status) {
+    case TOX_CONNECTION_NONE:
+        msg = "offline";
+        puts("connection lost");
+        break;
+    case TOX_CONNECTION_TCP:
+        msg = "connected via tcp";
+        puts("tcp connection established");
+        break;
+    case TOX_CONNECTION_UDP:
+        msg = "connected via udp";
+        puts("udp connection established");
+        break;
+    }
+    if(msg) { snprintf(buffer,120,"STATUS=%s, id=%s",msg,tox_printable_id); }
+    saveState(tox);
+    fflush(stdout);
 }
 
 void FriendConnectionUpdate(Tox *tox, uint32_t friend_number,
@@ -127,7 +127,7 @@ Tox* initTox() {
     struct Tox_Options* opts = tox_options_new(NULL);
     opts->start_port = 33445;
     opts->end_port = 33445 + 100;
-    int oldstate = open("savedata", O_RDONLY);
+    int oldstate = open("/tmp/savedata", O_RDONLY);
     if(oldstate >= 0) {
         struct stat info;
         fstat(oldstate, &info);

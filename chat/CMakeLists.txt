@@ -13,7 +13,8 @@ pkg_check_modules(TOX REQUIRED libtoxcore)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5Gui)
+find_package(Qt5Gui REQUIRED)
+#find_package(LibObs REQUIRED)
 
 set(CMAKE_C_FLAGS
   "${CMAKE_C_FLAGS} -g -std=c11 -Werror"
@@ -30,6 +31,7 @@ include_directories(
   ${ZMQ_INCLUDE_DIRS}
   ${MSG_INCLUDE_DIRS}
   ${TOX_INCLUDE_DIRS}
+  #${LIBOBS_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -52,6 +54,7 @@ set(GENERAL_LIBRARIES
   ${ZMQ_LIBRARIES}
   ${QT5_LIBRARIES}
   ${TOX_LIBRARIES}
+  #${LIBOBS_LIBRARIES}
 )
 
 # set(PLUGIN_SOURCES
