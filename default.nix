@@ -12,6 +12,8 @@ let
   #pkgs = nixpkgs {};
   callPackage = pkgs.newScope self;
   self = rec {
+    inherit pkgs;
+    nlohmann_json = callPackage ./fixes/nlohmann_json.nix {};
     fuspr-chat = callPackage ./chat {};
   };
 in self
