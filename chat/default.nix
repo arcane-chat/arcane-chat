@@ -1,7 +1,7 @@
 # Build dependencies
 { stdenv, cmake, pkgconfig, doxygen, ghostscript, ninja
 # Program dependencies
-, boost, zeromq, libmsgpack, libtoxcore-dev, nlohmann_json, qt57, obs-studio
+, boost, zeromq, libmsgpack, libtoxcore-dev, nlohmann_json, qtbase, obs-studio
 # Misc dependencies
 , guile, parallel
 }:
@@ -16,7 +16,7 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
-    boost zeromq libmsgpack qt57.qtbase nlohmann_json libtoxcore-dev obs-studio
+    boost zeromq libmsgpack qtbase nlohmann_json libtoxcore-dev obs-studio
   ];
 
   cmakeFlags = "-GNinja";

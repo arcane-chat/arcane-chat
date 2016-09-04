@@ -2,7 +2,7 @@
 
 rec {
   linuxPkgs = import nixpkgs.outPath {};
-  linuxCallPackage = linuxPkgs.newScope linux;
+  linuxCallPackage = linuxPkgs.qt57.newScope linux;
   linux = rec {
     # Boilerplate
     super = linuxPkgs;
@@ -20,7 +20,7 @@ rec {
       openssl.system = "mingw64";
     };
   };
-  windowsCallPackage = windowsPkgs.newScope windows;
+  windowsCallPackage = windowsPkgs.qt57.newScope windows;
   windows = rec {
     # Boilerplate
     super = windowsPkgs;
@@ -51,6 +51,6 @@ rec {
     super = darwinPkgs;
 
     # Our packages
-    fuspr-chat = darwinCallPackage ./chat {};
+    fuspr-chat = darwinCallPackage ./chat { qtbase = darwinPkgs.qt48Full; };
   };
 }
