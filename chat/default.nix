@@ -23,7 +23,12 @@ stdenv.mkDerivation rec {
 
   buildPhase = "ninja";
 
-  installPhase = "ninja install";
+  installPhase = ''
+      ninja install
+      mkdir $out/nix-support
+      echo "doc manual $out/share/doc/fuspr-chat/html index.html" \
+          >> $out/nix-support/hydra-build-products
+  ''
 
   shellHook = ''
       cd ${toString src}
