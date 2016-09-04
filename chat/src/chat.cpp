@@ -1,5 +1,4 @@
 #include <iostream>
-#include <sstream>
 #include <boost/algorithm/hex.hpp>
 #include <vector>
 #include <tox/tox.h>
@@ -12,12 +11,14 @@
 #include <fcntl.h>
 #include <signal.h>
 
-#include <QCoreApplication>
+#include <QApplication>
 
 #include "options.hpp"
 #include "core.hpp"
 #include "utils.hpp"
 #include "tracer.hpp"
+#include "mainwindow.h"
+#include "friend.h"
 
 namespace bootstrap {
     constexpr const char* address = "23.226.230.47";
@@ -79,12 +80,6 @@ void connection_status(Tox*           tox,
     fflush(stdout);
 }
 
-void FriendConnectionUpdate(Tox *tox, uint32_t friend_number,
-                            TOX_CONNECTION connection_status,
-                            void *user_data) {
-    std::cout << __func__ << " " << friend_number << " " << connection_status << "\n";
-}
-
 void MyFriendRequestCallback(Tox *tox, const uint8_t *public_key,
                              const uint8_t *message, size_t length,
                              void *user_data) {
@@ -134,14 +129,6 @@ Tox* initTox() {
     opts = 0;
     tox_callback_self_connection_status(tox, &connection_status, nullptr);
     tox_callback_friend_request(tox, MyFriendRequestCallback, nullptr);
-    tox_callback_friend_connection_status(tox, FriendConnectionUpdate, nullptr);
-    std::string username = ({
-            std::stringstream ss;
-            ss << "fuspr-" << rand();
-            ss.str();
-        });
-    tox_self_set_name(tox, reinterpret_cast<const uint8_t*>(username.c_str()),
-                      username.size(), nullptr);
     return tox;
 }
 
@@ -163,11 +150,12 @@ void handler(int signum) {
 }
 
 int main(int argc, char** argv) {
-    QCoreApplication app(argc, argv);
+    QApplication app(argc, argv);
     struct sigaction interrupt;
     memset(&interrupt, 0, sizeof(interrupt));
     interrupt.sa_handler = &handler;
     sigaction(SIGINT, &interrupt, nullptr);
+    sigaction(SIGTERM, &interrupt, nullptr);
 
     Tox* tox = initTox();
     uint8_t toxid[TOX_ADDRESS_SIZE];
@@ -179,6 +167,10 @@ int main(int argc, char** argv) {
 
     chat::Core core(tox);
     Tracer *tracer = new Tracer(&core);
+    QList<chat::Friend*> friends = core.getFriends();
+    MainWindow *mw = new MainWindow(friends, &core);
+    mw->show();
+
     int ret = app.exec();
     closeTox(tox);
     std::cout << "clean shutdown\n";

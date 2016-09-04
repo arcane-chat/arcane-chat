@@ -15,6 +15,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Qt5Gui REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 #find_package(LibObs REQUIRED)
 
 set(CMAKE_C_FLAGS
@@ -28,10 +29,12 @@ set(CMAKE_CXX_FLAGS
 include_directories(
   ${CMAKE_SOURCE_DIR}/include
   ${QT5_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${ZMQ_INCLUDE_DIRS}
   ${MSG_INCLUDE_DIRS}
   ${TOX_INCLUDE_DIRS}
+  ${CMAKE_BINARY_DIR}
   #${LIBOBS_INCLUDE_DIRS}
 )
 
@@ -69,8 +72,10 @@ set(GENERAL_LIBRARIES
 # add_executable(integration_test src/integration_test.cpp ${PLUGIN_SOURCES})
 # target_link_libraries(integration_test ${GENERAL_LIBRARIES})
 
-add_executable(chat src/chat.cpp src/core.cpp src/utils.cpp src/tracer.cpp)
-target_link_libraries(chat ${GENERAL_LIBRARIES})
+QT5_WRAP_UI(UIS_HDRS src/mainwindow.ui src/chatwidget.ui)
+
+add_executable(chat src/chat.cpp src/core.cpp src/utils.cpp src/tracer.cpp src/mainwindow.cpp src/friend.cpp src/channelmodel.cpp src/chatwidget.cpp)
+target_link_libraries(chat ${GENERAL_LIBRARIES} ${Qt5Widgets_LIBRARIES})
 
 install(
   TARGETS chat
