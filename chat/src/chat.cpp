@@ -12,7 +12,10 @@
 #include <fcntl.h>
 #include <signal.h>
 
+#include <QCoreApplication>
+
 #include "options.hpp"
+#include "core.hpp"
 
 namespace bootstrap {
     constexpr const char* address = "23.226.230.47";
@@ -158,7 +161,7 @@ Tox* initTox() {
     if(opts->savedata_data) { delete opts->savedata_data; }
     tox_options_free(opts);
     opts = 0;
-    tox_callback_self_connection_status(tox, &connection_status, 0);
+    tox_callback_self_connection_status(tox, &connection_status, nullptr);
     tox_callback_friend_request(tox, MyFriendRequestCallback, nullptr);
     tox_callback_friend_message(tox, MyFriendMessageCallback, nullptr);
     tox_callback_friend_connection_status(tox, FriendConnectionUpdate, nullptr);
@@ -188,9 +191,11 @@ bool keep_running = true;
 void handler(int signum) {
     std::cout << "Quitting...\n";
     keep_running = false;
+    QCoreApplication::quit();
 }
 
 int main(int argc, char** argv) {
+    QCoreApplication app(argc, argv);
     struct sigaction interrupt;
     memset(&interrupt, 0, sizeof(interrupt));
     interrupt.sa_handler = &handler;
@@ -203,12 +208,10 @@ int main(int argc, char** argv) {
     std::vector<uint8_t> bootstrap_pub_key = from_hex(bootstrap::key);
     tox_bootstrap(tox, bootstrap::address, bootstrap::port,
                   bootstrap_pub_key.data(), nullptr);
-    while(keep_running) {
-        int interval = tox_iteration_interval(tox);
-        usleep(1000 * interval);
-        tox_iterate(tox);
-        // ^^^ will call the callback functions defined and registered
-    }
+
+    chat::Core core(tox);
+    int ret = app.exec();
     closeTox(tox);
-    std::cout << "Hello, World!\n";
+    std::cout << "clean shutdown\n";
+    return ret;
 }
