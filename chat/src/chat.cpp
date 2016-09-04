@@ -117,12 +117,6 @@ void MyFriendRequestCallback(Tox *tox, const uint8_t *public_key,
     saveState(tox);
 }
 
-void MyFriendMessageCallback(Tox *tox, uint32_t friend_number,
-                             TOX_MESSAGE_TYPE type, const uint8_t *message,
-                             size_t length, void *user_data) {
-    std::cout << "message: \"" << message << "\"\n";
-}
-
 void MyFriendLossyPacket(Tox *tox, uint32_t friend_number,
                          const uint8_t *data, size_t length,
                          void *user_data) {
@@ -163,7 +157,6 @@ Tox* initTox() {
     opts = 0;
     tox_callback_self_connection_status(tox, &connection_status, nullptr);
     tox_callback_friend_request(tox, MyFriendRequestCallback, nullptr);
-    tox_callback_friend_message(tox, MyFriendMessageCallback, nullptr);
     tox_callback_friend_connection_status(tox, FriendConnectionUpdate, nullptr);
     tox_callback_friend_lossy_packet(tox, MyFriendLossyPacket, nullptr);
     tox_callback_friend_lossless_packet(tox, MyFriendLosslessPacket, nullptr);
