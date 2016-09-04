@@ -1,6 +1,6 @@
 RECURSIVE = YES
 INPUT = @CMAKE_CURRENT_SOURCE_DIR@/../src/
-PROJECT_NAME = teamspeak-zeromq-plugin
+PROJECT_NAME = fuspr-chat
 
 HTML_HEADER = include/header.html
 HTML_FOOTER = include/footer.html
