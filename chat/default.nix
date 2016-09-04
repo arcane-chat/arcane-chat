@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
   installPhase = ''
       ninja install
       mkdir $out/nix-support
-      echo "doc manual $out/share/doc/fuspr-chat/html index.html" \
+      echo "doc manual $out/share/doc/fuspr-chat index.html" \
           >> $out/nix-support/hydra-build-products
   '';
 
