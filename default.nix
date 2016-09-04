@@ -1,7 +1,7 @@
-{ nixpkgs ? import <nixpkgs> }:
+{ nixpkgs ? { outPath = <nixpkgs>; } }:
 
-rec {
-  linuxPkgs = nixpkgs {};
+{
+  linuxPkgs = import nixpkgs.outPath {};
   linuxCallPackage = linuxPkgs.newScope linux;
   linux = rec {
     # Boilerplate
@@ -11,7 +11,7 @@ rec {
     fuspr-chat = linuxCallPackage ./chat {};
   };
 
-  windowsPkgs = nixpkgs {
+  windowsPkgs = import nixpkgs.outPath {
     crossSystem = {
       config         = "x86_64-w64-mingw32";
       arch           = "x86_64";
@@ -44,7 +44,7 @@ rec {
     fuspr-chat = windowsCallPackage ./chat {};
   };
 
-  darwinPkgs = nixpkgs {}; # FIXME
+  darwinPkgs = import nixpkgs.outPath { system = "x86_64-darwin"; };
   darwinCallPackage = darwinPkgs.newScope darwin;
   darwin = rec {
     # Boilerplate
