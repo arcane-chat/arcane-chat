@@ -12,6 +12,7 @@ pkg_check_modules(QT5 REQUIRED Qt5Gui)
 pkg_check_modules(TOX REQUIRED libtoxcore)
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Qt5Gui REQUIRED)
 #find_package(LibObs REQUIRED)

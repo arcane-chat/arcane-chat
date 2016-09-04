@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <boost/algorithm/hex.hpp>
+#include <vector>
 #include <tox/tox.h>
 #include <cassert>
 #include <cstdio>
@@ -10,29 +12,33 @@
 #include <fcntl.h>
 #include <signal.h>
 
-#define BOOTSTRAP_ADDRESS "23.226.230.47"
-#define BOOTSTRAP_PORT 33445
-#define BOOTSTRAP_KEY "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074"
+namespace bootstrap {
+    constexpr const char* address = "23.226.230.47";
+
+    constexpr int port = 33445;
+
+    constexpr const char* key =
+        "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074";
+} // namespace bootstrap
 
 //! Print a hexadecimal array.
-std::string to_hex(const uint8_t* p, size_t size) {
-    char result[2 * (size + 1)];
-    for(char& c : result) { c = 0; }
-    char buffer[3];
-    for(size_t i = 0; i < size; i++) {
-        snprintf(buffer, 3, "%02x", p[i]);
-        result[i*2]     = buffer[0];
-        result[i*2 + 1] = buffer[1];
-    }
-    return std::string { result };
+std::string to_hex(const std::vector<uint8_t> &bin) {
+    std::string out;
+    out.resize(bin.size() * 2);
+    boost::algorithm::hex(bin.begin(), bin.end(), out.begin());
+    return out;
 }
 
-void hex_string_to_bin(const char* hex_string, uint8_t* ret) {
-    size_t len = strlen(hex_string) / 2;
-    const char* pos = hex_string;
-    for(size_t i = 0; i < len; ++i, pos += 2) {
-        sscanf(pos, "%2hhx", &ret[i]);
-    }
+std::string to_hex(const uint8_t* bin_arr, size_t bin_size) {
+    const std::vector<uint8_t> vec { bin_arr, bin_arr + bin_size };
+    return to_hex(vec);
+}
+
+std::vector<uint8_t> from_hex(const std::string& hex) {
+    std::vector<uint8_t> out;
+    out.resize(hex.size() / 2);
+    boost::algorithm::unhex(hex.begin(), hex.end(), out.begin());
+    return out;
 }
 
 void saveState(Tox* tox) {
@@ -124,6 +130,18 @@ void MyFriendLosslessPacket(Tox *tox, uint32_t friend_number,
     std::cout << "data: " << to_hex(data, length) << "\n";
 }
 
+namespace tox {
+    class options {
+    private:
+        struct Tox_Options* underlying_;
+    public:
+        inline options() : underlying_(tox_options_new(nullptr)) {
+        }
+
+        // set_start_port()
+    };
+} // namespace tox
+
 Tox* initTox() {
     Tox* tox;
     struct Tox_Options* opts = tox_options_new(nullptr);
@@ -192,10 +210,9 @@ int main(int argc, char** argv) {
     uint8_t toxid[TOX_ADDRESS_SIZE];
     tox_self_get_address(tox, toxid);
     std::cout << "my id is " << to_hex(toxid, TOX_ADDRESS_SIZE) << "\n";
-    uint8_t *bootstrap_pub_key = new uint8_t[TOX_PUBLIC_KEY_SIZE];
-    hex_string_to_bin(BOOTSTRAP_KEY, bootstrap_pub_key);
-    tox_bootstrap(tox, BOOTSTRAP_ADDRESS, BOOTSTRAP_PORT,
-                  bootstrap_pub_key, nullptr);
+    std::vector<uint8_t> bootstrap_pub_key = from_hex(bootstrap::key);
+    tox_bootstrap(tox, bootstrap::address, bootstrap::port,
+                  bootstrap_pub_key.data(), nullptr);
     while(keep_running) {
         int interval = tox_iteration_interval(tox);
         usleep(1000 * interval);
