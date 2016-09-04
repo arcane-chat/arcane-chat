@@ -1,7 +1,4 @@
 to fix:
-  taktoa: gettext
   taktoa: libvpx
-  taktoa: libmsgpack declares cmake as a non-native dependency, so it tries and
-          fails to cross-build cmake
   taktoa: obs-studio fails to find sys/ioctl.h
   clever: obs-studio fails due to alsalib
