@@ -16,6 +16,8 @@
 
 #include "options.hpp"
 #include "core.hpp"
+#include "utils.hpp"
+#include "tracer.hpp"
 
 namespace bootstrap {
     constexpr const char* address = "23.226.230.47";
@@ -25,19 +27,6 @@ namespace bootstrap {
     constexpr const char* key =
         "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074";
 } // namespace bootstrap
-
-//! Print a hexadecimal array.
-std::string to_hex(const std::vector<uint8_t> &bin) {
-    std::string out;
-    out.resize(bin.size() * 2);
-    boost::algorithm::hex(bin.begin(), bin.end(), out.begin());
-    return out;
-}
-
-std::string to_hex(const uint8_t* bin_arr, size_t bin_size) {
-    const std::vector<uint8_t> vec { bin_arr, bin_arr + bin_size };
-    return to_hex(vec);
-}
 
 std::vector<uint8_t> from_hex(const std::string& hex) {
     std::vector<uint8_t> out;
@@ -93,7 +82,7 @@ void connection_status(Tox*           tox,
 void FriendConnectionUpdate(Tox *tox, uint32_t friend_number,
                             TOX_CONNECTION connection_status,
                             void *user_data) {
-    std::cout << __func__ << "\n";
+    std::cout << __func__ << " " << friend_number << " " << connection_status << "\n";
 }
 
 void MyFriendRequestCallback(Tox *tox, const uint8_t *public_key,
@@ -115,18 +104,6 @@ void MyFriendRequestCallback(Tox *tox, const uint8_t *public_key,
         std::cerr << "error code: " << error << "\n";
     }
     saveState(tox);
-}
-
-void MyFriendLossyPacket(Tox *tox, uint32_t friend_number,
-                         const uint8_t *data, size_t length,
-                         void *user_data) {
-    std::cout << "data: " << to_hex(data, length) << "\n";
-}
-
-void MyFriendLosslessPacket(Tox *tox, uint32_t friend_number,
-                            const uint8_t *data, size_t length,
-                            void *user_data) {
-    std::cout << "data: " << to_hex(data, length) << "\n";
 }
 
 Tox* initTox() {
@@ -158,8 +135,6 @@ Tox* initTox() {
     tox_callback_self_connection_status(tox, &connection_status, nullptr);
     tox_callback_friend_request(tox, MyFriendRequestCallback, nullptr);
     tox_callback_friend_connection_status(tox, FriendConnectionUpdate, nullptr);
-    tox_callback_friend_lossy_packet(tox, MyFriendLossyPacket, nullptr);
-    tox_callback_friend_lossless_packet(tox, MyFriendLosslessPacket, nullptr);
     std::string username = ({
             std::stringstream ss;
             ss << "fuspr-" << rand();
@@ -203,6 +178,7 @@ int main(int argc, char** argv) {
                   bootstrap_pub_key.data(), nullptr);
 
     chat::Core core(tox);
+    Tracer *tracer = new Tracer(&core);
     int ret = app.exec();
     closeTox(tox);
     std::cout << "clean shutdown\n";

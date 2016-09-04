@@ -69,7 +69,7 @@ set(GENERAL_LIBRARIES
 # add_executable(integration_test src/integration_test.cpp ${PLUGIN_SOURCES})
 # target_link_libraries(integration_test ${GENERAL_LIBRARIES})
 
-add_executable(chat src/chat.cpp src/core.cpp)
+add_executable(chat src/chat.cpp src/core.cpp src/utils.cpp src/tracer.cpp)
 target_link_libraries(chat ${GENERAL_LIBRARIES})
 
 install(
