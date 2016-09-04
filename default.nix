@@ -1,6 +1,6 @@
 { nixpkgs ? { outPath = <nixpkgs>; } }:
 
-{
+rec {
   linuxPkgs = import nixpkgs.outPath {};
   linuxCallPackage = linuxPkgs.newScope linux;
   linux = rec {
