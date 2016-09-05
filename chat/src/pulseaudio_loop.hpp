@@ -8,21 +8,23 @@
 #include <QObject>
 
 namespace pulse {
-class Stream;
-class PAThreadedMainLoop : public QObject {
-friend class Stream;
-Q_OBJECT
-public:
-    PAThreadedMainLoop();
-    ~PAThreadedMainLoop();
-    void state_change_callback();
+    class Stream;
+    class PAThreadedMainLoop : public QObject {
+        friend class Stream;
+        Q_OBJECT
+    public:
+        PAThreadedMainLoop();
+        ~PAThreadedMainLoop();
+        void state_change_callback();
 
-    Stream *playback;
-protected:
-    pa_context *context;
-    pa_threaded_mainloop *loop;
-private:
-    static int set_prop(pa_proplist *p, const char *key, QString value);
-    void open_stream();
-};
+        Stream* playback;
+
+    protected:
+        pa_context* context;
+        pa_threaded_mainloop* loop;
+
+    private:
+        static int set_prop(pa_proplist* p, const char* key, QString value);
+        void open_stream();
+    };
 }

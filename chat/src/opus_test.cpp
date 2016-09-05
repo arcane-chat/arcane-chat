@@ -40,16 +40,16 @@ using namespace pulse;
 }*/
 
 int opus_main() {
-
     int samplerate = 48000;
     opus_int16 samples[samplerate];
-    for (int i=0; i<samplerate; i++) {
-        samples[i] = sin((2 * (float)i * FREQ * 3.1415) / samplerate) * (1 << 10);
-        //qDebug() << samples[i];
+    for(int i = 0; i < samplerate; i++) {
+        samples[i] =
+            sin((2 * (float) i * FREQ * 3.1415) / samplerate) * (1 << 10);
+        // qDebug() << samples[i];
     }
-    //qDebug() << QByteArray((char*)samples,samplerate).toHex();
-    //pulse_test(samples,samplerate);
-    PAThreadedMainLoop *loop = new PAThreadedMainLoop();
+    // qDebug() << QByteArray((char*)samples,samplerate).toHex();
+    // pulse_test(samples,samplerate);
+    PAThreadedMainLoop* loop = new PAThreadedMainLoop();
     sleep(5);
     loop->playback->write(samples, samplerate);
     sleep(5);
@@ -61,22 +61,24 @@ int opus_main() {
 
     return 0;
 
-    OpusEncoder* enc = opus_encoder_create(samplerate, 1, OPUS_APPLICATION_VOIP, nullptr);
+    OpusEncoder* enc =
+        opus_encoder_create(samplerate, 1, OPUS_APPLICATION_VOIP, nullptr);
     qDebug() << enc;
 
     int framesize = 2880;
-    qDebug() << "sending" << ((float)framesize / samplerate) << "seconds";
+    qDebug() << "sending" << ((float) framesize / samplerate) << "seconds";
     int remaining = samplerate;
     int offset = 0;
-    while (remaining > framesize) {
+    while(remaining > framesize) {
         uint8_t frame[4000];
         int used = opus_encode(enc, samples + offset, framesize, frame, 4000);
-        qDebug() << used << QByteArray((char*)frame,used).toHex();
+        qDebug() << used << QByteArray((char*) frame, used).toHex();
         remaining -= framesize;
         offset += framesize;
     }
 
     cout << opus_get_version_string() << "\n";
-    opus_encoder_destroy(enc); enc = 0;
+    opus_encoder_destroy(enc);
+    enc = 0;
     return 0;
 }
