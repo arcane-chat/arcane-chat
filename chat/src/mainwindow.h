@@ -7,7 +7,7 @@
 #include "friend.h"
 
 namespace Ui {
-class MainWindow;
+    class MainWindow;
 }
 
 class ChatWidget;
@@ -17,21 +17,21 @@ namespace chat {
     class Core;
 }
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QList<chat::Friend*> friends, chat::Core *core);
+    explicit MainWindow(QList<chat::Friend*> friends, chat::Core* core);
     ~MainWindow();
 
 private slots:
     void on_doubleclick(QModelIndex index);
+
 private:
-    Ui::MainWindow *ui;
-    ChatWidget *chatWidget;
-    InfoWidget *infoWidget;
-    ChannelModel *model;
+    Ui::MainWindow* ui;
+    ChatWidget* chatWidget;
+    InfoWidget* infoWidget;
+    ChannelModel* model;
 };
 
 #endif // MAINWINDOW_H

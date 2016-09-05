@@ -7,26 +7,27 @@
 
 namespace chat {
 
-enum class Link {
-    None, Tcp, Udp
-};
+    enum class Link { None, Tcp, Udp };
 
-class Friend : public QObject {
-Q_OBJECT
-public:
-    Friend(int friend_number, QByteArray pubkey, QString name, Link connection);
-    void set_connection(Link connection);
-    void new_message(bool action, QByteArray message);
+    class Friend : public QObject {
+        Q_OBJECT
+    public:
+        Friend(uint32_t friend_number,
+               QByteArray pubkey,
+               QString name,
+               Link connection);
+        void set_connection(Link connection);
+        void new_message(bool action, QByteArray message);
 
-    int friend_number;
-    QByteArray publickey;
-    QString name;
-    Link connection;
-    QString last_message; // temporary until voice works
-signals:
-    void connection_changed(Link old_state, Link new_state);
-    void message(bool action, QByteArray message);
-};
+        uint32_t friend_number;
+        QByteArray publickey;
+        QString name;
+        Link connection;
+        QString last_message; // temporary until voice works
+    signals:
+        void connection_changed(Link old_state, Link new_state);
+        void message(bool action, QByteArray message);
+    };
 
 } // namespace chat
 

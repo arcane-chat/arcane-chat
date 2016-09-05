@@ -40,23 +40,23 @@ void saveState(Tox* tox) {
     size_t size = tox_get_savedata_size(tox);
     uint8_t* savedata = new uint8_t[size];
     tox_get_savedata(tox, savedata);
-    int fd = open("/tmp/savedata", O_TRUNC|O_WRONLY|O_CREAT, 0644);
+    int fd = open("/tmp/savedata", O_TRUNC | O_WRONLY | O_CREAT, 0644);
     assert(fd);
     ssize_t written = write(fd, savedata, size);
     assert(written > 0);
     close(fd);
 }
 
-void connection_status(Tox*           tox,
+void connection_status(Tox* tox,
                        TOX_CONNECTION connection_status,
-                       void*          user_data) {
+                       void* user_data) {
     uint8_t toxid[TOX_ADDRESS_SIZE];
     tox_self_get_address(tox, toxid);
     std::string tox_printable_id = to_hex(toxid, TOX_ADDRESS_SIZE);
 
-    const char *msg = nullptr;
+    const char* msg = nullptr;
 
-    switch (connection_status) {
+    switch(connection_status) {
     case TOX_CONNECTION_NONE:
         msg = "offline";
         std::cout << "connection lost\n";
@@ -80,23 +80,21 @@ void connection_status(Tox*           tox,
     fflush(stdout);
 }
 
-void MyFriendRequestCallback(Tox *tox, const uint8_t *public_key,
-                             const uint8_t *message, size_t length,
-                             void *user_data) {
+void MyFriendRequestCallback(Tox* tox,
+                             const uint8_t* public_key,
+                             const uint8_t* message,
+                             size_t length,
+                             void* user_data) {
     std::cout << __func__ << "\n";
     TOX_ERR_FRIEND_ADD error;
     tox_friend_add_norequest(tox, public_key, &error);
-    switch (error) {
-    case TOX_ERR_FRIEND_ADD_OK:
-        break;
+    switch(error) {
+    case TOX_ERR_FRIEND_ADD_OK: break;
     case TOX_ERR_FRIEND_ADD_ALREADY_SENT:
         fputs("already sent\n", stderr);
         break;
-    case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM:
-        fputs("crc error\n", stderr);
-        break;
-    default:
-        std::cerr << "error code: " << error << "\n";
+    case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM: fputs("crc error\n", stderr); break;
+    default: std::cerr << "error code: " << error << "\n";
     }
     saveState(tox);
 }
@@ -124,7 +122,9 @@ Tox* initTox() {
         opts->ipv6_enabled = false;
         tox = tox_new(opts, &new_error);
     }
-    if(opts->savedata_data) { delete opts->savedata_data; }
+    if(opts->savedata_data) {
+        delete opts->savedata_data;
+    }
     tox_options_free(opts);
     opts = 0;
     tox_callback_self_connection_status(tox, &connection_status, nullptr);
@@ -132,9 +132,7 @@ Tox* initTox() {
     return tox;
 }
 
-void syncTox(Tox* tox) {
-    saveState(tox);
-}
+void syncTox(Tox* tox) { saveState(tox); }
 
 void closeTox(Tox* tox) {
     saveState(tox);
@@ -166,9 +164,9 @@ int main(int argc, char** argv) {
                   bootstrap_pub_key.data(), nullptr);
 
     chat::Core core(tox);
-    Tracer *tracer = new Tracer(&core);
+    Tracer* tracer = new Tracer(&core);
     QList<chat::Friend*> friends = core.getFriends();
-    MainWindow *mw = new MainWindow(friends, &core);
+    MainWindow* mw = new MainWindow(friends, &core);
     mw->show();
 
     int ret = app.exec();

@@ -62,9 +62,7 @@ namespace {
             mainloop->quit();
             return false;
         }
-        default: {
-            break;
-        }
+        default: { break; }
         }
 
         return true;
@@ -77,8 +75,8 @@ namespace {
         Gst::PadLinkReturn ret = newPad->link(sinkPad);
 
         if((ret != Gst::PAD_LINK_OK) && (ret != Gst::PAD_LINK_WAS_LINKED)) {
-            std::cerr << "Linking of pads " << (newPad->get_name())
-                      << " and " << (sinkPad->get_name()) << " failed.\n";
+            std::cerr << "Linking of pads " << (newPad->get_name()) << " and "
+                      << (sinkPad->get_name()) << " failed.\n";
         }
     }
 
@@ -107,19 +105,19 @@ int main(int argc, char** argv) {
 
     pipeline = Gst::Pipeline::create("audio-player");
 
-#define CREATE_ELEMENT(var, name)                                   \
-    var = Gst::ElementFactory::create_element(name);                \
-    if(!var) {                                                      \
-        std::cerr << name << " element could not be created.\n";    \
+#define CREATE_ELEMENT(var, name)                                              \
+    var = Gst::ElementFactory::create_element(name);                           \
+    if(!var) {                                                                 \
+        std::cerr << name << " element could not be created.\n";               \
     }
 
     ref<Gst::Element> source, parser, conv, sink;
 
-    CREATE_ELEMENT(source,  "filesrc");
-    CREATE_ELEMENT(parser,  "oggdemux");
+    CREATE_ELEMENT(source, "filesrc");
+    CREATE_ELEMENT(parser, "oggdemux");
     CREATE_ELEMENT(decoder, "vorbisdec");
-    CREATE_ELEMENT(conv,    "audioconvert");
-    CREATE_ELEMENT(sink,    "pulsesink");
+    CREATE_ELEMENT(conv, "audioconvert");
+    CREATE_ELEMENT(sink, "pulsesink");
 
 #undef CREATE_ELEMENT
 
@@ -142,7 +140,6 @@ int main(int argc, char** argv) {
     // context with the default priority:
     ref<Gst::Bus> bus = pipeline->get_bus();
     bus->add_watch(sigc::ptr_fun(&on_bus_message));
-
 
     try {
         pipeline->add(source)->add(parser)->add(decoder)->add(conv)->add(sink);

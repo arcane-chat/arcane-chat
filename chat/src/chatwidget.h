@@ -5,7 +5,7 @@
 #include <QTextBrowser>
 
 namespace Ui {
-class ChatWidget;
+    class ChatWidget;
 }
 
 class FriendNode;
@@ -16,32 +16,32 @@ namespace chat {
 using namespace chat;
 
 class ChatSection : public QWidget {
-Q_OBJECT
+    Q_OBJECT
 public:
-    ChatSection(chat::Friend *f);
+    ChatSection(chat::Friend* f);
 
-    chat::Friend *f;
-    QTextEdit *text;
+    chat::Friend* f;
+    QTextEdit* text;
+
 private:
-    QTextDocument *doc;
+    QTextDocument* doc;
 };
 
-class ChatWidget : public QWidget
-{
+class ChatWidget : public QWidget {
     Q_OBJECT
 
 public:
-    explicit ChatWidget(chat::Core *core, QWidget *parent = 0);
-    void open_chat(FriendNode *fn);
+    explicit ChatWidget(chat::Core* core, QWidget* parent = 0);
+    void open_chat(FriendNode* fn);
     ~ChatWidget();
 
 private:
-    Ui::ChatWidget *ui;
-    QMap<uint32_t,ChatSection*> chatSections;
-    chat::Core *core;
+    Ui::ChatWidget* ui;
+    QMap<uint32_t, ChatSection*> chatSections;
+    chat::Core* core;
 private slots:
     void return_pressed();
-    void on_message(Friend *f, bool action, QString message);
+    void on_message(Friend* f, bool action, QString message);
 };
 
 #endif // CHATWIDGET_H
