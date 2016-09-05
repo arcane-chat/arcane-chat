@@ -2,7 +2,7 @@
 
 rec {
   linuxPkgs = import nixpkgs.outPath {};
-  linuxCallPackage = linuxPkgs.qt57.newScope linux;
+  linuxCallPackage = linuxPkgs.qt56.newScope linux;
   linux = rec {
     # Boilerplate
     super = linuxPkgs;
@@ -20,7 +20,7 @@ rec {
       openssl.system = "mingw64";
     };
   };
-  windowsCallPackage = windowsPkgs.qt57.newScope windows;
+  windowsCallPackage = windowsPkgs.qt56.newScope windows;
   windows = rec {
     # Boilerplate
     super = windowsPkgs;
