@@ -3,8 +3,11 @@
 #include <QDebug>
 
 #include "pulseaudio_loop.hpp"
+#include "pulse_stream.h"
 
-void pa_state_callback(pa_context *c, void *userdata) {
+using namespace pulse;
+
+void pa_state_callback(pa_context *, void *userdata) {
     PAThreadedMainLoop *x = (PAThreadedMainLoop*)userdata;
     x->state_change_callback();
 }
@@ -29,15 +32,7 @@ PAThreadedMainLoop::PAThreadedMainLoop() {
 }
 
 void PAThreadedMainLoop::open_stream() {
-    pa_sample_spec ss;
-    ss.format = PA_SAMPLE_S16NE;
-    ss.channels = 1;
-    ss.rate = 48000;
-
-    pa_proplist *props = pa_proplist_new();
-    stream = pa_stream_new_with_proplist(context, "sample stream", &ss, nullptr, props);
-    pa_proplist_free(props);
-    pa_stream_connect_playback(stream, nullptr, nullptr, PA_STREAM_NOFLAGS, nullptr, nullptr);
+    playback = new Stream(this);
 }
 
 int PAThreadedMainLoop::set_prop(pa_proplist *p, const char *key, QString value) {
@@ -49,28 +44,8 @@ int PAThreadedMainLoop::set_prop(pa_proplist *p, const char *key, QString value)
 PAThreadedMainLoop::~PAThreadedMainLoop() {
     pa_context_disconnect(context);
     pa_context_unref(context);
-    pa_stream_unref(stream);
     pa_threaded_mainloop_stop(loop);
     pa_threaded_mainloop_free(loop);
-}
-
-PAThreadedMainLoop *pa_test_init() {
-    PAThreadedMainLoop *loop = new PAThreadedMainLoop();
-    return loop;
-}
-
-void pa_test_stop(PAThreadedMainLoop *loop) {
-    delete loop;
-}
-
-void pa_test_write(PAThreadedMainLoop *loop, int16_t *samples, int count) {
-    loop->write(samples,count);
-}
-
-void PAThreadedMainLoop::write(int16_t *samples, int count) {
-    pa_threaded_mainloop_lock(loop);
-    pa_stream_write(stream, samples, count * 2, nullptr, 0, PA_SEEK_RELATIVE);
-    pa_threaded_mainloop_unlock(loop);
 }
 
 static QString decode_state(pa_context_state state) {

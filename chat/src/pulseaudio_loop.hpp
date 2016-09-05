@@ -7,22 +7,22 @@
 #include <pulse/stream.h>
 #include <QObject>
 
+namespace pulse {
+class Stream;
 class PAThreadedMainLoop : public QObject {
+friend class Stream;
 Q_OBJECT
 public:
     PAThreadedMainLoop();
     ~PAThreadedMainLoop();
-    void write(int16_t *samples, int count);
     void state_change_callback();
+
+    Stream *playback;
+protected:
+    pa_context *context;
+    pa_threaded_mainloop *loop;
 private:
     static int set_prop(pa_proplist *p, const char *key, QString value);
     void open_stream();
-
-    pa_threaded_mainloop *loop;
-    pa_context *context;
-    pa_stream *stream;
 };
-
-PAThreadedMainLoop *pa_test_init();
-void pa_test_write(PAThreadedMainLoop *loop, int16_t *samples, int count);
-void pa_test_stop(PAThreadedMainLoop *loop);
+}

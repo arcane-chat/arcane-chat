@@ -19,7 +19,8 @@ HEADERS += src/core.hpp \
     src/infowidget.h \
     src/channelmodel.h \
     src/friend.h \
-    src/pulseaudio_loop.hpp
+    src/pulseaudio_loop.hpp \
+    src/pulse_stream.h
 SOURCES += src/client.cpp \
            src/core.cpp \
            src/tracer.cpp \
@@ -30,7 +31,8 @@ SOURCES += src/client.cpp \
     src/channelmodel.cpp \
     src/friend.cpp \
     src/opus_test.cpp \
-    src/pulseaudio_loop.cpp
+    src/pulseaudio_loop.cpp \
+    src/pulse_stream.cpp
 
 FORMS += \
     src/mainwindow.ui \

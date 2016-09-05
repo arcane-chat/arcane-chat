@@ -98,6 +98,7 @@ set(CHAT_LIB_SOURCES
   src/channelmodel.cpp
   src/opus_test.cpp
   src/pulseaudio_loop.cpp
+  src/pulse_stream.cpp
   ${UI_HEADERS}
 )
 

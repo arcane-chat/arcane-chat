@@ -7,8 +7,10 @@
 #include <cassert>
 
 #include "pulseaudio_loop.hpp"
+#include "pulse_stream.h"
 
 using namespace std;
+using namespace pulse;
 
 #define FREQ 15000
 
@@ -47,15 +49,15 @@ int opus_main() {
     }
     //qDebug() << QByteArray((char*)samples,samplerate).toHex();
     //pulse_test(samples,samplerate);
-    PAThreadedMainLoop *loop = pa_test_init();
+    PAThreadedMainLoop *loop = new PAThreadedMainLoop();
     sleep(5);
-    pa_test_write(loop, samples, samplerate);
+    loop->playback->write(samples, samplerate);
     sleep(5);
-    pa_test_write(loop, samples, samplerate);
+    loop->playback->write(samples, samplerate);
     sleep(5);
-    pa_test_write(loop, samples, samplerate);
+    loop->playback->write(samples, samplerate);
     sleep(5);
-    pa_test_stop(loop);
+    delete loop;
 
     return 0;
 
