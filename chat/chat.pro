@@ -18,7 +18,8 @@ HEADERS += src/core.hpp \
     src/chatwidget.h \
     src/infowidget.h \
     src/channelmodel.h \
-    src/friend.h
+    src/friend.h \
+    src/pulseaudio_loop.hpp
 SOURCES += src/client.cpp \
            src/core.cpp \
            src/tracer.cpp \
@@ -28,7 +29,8 @@ SOURCES += src/client.cpp \
     src/infowidget.cpp \
     src/channelmodel.cpp \
     src/friend.cpp \
-    src/opus_test.cpp
+    src/opus_test.cpp \
+    src/pulseaudio_loop.cpp
 
 FORMS += \
     src/mainwindow.ui \

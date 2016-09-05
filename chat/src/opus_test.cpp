@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <cassert>
 
+#include "pulseaudio_loop.hpp"
+
 using namespace std;
 
 #define FREQ 15000
@@ -41,10 +43,21 @@ int opus_main() {
     opus_int16 samples[samplerate];
     for (int i=0; i<samplerate; i++) {
         samples[i] = sin((2 * (float)i * FREQ * 3.1415) / samplerate) * (1 << 10);
-        qDebug() << samples[i];
+        //qDebug() << samples[i];
     }
     //qDebug() << QByteArray((char*)samples,samplerate).toHex();
-    pulse_test(samples,samplerate);
+    //pulse_test(samples,samplerate);
+    PAThreadedMainLoop *loop = pa_test_init();
+    sleep(5);
+    pa_test_write(loop, samples, samplerate);
+    sleep(5);
+    pa_test_write(loop, samples, samplerate);
+    sleep(5);
+    pa_test_write(loop, samples, samplerate);
+    sleep(5);
+    pa_test_stop(loop);
+
+    return 0;
 
     OpusEncoder* enc = opus_encoder_create(samplerate, 1, OPUS_APPLICATION_VOIP, nullptr);
     qDebug() << enc;

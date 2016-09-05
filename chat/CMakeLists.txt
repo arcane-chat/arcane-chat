@@ -95,6 +95,8 @@ set(CHAT_LIB_SOURCES
   src/infowidget.cpp
   src/friend.cpp
   src/channelmodel.cpp
+  src/opus_test.cpp
+  src/pulseaudio_loop.cpp
   ${UI_HEADERS}
 )
 
