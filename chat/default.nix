@@ -1,5 +1,5 @@
 # Build dependencies
-{ stdenv, cmake, pkgconfig, doxygen, ghostscript, ninja
+{ stdenv, cmake, pkgconfig, doxygen, ghostscript, ninja, makeWrapper
 # Program dependencies
 , boost, zeromq, libmsgpack, libtoxcore-dev, nlohmann_json, qtbase, obs-studio
 , gst_all_1
@@ -13,13 +13,13 @@ stdenv.mkDerivation rec {
   src = ./.;
 
   nativeBuildInputs = [
-    cmake pkgconfig ninja doxygen ghostscript guile parallel
+    cmake pkgconfig ninja doxygen ghostscript guile parallel makeWrapper
   ];
 
   buildInputs = with gst_all_1; [
     boost zeromq libmsgpack qtbase nlohmann_json libtoxcore-dev obs-studio
     gstreamer gstreamermm gst-libav gst-plugins-base gst-plugins-good
-    libopus libpulseaudio
+    gst-plugins-ugly gst-plugins-bad libopus libpulseaudio
   ];
 
   cmakeFlags = "-GNinja";
@@ -31,6 +31,11 @@ stdenv.mkDerivation rec {
       mkdir $out/nix-support
       echo "doc manual $out/share/doc/fuspr-chat index.html" \
           >> $out/nix-support/hydra-build-products
+
+      for exe in $out/bin/{client,gst}; do
+          wrapProgram "$exe" \
+              --prefix GST_PLUGIN_PATH : "$GST_PLUGIN_SYSTEM_PATH_1_0"
+      done
   '';
 
   shellHook = ''
