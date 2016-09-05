@@ -8,7 +8,6 @@ rec {
     super = linuxPkgs;
 
     # Our packages
-    gst_all_1 = super.recurseIntoAttrs (linuxCallPackage ./fixes/gstreamer {});
     fuspr-chat = linuxCallPackage ./chat {};
   };
 
