@@ -147,7 +147,11 @@ void handler(int signum) {
     QCoreApplication::quit();
 }
 
+int opus_main();
+
 int main(int argc, char** argv) {
+    return opus_main();
+
     QApplication app(argc, argv);
     struct sigaction interrupt;
     memset(&interrupt, 0, sizeof(interrupt));

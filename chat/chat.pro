@@ -6,7 +6,7 @@ TEMPLATE = app
 QT += widgets
 TARGET = chat
 INCLUDEPATH += .
-LIBS += -ltoxcore
+LIBS += -ltoxcore -lopus -lpulse-simple
 
 # Input
 HEADERS += src/core.hpp \
@@ -19,7 +19,7 @@ HEADERS += src/core.hpp \
     src/infowidget.h \
     src/channelmodel.h \
     src/friend.h
-SOURCES += src/chat.cpp \
+SOURCES += src/client.cpp \
            src/core.cpp \
            src/tracer.cpp \
            src/utils.cpp \
@@ -27,7 +27,8 @@ SOURCES += src/chat.cpp \
     src/chatwidget.cpp \
     src/infowidget.cpp \
     src/channelmodel.cpp \
-    src/friend.cpp
+    src/friend.cpp \
+    src/opus_test.cpp
 
 FORMS += \
     src/mainwindow.ui \

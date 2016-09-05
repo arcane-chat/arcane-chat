@@ -4,7 +4,7 @@
 , boost, zeromq, libmsgpack, libtoxcore-dev, nlohmann_json, qtbase, obs-studio
 , gst_all_1
 # Misc dependencies
-, guile, parallel
+, guile, parallel, libopus, libpulseaudio
 }:
 
 stdenv.mkDerivation rec {
@@ -19,6 +19,7 @@ stdenv.mkDerivation rec {
   buildInputs = with gst_all_1; [
     boost zeromq libmsgpack qtbase nlohmann_json libtoxcore-dev obs-studio
     gstreamer gstreamermm gst-libav gst-plugins-base gst-plugins-good
+    libopus libpulseaudio
   ];
 
   cmakeFlags = "-GNinja";
