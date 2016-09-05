@@ -12,7 +12,7 @@ using namespace std;
 
 #define FREQ 15000
 
-int pulse_test(opus_int16 *samples, int count) {
+/*int pulse_test(opus_int16 *samples, int count) {
     pa_simple *s;
     pa_sample_spec ss;
     ss.format = PA_SAMPLE_S16NE;
@@ -35,7 +35,7 @@ int pulse_test(opus_int16 *samples, int count) {
     //sleep(6);
     pa_simple_free(s);
     return 0;
-}
+}*/
 
 int opus_main() {
 
