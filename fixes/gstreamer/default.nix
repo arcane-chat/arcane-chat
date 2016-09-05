@@ -1,11 +1,9 @@
-{ callPackage, libva-full }:
+{ callPackage, libva-full, boost155 }:
 
 rec {
   gstreamer = callPackage ./core {};
 
-  gstreamermm = callPackage ./gstreamermm { inherit mm-common; };
-
-  mm-common = callPackage ./mm-common {};
+  gstreamermm = callPackage ./gstreamermm {};
 
   gst-plugins-base = callPackage ./base { inherit gstreamer; };
 
@@ -21,6 +19,6 @@ rec {
     inherit gst-plugins-base gstreamer gst-plugins-bad;
     libva = libva-full; # looks also for libva-{x11,wayland}
   };
-  
-  gst-validate = callPackage ./validate { inherit gst-plugins-base; };
+
+  qt-gstreamer = callPackage ./qt-gstreamer { boost = boost155; };
 }
