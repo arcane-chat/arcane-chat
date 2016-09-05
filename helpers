@@ -255,4 +255,9 @@ enter-nix-shell () {
     fi
 }
 
+commit () {
+    (( $# == 1 )) || echo "Not enough arguments!"
+    git commit -m "${1}" && git pull --rebase && git push
+}
+
 note "Helpers successfully loaded."
