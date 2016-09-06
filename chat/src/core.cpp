@@ -8,48 +8,54 @@
 
 using namespace chat;
 
-static void MyFriendMessageCallback(Tox* tox,
+static QByteArray make_byte_array(const uint8_t* data, size_t length) {
+    return QByteArray(reinterpret_cast<const char*>(data), length);
+}
+
+static void friend_message_callback(Tox* tox,
                                     uint32_t friend_number,
                                     TOX_MESSAGE_TYPE type,
                                     const uint8_t* message,
                                     size_t length,
                                     void* user_data) {
+    Q_UNUSED(tox);
     Core* core = (Core*) user_data;
-    core->handleMessage(friend_number, type,
-                        QByteArray((const char*) message, length));
+    core->handle_message(friend_number, type, make_byte_array(message, length));
 }
 
-static void MyFriendLossyPacket(Tox* tox,
+static void friend_lossy_packet(Tox* tox,
                                 uint32_t friend_number,
                                 const uint8_t* data,
                                 size_t length,
                                 void* user_data) {
+    Q_UNUSED(tox);
     Core* core = (Core*) user_data;
-    core->handleLossyPacket(friend_number,
-                            QByteArray((const char*) data, length));
+    core->handle_lossy_packet(friend_number, make_byte_array(data, length));
 }
 
-static void MyFriendLosslessPacket(Tox* tox,
+static void friend_lossless_packet(Tox* tox,
                                    uint32_t friend_number,
                                    const uint8_t* data,
                                    size_t length,
                                    void* user_data) {
+    Q_UNUSED(tox);
     Core* core = (Core*) user_data;
-    core->handleLosslessPacket(friend_number,
-                               QByteArray((const char*) data, length));
+    core->handle_lossless_packet(friend_number, make_byte_array(data, length));
 }
 
-static void MyFriendTyping(Tox* tox,
-                           uint32_t friend_number,
-                           bool is_typing,
-                           void* user_data) {
+static void friend_typing(Tox* tox,
+                          uint32_t friend_number,
+                          bool is_typing,
+                          void* user_data) {
+    Q_UNUSED(tox);
     qDebug() << friend_number << is_typing << "is typing";
 }
 
-static void FriendConnectionUpdate(Tox* tox,
-                                   uint32_t friend_number,
-                                   TOX_CONNECTION connection_status,
-                                   void* user_data) {
+static void friend_connection_update(Tox* tox,
+                                     uint32_t friend_number,
+                                     TOX_CONNECTION connection_status,
+                                     void* user_data) {
+    Q_UNUSED(tox);
     Core* core = (Core*) user_data;
     core->handle_friend_connection_update(friend_number, connection_status);
     std::cout << __func__ << " " << friend_number << " " << connection_status
@@ -57,24 +63,24 @@ static void FriendConnectionUpdate(Tox* tox,
 }
 
 Core::Core(Tox* tox) : tox(tox) {
-    tox_callback_friend_typing(tox, MyFriendTyping, this);
-    tox_callback_friend_message(tox, MyFriendMessageCallback, this);
-    tox_callback_friend_lossy_packet(tox, MyFriendLossyPacket, this);
-    tox_callback_friend_lossless_packet(tox, MyFriendLosslessPacket, this);
-    tox_callback_friend_connection_status(tox, FriendConnectionUpdate, this);
+    tox_callback_friend_typing(tox, friend_typing, this);
+    tox_callback_friend_message(tox, friend_message_callback, this);
+    tox_callback_friend_lossy_packet(tox, friend_lossy_packet, this);
+    tox_callback_friend_lossless_packet(tox, friend_lossless_packet, this);
+    tox_callback_friend_connection_status(tox, friend_connection_update, this);
 
     std::string username = ({
-        std::stringstream ss;
-        ss << "fuspr-" << rand();
-        ss.str();
-    });
+            std::stringstream ss;
+            ss << "fuspr-" << rand();
+            ss.str();
+        });
     tox_self_set_name(tox, reinterpret_cast<const uint8_t*>(username.c_str()),
                       username.size(), nullptr);
 
     this->username = username.c_str();
 
     iterator.setSingleShot(true);
-    connect(&iterator, SIGNAL(timeout()), this, SLOT(checkTox()));
+    connect(&iterator, SIGNAL(timeout()), this, SLOT(check_tox()));
     iterator.setInterval(tox_iteration_interval(tox));
     iterator.start();
 
@@ -115,16 +121,16 @@ Core::Core(Tox* tox) : tox(tox) {
     }
 }
 
-void Core::checkTox() {
+void Core::check_tox() {
     tox_iterate(tox);
     // ^^^ will call the callback functions defined and registered
     iterator.setInterval(tox_iteration_interval(tox));
     iterator.start();
 }
 
-void Core::handleMessage(uint32_t friend_number,
-                         TOX_MESSAGE_TYPE type,
-                         QByteArray message) {
+void Core::handle_message(uint32_t friend_number,
+                          TOX_MESSAGE_TYPE type,
+                          QByteArray message) {
     QString text(message);
     bool action = type == TOX_MESSAGE_TYPE_ACTION;
     for(chat::Friend* f : friends) {
@@ -135,12 +141,12 @@ void Core::handleMessage(uint32_t friend_number,
     }
 }
 
-void Core::handleLosslessPacket(uint32_t friend_number, QByteArray message) {
-    emit onLosslessPacket(friend_number, message);
+void Core::handle_lossless_packet(uint32_t friend_number, QByteArray message) {
+    emit on_lossless_packet(friend_number, message);
 }
 
-void Core::handleLossyPacket(uint32_t friend_number, QByteArray message) {
-    emit onLossyPacket(friend_number, message);
+void Core::handle_lossy_packet(uint32_t friend_number, QByteArray message) {
+    emit on_lossy_packet(friend_number, message);
 }
 
 void Core::handle_friend_connection_update(uint32_t friend_number,
@@ -153,7 +159,7 @@ void Core::handle_friend_connection_update(uint32_t friend_number,
     case TOX_CONNECTION_UDP: newlink = chat::Link::Udp; break;
     }
 
-    foreach(chat::Friend* f, friends) {
+    for(chat::Friend* f : friends) {
         if(f->friend_number == friend_number) {
             f->set_connection(newlink);
         }

@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QTextBrowser>
+#include <utils.hpp>
 
 namespace Ui {
     class ChatWidget;
@@ -13,6 +14,7 @@ namespace chat {
     class Core;
     class Friend;
 }
+
 using namespace chat;
 
 class ChatSection : public QWidget {
@@ -36,7 +38,7 @@ public:
     ~ChatWidget();
 
 private:
-    Ui::ChatWidget* ui;
+    chat::ui::ChatWidget* ui;
     QMap<uint32_t, ChatSection*> chatSections;
     chat::Core* core;
 private slots:

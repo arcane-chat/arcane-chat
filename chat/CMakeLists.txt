@@ -3,6 +3,13 @@ project(fuspr-chat)
 
 add_subdirectory(doc)
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
+include(cotire)
+
 find_package(PkgConfig REQUIRED)
 find_package(Boost     REQUIRED program_options thread filesystem)
 
@@ -29,15 +36,11 @@ pkg_check_modules(GST REQUIRED
   gstreamer-sdp-1.0
   gstreamer-tag-1.0)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 find_package(Qt5Core      REQUIRED)
 find_package(Qt5Gui       REQUIRED)
 find_package(Qt5Widgets   REQUIRED)
 find_package(Qt5GStreamer REQUIRED)
-#find_package(LibObs REQUIRED)
+find_package(LibObs       REQUIRED)
 
 set(CMAKE_C_FLAGS
   "${CMAKE_C_FLAGS} -g -std=c11 -Wall"
@@ -54,8 +57,7 @@ include_directories(
   ${MSG_INCLUDE_DIRS}
   ${TOX_INCLUDE_DIRS}
   ${GST_INCLUDE_DIRS}
-  ${CMAKE_BINARY_DIR}
-  #${LIBOBS_INCLUDE_DIRS}
+  ${LIBOBS_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -86,35 +88,34 @@ set(GENERAL_LIBRARIES
   ${ZMQ_LIBRARIES}
   ${TOX_LIBRARIES}
   ${GST_LIBRARIES}
-  pulse
-  #${LIBOBS_LIBRARIES}
+  ${LIBOBS_LIBRARIES}
 )
 
 QT5_WRAP_UI(UI_HEADERS src/mainwindow.ui src/chatwidget.ui src/infowidget.ui)
 
 set(CHAT_LIB_SOURCES
   src/core.cpp
+  src/friend.cpp
   src/utils.cpp
   src/tracer.cpp
   src/mainwindow.cpp
   src/chatwidget.cpp
   src/infowidget.cpp
-  src/friend.cpp
   src/channelmodel.cpp
-  src/opus_test.cpp
-  src/pulseaudio_loop.cpp
-  src/pulse_stream.cpp
   ${UI_HEADERS}
 )
 
 add_library(chat SHARED ${CHAT_LIB_SOURCES})
 target_link_libraries(chat ${GENERAL_LIBRARIES})
+cotire(chat)
 
 add_executable(client src/client.cpp)
 target_link_libraries(client chat ${GENERAL_LIBRARIES})
+cotire(client)
 
 add_executable(gst src/gst.cpp)
 target_link_libraries(gst ${GENERAL_LIBRARIES})
+cotire(gst)
 
 install(
   TARGETS client gst chat

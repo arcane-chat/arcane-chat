@@ -20,14 +20,14 @@
 #include "mainwindow.h"
 #include "friend.h"
 
-namespace bootstrap {
+namespace tox::bootstrap {
     constexpr const char* address = "23.226.230.47";
 
     constexpr int port = 33445;
 
     constexpr const char* key =
         "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074";
-} // namespace bootstrap
+} // namespace tox::bootstrap
 
 std::vector<uint8_t> from_hex(const std::string& hex) {
     std::vector<uint8_t> out;

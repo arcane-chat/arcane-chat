@@ -1,35 +1,44 @@
 #pragma once
 
+namespace tox {
+    namespace clib {
 #include <tox/tox.h>
+    }
+}
 
 #include <QObject>
 #include <QTimer>
 #include <QList>
 
-#include "friend.h"
+#include "friend.hpp"
 
 namespace chat {
     class Core : public QObject {
         Q_OBJECT
+
     public:
-        Core(Tox* tox);
-        void handleMessage(uint32_t friend_number,
-                           TOX_MESSAGE_TYPE type,
-                           QByteArray message);
-        void handleLossyPacket(uint32_t friend_number, QByteArray message);
-        void handleLosslessPacket(uint32_t friend_number, QByteArray message);
+        explicit Core(tox::clib::Tox* tox);
+
+        void handle_message(uint32_t friend_number,
+                            TOX_MESSAGE_TYPE type,
+                            QByteArray message);
+        void handle_lossy_packet(uint32_t friend_number, QByteArray message);
+        void handle_lossless_packet(uint32_t friend_number, QByteArray message);
         void handle_friend_connection_update(uint32_t friend_number,
                                              TOX_CONNECTION link);
-        const QList<Friend*> getFriends() { return friends; }
+
+        const QList<Friend*> get_friends() { return friends; }
         void send_message(uint32_t friend_number, bool action, QString message);
 
         QString username;
+
     signals:
         void on_message(Friend*, bool action, QString message);
-        void onLosslessPacket(uint32_t friend_number, QByteArray message);
-        void onLossyPacket(uint32_t friend_number, QByteArray message);
+        void on_lossless_packet(uint32_t friend_number, QByteArray message);
+        void on_lossy_packet(uint32_t friend_number, QByteArray message);
+
     private slots:
-        void checkTox();
+        void check_tox();
 
     private:
         Tox* tox;

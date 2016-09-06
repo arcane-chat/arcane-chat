@@ -8,7 +8,7 @@ ChannelModel::ChannelModel(QList<chat::Friend*> friends) {
     Node* legacyFolder = new Node(NodeType::LegacyFolder, root);
     root->children.append(legacyFolder);
 
-    foreach(chat::Friend* f, friends) {
+    for(chat::Friend* f : friends) {
         FriendNode* t = new FriendNode(legacyFolder, f);
         connect(t, SIGNAL(changed(Node*) ), this, SLOT(node_changed(Node*) ));
         legacyFolder->children.append(t);
