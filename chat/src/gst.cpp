@@ -1,3 +1,5 @@
+#include "goutputstream.hpp"
+
 #include <iostream>
 #include <QCoreApplication>
 #include <Qt5GStreamer/QGlib/Error>
@@ -16,9 +18,7 @@ public:
         : QGst::Utils::ApplicationSink(), m_src(src) {}
 
 protected:
-    virtual void eos() {
-        m_src->endOfStream();
-    }
+    virtual void eos() { m_src->endOfStream(); }
 
     virtual QGst::FlowReturn newSample() {
         QGst::SamplePtr sample = pullSample();
@@ -50,7 +50,8 @@ Player::Player(int argc, char** argv)
     QGst::init(&argc, &argv);
     const char* caps = "audio/x-opus, channel-mapping-family=(int)0";
     QString pipe1 = QString("audiotestsrc ! opusenc"
-                            " ! appsink name=\"a\" caps=\"%2\"").arg(caps);
+                            " ! appsink name=\"a\" caps=\"%2\"")
+                        .arg(caps);
     // const char* caps = "video/x-vp8";
     // QString pipe1 = QString("v4l2src ! vp8enc deadline=20000 threads=8"
     //                         " ! appsink name=\"a\" caps=\"%2\"").arg(caps);
@@ -60,10 +61,13 @@ Player::Player(int argc, char** argv)
                    &Player::onBusMessage);
     pipeline1->bus()->addSignalWatch();
 
-    // QString pipe2 = QString("appsrc name=\"b\" is-live=true caps=\"%2\" format=3"
+    // QString pipe2 = QString("appsrc name=\"b\" is-live=true caps=\"%2\"
+    // format=3"
     //                         " ! decodebin ! autovideosink").arg(caps);
-    QString pipe2 = QString("appsrc name=\"b\" is-live=true caps=\"%2\" format=3"
-                            " ! decodebin ! pulsesink").arg(caps);
+    QString pipe2 =
+        QString("appsrc name=\"b\" is-live=true caps=\"%2\" format=3"
+                " ! decodebin ! pulsesink")
+            .arg(caps);
     pipeline2 = QGst::Parse::launch(pipe2).dynamicCast<QGst::Pipeline>();
     m_src.setElement(pipeline2->getElementByName("b"));
     QGlib::connect(pipeline2->bus(), "message", this, &Player::onBusMessage);
@@ -89,6 +93,8 @@ void Player::onBusMessage(const QGst::MessagePtr& message) {
 }
 
 int main(int argc, char** argv) {
+    gpointer out = g_object_new(TOX_TYPE_OUTPUT, nullptr);
+    return 0;
     Player p(argc, argv);
     return p.exec();
 }
