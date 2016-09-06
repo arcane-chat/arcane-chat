@@ -1,5 +1,5 @@
-{ stdenv, fetchurl, fetchpatch, gst_all_1, boost, glib, qt4, cmake
-, automoc4, flex, bison, pkgconfig }:
+{ stdenv, fetchurl, fetchpatch, cmake, automoc4, flex, bison, pkgconfig
+, gstreamer, gst-plugins-base, boost, glib, qtbase, qtdeclarative }:
 
 stdenv.mkDerivation rec {
   name = "${pname}-1.2.0";
@@ -19,11 +19,11 @@ stdenv.mkDerivation rec {
 
   outputs = [ "dev" "out" ];
 
-  buildInputs = [ gst_all_1.gstreamer gst_all_1.gst-plugins-base glib qt4 ];
+  buildInputs = [ gstreamer gst-plugins-base glib qtbase qtdeclarative ];
   propagatedBuildInputs = [ boost ];
   nativeBuildInputs = [ cmake automoc4 flex bison pkgconfig ];
 
-  cmakeFlags = "-DUSE_QT_PLUGIN_DIR=OFF -DUSE_GST_PLUGIN_DIR=OFF";
+  cmakeFlags = "-DQT_VERSION=5 -DUSE_QT_PLUGIN_DIR=OFF -DUSE_GST_PLUGIN_DIR=OFF";
 
   meta = {
     platforms = stdenv.lib.platforms.linux;

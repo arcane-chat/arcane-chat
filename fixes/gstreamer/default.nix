@@ -1,4 +1,4 @@
-{ callPackage, libva-full, boost155 }:
+{ callPackage, qt56, libva-full, boost155 }:
 
 rec {
   gstreamer = callPackage ./core {};
@@ -20,5 +20,8 @@ rec {
     libva = libva-full; # looks also for libva-{x11,wayland}
   };
 
-  qt-gstreamer = callPackage ./qt-gstreamer { boost = boost155; };
+  qt-gstreamer = qt56.callPackage ./qt-gstreamer {
+    inherit gstreamer gst-plugins-base;
+    boost = boost155;
+  };
 }

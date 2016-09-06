@@ -33,9 +33,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(Qt5Core    REQUIRED)
-find_package(Qt5Gui     REQUIRED)
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Core      REQUIRED)
+find_package(Qt5Gui       REQUIRED)
+find_package(Qt5Widgets   REQUIRED)
+find_package(Qt5GStreamer REQUIRED)
 #find_package(LibObs REQUIRED)
 
 set(CMAKE_C_FLAGS
@@ -77,6 +78,10 @@ set(GENERAL_LIBRARIES
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
+  Qt5GLib
+  Qt5GStreamer
+  Qt5GStreamerUi
+  Qt5GStreamerUtils
   ${Boost_LIBRARIES}
   ${ZMQ_LIBRARIES}
   ${TOX_LIBRARIES}

@@ -19,7 +19,7 @@ stdenv.mkDerivation rec {
   buildInputs = with gst_all_1; [
     boost zeromq libmsgpack qtbase nlohmann_json libtoxcore-dev obs-studio
     gstreamer gstreamermm gst-libav gst-plugins-base gst-plugins-good
-    gst-plugins-ugly gst-plugins-bad libopus libpulseaudio
+    gst-plugins-ugly gst-plugins-bad qt-gstreamer libopus libpulseaudio
   ];
 
   cmakeFlags = "-GNinja";
