@@ -16,6 +16,7 @@ find_package(Boost     REQUIRED program_options thread filesystem)
 pkg_check_modules(ZMQ REQUIRED libzmq)
 pkg_check_modules(MSG REQUIRED msgpack)
 pkg_check_modules(TOX REQUIRED libtoxcore)
+pkg_check_modules(X11 REQUIRED x11 x11-xcb)
 pkg_check_modules(GST REQUIRED
   gstreamer-1.0
   gstreamermm-1.0
@@ -58,6 +59,7 @@ include_directories(
   ${MSG_INCLUDE_DIRS}
   ${TOX_INCLUDE_DIRS}
   ${GST_INCLUDE_DIRS}
+  ${X11_INCLUDE_DIRS}
   ${LIBOBS_INCLUDE_DIRS}
 )
 
@@ -67,6 +69,7 @@ link_directories(
   ${MSG_LIBRARY_DIRS}
   ${TOX_LIBRARY_DIRS}
   ${GST_LIBRARY_DIRS}
+  ${X11_LIBRARY_DIRS}
 )
 
 add_definitions(
@@ -75,6 +78,7 @@ add_definitions(
   ${MSG_CFLAGS_OTHER}
   ${TOX_CFLAGS_OTHER}
   ${GST_CFLAGS_OTHER}
+  ${X11_CFLAGS_OTHER}
 )
 
 set(GENERAL_LIBRARIES
@@ -89,6 +93,7 @@ set(GENERAL_LIBRARIES
   ${ZMQ_LIBRARIES}
   ${TOX_LIBRARIES}
   ${GST_LIBRARIES}
+  ${X11_LIBRARIES}
   ${LIBOBS_LIBRARIES}
 )
 
@@ -113,7 +118,7 @@ add_executable(client src/client.cpp)
 target_link_libraries(client chat ${GENERAL_LIBRARIES})
 cotire(client)
 
-add_executable(gst src/gst.cpp)
+add_executable(gst src/gst.cpp src/goutputstream.cpp)
 target_link_libraries(gst ${GENERAL_LIBRARIES})
 cotire(gst)
 

@@ -26,5 +26,8 @@ namespace tox {
 
         //! Print a hexadecimal array.
         std::string to_hex(const uint8_t* bin_arr, size_t bin_size);
+
+        //! Parse a hexadecimal array.
+        std::vector<uint8_t> from_hex(const std::string& hex);
     }
 }

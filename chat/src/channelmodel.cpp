@@ -69,9 +69,9 @@ QVariant Node::data() {
 QVariant FriendNode::data() {
     QString state;
     switch(f->connection) {
-    case Link::None: state = "offline"; break;
-    case Link::Tcp: state = "tcp"; break;
-    case Link::Udp: state = "udp"; break;
+    case Link::none: state = "offline"; break;
+    case Link::tcp: state = "tcp"; break;
+    case Link::udp: state = "udp"; break;
     }
 
     return QString("%1 - %2 - %3").arg(state).arg(f->name).arg(f->last_message);

@@ -16,25 +16,19 @@
 #include "options.hpp"
 #include "core.hpp"
 #include "utils.hpp"
-#include "tracer.hpp"
 #include "friend.hpp"
 #include "mainwindow.h"
 
-namespace tox::bootstrap {
-    constexpr const char* address = "23.226.230.47";
+namespace tox {
+    namespace bootstrap {
+        constexpr const char* address = "23.226.230.47";
 
-    constexpr int port = 33445;
+        constexpr int port = 33445;
 
-    constexpr const char* key =
-        "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074";
-} // namespace tox::bootstrap
-
-std::vector<uint8_t> from_hex(const std::string& hex) {
-    std::vector<uint8_t> out;
-    out.resize(hex.size() / 2);
-    boost::algorithm::unhex(hex.begin(), hex.end(), out.begin());
-    return out;
-}
+        constexpr const char* key =
+            "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074";
+    } // namespace bootstrap
+} // namespace tox
 
 void saveState(Tox* tox) {
     size_t size = tox_get_savedata_size(tox);
@@ -52,7 +46,7 @@ void connection_status(Tox* tox,
                        void* user_data) {
     uint8_t toxid[TOX_ADDRESS_SIZE];
     tox_self_get_address(tox, toxid);
-    std::string tox_printable_id = to_hex(toxid, TOX_ADDRESS_SIZE);
+    std::string tox_printable_id = tox::utils::to_hex(toxid, TOX_ADDRESS_SIZE);
 
     const char* msg = nullptr;
 
@@ -147,11 +141,7 @@ void handler(int signum) {
     QCoreApplication::quit();
 }
 
-int opus_main();
-
 int main(int argc, char** argv) {
-    return opus_main();
-
     QApplication app(argc, argv);
     struct sigaction interrupt;
     memset(&interrupt, 0, sizeof(interrupt));
@@ -162,14 +152,18 @@ int main(int argc, char** argv) {
     Tox* tox = initTox();
     uint8_t toxid[TOX_ADDRESS_SIZE];
     tox_self_get_address(tox, toxid);
-    std::cout << "my id is " << to_hex(toxid, TOX_ADDRESS_SIZE) << "\n";
-    std::vector<uint8_t> bootstrap_pub_key = from_hex(bootstrap::key);
-    tox_bootstrap(tox, bootstrap::address, bootstrap::port,
+    std::cout << "my id is "
+              << tox::utils::to_hex(toxid, TOX_ADDRESS_SIZE)
+              << "\n";
+    std::vector<uint8_t> bootstrap_pub_key {
+        tox::utils::from_hex(tox::bootstrap::key)
+    };
+    tox_bootstrap(tox, tox::bootstrap::address, tox::bootstrap::port,
                   bootstrap_pub_key.data(), nullptr);
 
     chat::Core core(tox);
-    Tracer* tracer = new Tracer(&core);
-    QList<chat::Friend*> friends = core.getFriends();
+    // Tracer* tracer = new Tracer(&core);
+    QList<chat::Friend*> friends = core.get_friends();
     MainWindow* mw = new MainWindow(friends, &core);
     mw->show();
 

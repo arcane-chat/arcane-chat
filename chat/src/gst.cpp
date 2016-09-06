@@ -1,6 +1,5 @@
-#include "goutputstream.hpp"
-
 #include <iostream>
+#include "goutputstream.hpp"
 #include <QCoreApplication>
 #include <Qt5GStreamer/QGlib/Error>
 #include <Qt5GStreamer/QGlib/Connect>
@@ -93,7 +92,7 @@ void Player::onBusMessage(const QGst::MessagePtr& message) {
 }
 
 int main(int argc, char** argv) {
-    gpointer out = g_object_new(TOX_TYPE_OUTPUT, nullptr);
+    //gpointer out = g_object_new(TOX_TYPE_OUTPUT, nullptr);
     return 0;
     Player p(argc, argv);
     return p.exec();
