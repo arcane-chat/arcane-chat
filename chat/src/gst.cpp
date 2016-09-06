@@ -1,5 +1,5 @@
 #include <iostream>
-#include "goutputstream.hpp"
+#include "toxoutputstream.hpp"
 #include <QCoreApplication>
 #include <Qt5GStreamer/QGlib/Error>
 #include <Qt5GStreamer/QGlib/Connect>

@@ -118,7 +118,7 @@ add_executable(client src/client.cpp)
 target_link_libraries(client chat ${GENERAL_LIBRARIES})
 cotire(client)
 
-add_executable(gst src/gst.cpp src/goutputstream.cpp)
+add_executable(gst src/gst.cpp src/toxoutputstream.cpp)
 target_link_libraries(gst ${GENERAL_LIBRARIES})
 cotire(gst)
 
