@@ -12,7 +12,7 @@
 
 class MySink : public QGst::Utils::ApplicationSink {
 public:
-    explicit MySink(QGst::Utils::ApplicationSource *src)
+    explicit MySink(QGst::Utils::ApplicationSource* src)
         : QGst::Utils::ApplicationSink(), m_src(src) {}
 
 protected:
@@ -27,15 +27,17 @@ protected:
     }
 
 private:
-    QGst::Utils::ApplicationSource *m_src;
+    QGst::Utils::ApplicationSource* m_src;
 };
 
 class Player : public QCoreApplication {
 public:
-    Player(int argc, char **argv);
+    Player(int argc, char** argv);
     ~Player();
+
 private:
-    void onBusMessage(const QGst::MessagePtr & message);
+    void onBusMessage(const QGst::MessagePtr& message);
+
 private:
     QGst::Utils::ApplicationSource m_src;
     MySink m_sink;
@@ -49,12 +51,17 @@ Player::Player(int argc, char** argv)
     const char* caps = "audio/x-opus, channel-mapping-family=(int)0";
     QString pipe1 = QString("audiotestsrc ! opusenc"
                             " ! appsink name=\"a\" caps=\"%2\"").arg(caps);
+    // const char* caps = "video/x-vp8";
+    // QString pipe1 = QString("v4l2src ! vp8enc deadline=20000 threads=8"
+    //                         " ! appsink name=\"a\" caps=\"%2\"").arg(caps);
     pipeline1 = QGst::Parse::launch(pipe1).dynamicCast<QGst::Pipeline>();
     m_sink.setElement(pipeline1->getElementByName("a"));
     QGlib::connect(pipeline1->bus(), "message::error", this,
                    &Player::onBusMessage);
     pipeline1->bus()->addSignalWatch();
 
+    // QString pipe2 = QString("appsrc name=\"b\" is-live=true caps=\"%2\" format=3"
+    //                         " ! decodebin ! autovideosink").arg(caps);
     QString pipe2 = QString("appsrc name=\"b\" is-live=true caps=\"%2\" format=3"
                             " ! decodebin ! pulsesink").arg(caps);
     pipeline2 = QGst::Parse::launch(pipe2).dynamicCast<QGst::Pipeline>();
