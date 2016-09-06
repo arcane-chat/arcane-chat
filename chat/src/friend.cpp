@@ -1,4 +1,4 @@
-#include "friend.h"
+#include "friend.hpp"
 
 namespace chat {
 

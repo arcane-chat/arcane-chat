@@ -17,8 +17,8 @@
 #include "core.hpp"
 #include "utils.hpp"
 #include "tracer.hpp"
+#include "friend.hpp"
 #include "mainwindow.h"
-#include "friend.h"
 
 namespace tox::bootstrap {
     constexpr const char* address = "23.226.230.47";

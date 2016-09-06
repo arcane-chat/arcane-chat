@@ -20,12 +20,12 @@ namespace chat {
         explicit Core(tox::clib::Tox* tox);
 
         void handle_message(uint32_t friend_number,
-                            TOX_MESSAGE_TYPE type,
+                            tox::clib::TOX_MESSAGE_TYPE type,
                             QByteArray message);
         void handle_lossy_packet(uint32_t friend_number, QByteArray message);
         void handle_lossless_packet(uint32_t friend_number, QByteArray message);
         void handle_friend_connection_update(uint32_t friend_number,
-                                             TOX_CONNECTION link);
+                                             tox::clib::TOX_CONNECTION link);
 
         const QList<Friend*> get_friends() { return friends; }
         void send_message(uint32_t friend_number, bool action, QString message);
@@ -41,7 +41,7 @@ namespace chat {
         void check_tox();
 
     private:
-        Tox* tox;
+        tox::clib::Tox* tox;
         QTimer iterator;
         QList<Friend*> friends;
     };

@@ -7,7 +7,7 @@
 
 namespace chat {
 
-    enum class Link { None, Tcp, Udp };
+    enum class Link { none, tcp, udp };
 
     class Friend : public QObject {
         Q_OBJECT

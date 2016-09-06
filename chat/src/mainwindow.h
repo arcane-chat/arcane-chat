@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QModelIndex>
 
-#include "friend.h"
+#include "friend.hpp"
 
 namespace Ui {
     class MainWindow;

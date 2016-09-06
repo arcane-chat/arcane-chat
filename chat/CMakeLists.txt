@@ -51,7 +51,8 @@ set(CMAKE_CXX_FLAGS
 )
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/src
+  ${CMAKE_BINARY_DIR}
   ${Boost_INCLUDE_DIRS}
   ${ZMQ_INCLUDE_DIRS}
   ${MSG_INCLUDE_DIRS}
@@ -97,7 +98,6 @@ set(CHAT_LIB_SOURCES
   src/core.cpp
   src/friend.cpp
   src/utils.cpp
-  src/tracer.cpp
   src/mainwindow.cpp
   src/chatwidget.cpp
   src/infowidget.cpp

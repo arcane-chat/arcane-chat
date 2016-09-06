@@ -1,10 +1,9 @@
-#ifndef CHANNELMODEL_H
-#define CHANNELMODEL_H
+#pragma once
 
 #include <QAbstractItemModel>
 #include <QList>
 
-#include "friend.h"
+#include "friend.hpp"
 
 enum class NodeType { Root, LegacyFolder, LegacyFriend };
 
@@ -54,5 +53,3 @@ private:
 private slots:
     void node_changed(Node*);
 };
-
-#endif // CHANNELMODEL_H

@@ -6,35 +6,29 @@ TEMPLATE = app
 QT += widgets
 TARGET = chat
 INCLUDEPATH += .
-LIBS += -ltoxcore -lopus -lpulse-simple
+LIBS += -ltoxcore
 
-# Input
 HEADERS += src/core.hpp \
            src/enums.hpp \
            src/options.hpp \
            src/tracer.hpp \
            src/utils.hpp \
-    src/mainwindow.h \
-    src/chatwidget.h \
-    src/infowidget.h \
-    src/channelmodel.h \
-    src/friend.h \
-    src/pulseaudio_loop.hpp \
-    src/pulse_stream.h
+           src/mainwindow.h \
+           src/chatwidget.h \
+           src/infowidget.h \
+           src/channelmodel.h \
+           src/friend.hpp
+
 SOURCES += src/client.cpp \
            src/core.cpp \
            src/tracer.cpp \
            src/utils.cpp \
-    src/mainwindow.cpp \
-    src/chatwidget.cpp \
-    src/infowidget.cpp \
-    src/channelmodel.cpp \
-    src/friend.cpp \
-    src/opus_test.cpp \
-    src/pulseaudio_loop.cpp \
-    src/pulse_stream.cpp
+           src/mainwindow.cpp \
+           src/chatwidget.cpp \
+           src/infowidget.cpp \
+           src/channelmodel.cpp \
+           src/friend.cpp
 
-FORMS += \
-    src/mainwindow.ui \
-    src/chatwidget.ui \
-    src/infowidget.ui
+FORMS += src/mainwindow.ui \
+         src/chatwidget.ui \
+         src/infowidget.ui

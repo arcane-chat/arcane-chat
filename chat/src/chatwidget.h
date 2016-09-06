@@ -38,7 +38,7 @@ public:
     ~ChatWidget();
 
 private:
-    chat::ui::ChatWidget* ui;
+    Ui::ChatWidget* ui;
     QMap<uint32_t, ChatSection*> chatSections;
     chat::Core* core;
 private slots:
