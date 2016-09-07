@@ -1,9 +1,10 @@
 #include <QDebug>
 
-#include "chatwidget.h"
-#include "ui_chatwidget.h"
-#include "channelmodel.h"
+#include "chatwidget.hpp"
+#include "channelmodel.hpp"
 #include "core.hpp"
+
+#include "ui_chatwidget.h"
 
 ChatWidget::ChatWidget(Core* core, QWidget* parent)
     : QWidget(parent), ui(new Ui::ChatWidget), core(core) {

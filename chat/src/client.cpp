@@ -13,7 +13,7 @@
 #include "core.hpp"
 #include "utils.hpp"
 #include "friend.hpp"
-#include "mainwindow.h"
+#include "mainwindow.hpp"
 
 void handler(int signum) {
     std::cout << "Quitting...\n";

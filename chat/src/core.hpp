@@ -31,6 +31,7 @@ namespace chat {
 
         const QList<Friend*> get_friends() { return friends; }
         void send_message(uint32_t friend_number, bool action, QString message);
+        void save_state();
 
         QString username;
 
@@ -46,5 +47,6 @@ namespace chat {
         Tox* tox;
         QTimer iterator;
         QList<Friend*> friends;
+        std::string savedata_path;
     };
 } // namespace chat

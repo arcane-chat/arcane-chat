@@ -1,4 +1,4 @@
-#include "infowidget.h"
+#include "infowidget.hpp"
 #include "ui_infowidget.h"
 
 InfoWidget::InfoWidget(QWidget* parent)

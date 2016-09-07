@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QTextBrowser>
-#include <utils.hpp>
+#include "utils.hpp"
 
 namespace Ui {
     class ChatWidget;
@@ -41,6 +41,7 @@ private:
     Ui::ChatWidget* ui;
     QMap<uint32_t, ChatSection*> chatSections;
     chat::Core* core;
+
 private slots:
     void return_pressed();
     void on_message(Friend* f, bool action, QString message);

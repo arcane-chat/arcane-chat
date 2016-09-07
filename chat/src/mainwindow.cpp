@@ -1,11 +1,12 @@
 #include <QDockWidget>
 #include <QDebug>
 
-#include "mainwindow.h"
+#include "mainwindow.hpp"
+#include "chatwidget.hpp"
+#include "infowidget.hpp"
+#include "channelmodel.hpp"
+
 #include "ui_mainwindow.h"
-#include "chatwidget.h"
-#include "infowidget.h"
-#include "channelmodel.h"
 
 MainWindow::MainWindow(QList<chat::Friend*> friends, chat::Core* core)
     : ui(new Ui::MainWindow) {

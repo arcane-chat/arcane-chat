@@ -1,7 +1,7 @@
 #include <QDebug>
 #include <cassert>
 
-#include "channelmodel.h"
+#include "channelmodel.hpp"
 
 ChannelModel::ChannelModel(QList<chat::Friend*> friends) {
     root = new Node(NodeType::Root, nullptr);
