@@ -33,6 +33,7 @@ public:
     void save_state();
     void friend_add_norequest(const QByteArray public_key);
     void send_lossy_packet(Friend*, QByteArray data);
+    void send_lossless_packet(Friend*, QByteArray data);
 
     QString username;
 
