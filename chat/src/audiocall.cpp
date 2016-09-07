@@ -1,5 +1,6 @@
 #include <gstreamermm.h>
 #include <iostream>
+#include <giomm/init.h>
 
 #include "audiocall.hpp"
 #include "core.hpp"
@@ -61,6 +62,7 @@ void AudioCall::create_pipeline() {
     }
 
     pipeline->set_state(Gst::STATE_PLAYING);
+    qDebug() << "entering glib mainloop";
     mainloop->run();
     pipeline->set_state(Gst::STATE_NULL);
 }
@@ -73,4 +75,9 @@ void AudioCall::stop_everything()
 
 ssize_t AudioCall::write_fn(QByteArray data) {
     core->call_data(fr,data);
+}
+
+void audio_call_init(int argc, char **argv) {
+    Gst::init(argc, argv);
+    Gio::init();
 }

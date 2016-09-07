@@ -131,8 +131,7 @@ void callback_friend_connection_status(Tox* tox,
     Q_ASSERT(fr != core->get_friends().end());
 
     core->handle_friend_connection_status(*fr, link_type);
-    std::cout << __func__ << " " << friend_number << " " << connection_status
-              << "\n";
+    //std::cout << __func__ << " " << friend_number << " " << connection_status << "\n";
 }
 
 void callback_self_connection_status(Tox* tox,

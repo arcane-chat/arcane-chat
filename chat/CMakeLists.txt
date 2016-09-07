@@ -8,7 +8,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-include(cotire)
+#include(cotire)
 
 find_package(PkgConfig REQUIRED)
 find_package(Boost     REQUIRED program_options thread filesystem)
@@ -108,6 +108,8 @@ set(CHAT_LIB_SOURCES
   src/chatwidget.cpp
   src/infowidget.cpp
   src/channelmodel.cpp
+  src/audiocall.cpp
+  src/toxoutputstream.cpp
   ${UI_HEADERS}
 )
 
@@ -119,22 +121,22 @@ set(GST_SOURCES
 add_library(chat SHARED ${CHAT_LIB_SOURCES})
 target_link_libraries(chat ${GENERAL_LIBRARIES})
 set_property(TARGET chat PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-cotire(chat)
+#cotire(chat)
 
 add_executable(client src/client.cpp)
 target_link_libraries(client chat ${GENERAL_LIBRARIES})
 set_property(TARGET client PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-cotire(client)
+#cotire(client)
 
 add_executable(server src/server.cpp)
 target_link_libraries(server chat ${GENERAL_LIBRARIES})
 set_property(TARGET server PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-cotire(server)
+#cotire(server)
 
 add_executable(gst src/gst.cpp ${GST_SOURCES})
 target_link_libraries(gst ${GENERAL_LIBRARIES})
 set_property(TARGET gst PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-cotire(gst)
+#cotire(gst)
 
 install(
   TARGETS client gst chat

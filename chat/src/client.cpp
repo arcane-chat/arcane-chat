@@ -20,7 +20,11 @@ void handler(int signum) {
     QCoreApplication::quit();
 }
 
+//! yes yes, i know, avoiding glib vs qt fallout
+void audio_call_init(int argc, char **argv);
+
 int main(int argc, char** argv) {
+    audio_call_init(argc, argv);
     QApplication app(argc, argv);
     struct sigaction interrupt;
     memset(&interrupt, 0, sizeof(interrupt));

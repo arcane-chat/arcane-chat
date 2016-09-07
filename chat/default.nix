@@ -30,6 +30,9 @@ in stdenv.mkDerivation rec {
   ] ++ deps;
 
   cmakeFlags = "-GNinja";
+  NIX_CFLAGS_COMPILE = [
+    "-Dforeach=foreach" # glib has a foreach function, qt has a foreach macro
+  ];
 
   buildPhase = "ninja";
 

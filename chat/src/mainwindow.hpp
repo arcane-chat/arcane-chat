@@ -24,7 +24,7 @@ public:
     explicit MainWindow(chat::Core* core);
     ~MainWindow();
 
-private slots:
+private Q_SLOTS:
     void on_doubleclick(QModelIndex index);
 
 private:
