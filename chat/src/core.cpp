@@ -211,7 +211,7 @@ Core::Core() : tox(nullptr) {
 
     std::string username = ({
             std::stringstream ss;
-            ss << "fuspr-" << rand();
+            ss << "arcane-" << rand();
             ss.str();
         });
     tox_self_set_name(tox, reinterpret_cast<const uint8_t*>(username.c_str()),

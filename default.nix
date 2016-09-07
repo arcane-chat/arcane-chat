@@ -9,7 +9,7 @@ rec {
 
     # Our packages
     gst_all_1 = super.recurseIntoAttrs (linuxCallPackage ./fixes/gstreamer {});
-    fuspr-chat = linuxCallPackage ./chat {};
+    arcane-chat = linuxCallPackage ./chat {};
   };
 
   windowsPkgs = import nixpkgs.outPath {
@@ -42,7 +42,7 @@ rec {
     };
 
     # Our packages
-    fuspr-chat = windowsCallPackage ./chat {};
+    arcane-chat = windowsCallPackage ./chat {};
   };
 
   darwinPkgs = import nixpkgs.outPath { system = "x86_64-darwin"; };
@@ -52,6 +52,6 @@ rec {
     super = darwinPkgs;
 
     # Our packages
-    fuspr-chat = darwinCallPackage ./chat { qtbase = darwinPkgs.qt48Full; };
+    arcane-chat = darwinCallPackage ./chat { qtbase = darwinPkgs.qt48Full; };
   };
 }

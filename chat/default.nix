@@ -8,7 +8,7 @@
 }:
 
 stdenv.mkDerivation rec {
-  name = "fuspr-chat-0.0.1";
+  name = "arcane-chat-0.0.1";
 
   src = ./.;
 
@@ -29,7 +29,7 @@ stdenv.mkDerivation rec {
   installPhase = ''
       ninja install
       mkdir $out/nix-support
-      echo "doc manual $out/share/doc/fuspr-chat index.html" \
+      echo "doc manual $out/share/doc/arcane-chat index.html" \
           >> $out/nix-support/hydra-build-products
 
       for exe in $out/bin/{client,gst}; do
