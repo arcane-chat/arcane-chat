@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <thread>
 #include "toxoutputstream.hpp"
+#include <QThread>
 
 template <typename T>
 using ref = Glib::RefPtr<T>;
@@ -66,6 +67,7 @@ int main(int argc, char** argv) {
     Gst::init(argc, argv);
     Gio::init();
     gpointer out = g_object_new(TOX_TYPE_OUTPUT, nullptr);
+    qDebug() << "instance" << out << QThread::currentThread();
     ref<Gio::OutputStream> gos = Glib::wrap(static_cast<GOutputStream*>(out));
     test_toxoutputstream(gos);
 }

@@ -1,6 +1,8 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
+#include <QDebug>
+
 G_BEGIN_DECLS
 
 #define TOX_TYPE_OUTPUT (tox_output_stream_get_type())
@@ -9,6 +11,7 @@ typedef struct _ToxOutputStream ToxOutputStream;
 
 struct _ToxOutputStream {
     GOutputStream parent_class;
+
 };
 
 GType tox_output_stream_get_type();
