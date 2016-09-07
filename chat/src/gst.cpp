@@ -1,99 +1,97 @@
+#include <gstreamermm.h>
+#include <glibmm.h>
+#include <giomm/init.h>
+#include <giomm/outputstream.h>
 #include <iostream>
+#include <iomanip>
+#include <sys/socket.h>
+#include <thread>
 #include "toxoutputstream.hpp"
-#include <QCoreApplication>
-#include <Qt5GStreamer/QGlib/Error>
-#include <Qt5GStreamer/QGlib/Connect>
-#include <Qt5GStreamer/QGst/Init>
-#include <Qt5GStreamer/QGst/Bus>
-#include <Qt5GStreamer/QGst/Pipeline>
-#include <Qt5GStreamer/QGst/Parse>
-#include <Qt5GStreamer/QGst/Message>
-#include <Qt5GStreamer/QGst/Utils/ApplicationSink>
-#include <Qt5GStreamer/QGst/Utils/ApplicationSource>
 
-class MySink : public QGst::Utils::ApplicationSink {
-public:
-    explicit MySink(QGst::Utils::ApplicationSource* src)
-        : QGst::Utils::ApplicationSink(), m_src(src) {}
+template <typename T>
+using ref = Glib::RefPtr<T>;
 
-protected:
-    virtual void eos() { m_src->endOfStream(); }
-
-    virtual QGst::FlowReturn newSample() {
-        QGst::SamplePtr sample = pullSample();
-        m_src->pushBuffer(sample->buffer());
-        return QGst::FlowOk;
-    }
-
+class GstException : public std::exception {
 private:
-    QGst::Utils::ApplicationSource* m_src;
+    std::string description_;
+
+public:
+    explicit GstException(std::string desc) : description_(desc) {}
+
+    virtual const char* what() const throw() {
+        return description_.c_str();
+    }
 };
 
-class Player : public QCoreApplication {
-public:
-    Player(int argc, char** argv);
-    ~Player();
-
-private:
-    void onBusMessage(const QGst::MessagePtr& message);
-
-private:
-    QGst::Utils::ApplicationSource m_src;
-    MySink m_sink;
-    QGst::PipelinePtr pipeline1;
-    QGst::PipelinePtr pipeline2;
-};
-
-Player::Player(int argc, char** argv)
-    : QCoreApplication(argc, argv), m_sink(&m_src) {
-    QGst::init(&argc, &argv);
-    const char* caps = "audio/x-opus, channel-mapping-family=(int)0";
-    QString pipe1 = QString("audiotestsrc ! opusenc"
-                            " ! appsink name=\"a\" caps=\"%2\"")
-                        .arg(caps);
-    // const char* caps = "video/x-vp8";
-    // QString pipe1 = QString("v4l2src ! vp8enc deadline=20000 threads=8"
-    //                         " ! appsink name=\"a\" caps=\"%2\"").arg(caps);
-    pipeline1 = QGst::Parse::launch(pipe1).dynamicCast<QGst::Pipeline>();
-    m_sink.setElement(pipeline1->getElementByName("a"));
-    QGlib::connect(pipeline1->bus(), "message::error", this,
-                   &Player::onBusMessage);
-    pipeline1->bus()->addSignalWatch();
-
-    // QString pipe2 = QString("appsrc name=\"b\" is-live=true caps=\"%2\"
-    // format=3"
-    //                         " ! decodebin ! autovideosink").arg(caps);
-    QString pipe2 =
-        QString("appsrc name=\"b\" is-live=true caps=\"%2\" format=3"
-                " ! decodebin ! pulsesink")
-            .arg(caps);
-    pipeline2 = QGst::Parse::launch(pipe2).dynamicCast<QGst::Pipeline>();
-    m_src.setElement(pipeline2->getElementByName("b"));
-    QGlib::connect(pipeline2->bus(), "message", this, &Player::onBusMessage);
-    pipeline2->bus()->addSignalWatch();
-
-    pipeline1->setState(QGst::StatePlaying);
-    pipeline2->setState(QGst::StatePlaying);
+ref<Gst::Element> make_element(const std::string& name) {
+    ref<Gst::Element> result = Gst::ElementFactory::create_element(name);
+    if(!result) { throw GstException(name + " could not be created."); }
+    return result;
 }
 
-Player::~Player() {
-    pipeline1->setState(QGst::StateNull);
-    pipeline2->setState(QGst::StateNull);
-}
+void test_toxoutputstream(ref<Gio::OutputStream> gos) {
+    ref<Glib::MainLoop> mainloop = Glib::MainLoop::create();
+    ref<Gst::Pipeline> pipeline = Gst::Pipeline::create("gst-test");
 
-void Player::onBusMessage(const QGst::MessagePtr& message) {
-    switch(message->type()) {
-    case QGst::MessageEos: quit(); break;
-    case QGst::MessageError:
-        qCritical() << message.staticCast<QGst::ErrorMessage>()->error();
-        break;
-    default: break;
+    auto src = make_element("audiotestsrc");
+    auto sink = make_element("giostreamsink");
+
+    if(!pipeline || !src || !sink) {
+        std::cerr << "One element could not be created\n";
+        return;
     }
+
+    sink->set_property("stream", gos);
+
+    try {
+        pipeline->add(src)->add(sink);
+    } catch(const Glib::Error& ex) {
+        std::cerr << "Error while adding elements to the pipeline: "
+                  << ex.what() << "\n";
+        return;
+    }
+
+    try {
+        src->link(sink);
+    } catch(const std::runtime_error& ex) {
+        std::cout << "Exception while linking elements: " << ex.what() << "\n";
+    }
+
+    pipeline->set_state(Gst::STATE_PLAYING);
+    mainloop->run();
+    pipeline->set_state(Gst::STATE_NULL);
 }
 
 int main(int argc, char** argv) {
-    //gpointer out = g_object_new(TOX_TYPE_OUTPUT, nullptr);
-    return 0;
-    Player p(argc, argv);
-    return p.exec();
+    Gst::init(argc, argv);
+    Gio::init();
+    gpointer out = g_object_new(TOX_TYPE_OUTPUT, nullptr);
+    ref<Gio::OutputStream> gos = Glib::wrap(static_cast<GOutputStream*>(out));
+    test_toxoutputstream(gos);
 }
+
+// #include <iostream>
+// #include "toxoutputstream.hpp"
+// #include <QCoreApplication>
+// #include <Qt5GStreamer/QGlib/Error>
+// #include <Qt5GStreamer/QGlib/Connect>
+// #include <Qt5GStreamer/QGst/Init>
+// #include <Qt5GStreamer/QGst/Bus>
+// #include <Qt5GStreamer/QGst/Pipeline>
+// #include <Qt5GStreamer/QGst/Parse>
+// #include <Qt5GStreamer/QGst/Message>
+// #include <Qt5GStreamer/QGst/Utils/ApplicationSink>
+// #include <Qt5GStreamer/QGst/Utils/ApplicationSource>
+//
+// const char* caps = "audio/x-opus, channel-mapping-family=(int)0";
+// // const char* caps = "video/x-vp8";
+//
+// QString pipe1 = QString("audiotestsrc ! opusenc"
+//                         " ! appsink name=\"a\" caps=\"%2\"").arg(caps);
+// // QString pipe1 = QString("v4l2src ! vp8enc deadline=20000 threads=8"
+// //                         " ! appsink name=\"a\" caps=\"%2\"").arg(caps);
+//
+// QString pipe2 = QString("appsrc name=\"b\" is-live=true caps=\"%2\" format=3"
+//                         " ! decodebin ! pulsesink").arg(caps);
+// // QString pipe2 = QString("appsrc name=\"b\" is-live=true caps=\"%2\" format=3"
+// //                         " ! decodebin ! autovideosink").arg(caps);
