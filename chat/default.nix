@@ -4,10 +4,17 @@
 , boost, zeromq, libmsgpack, libtoxcore-dev, nlohmann_json, qtbase, obs-studio
 , gst_all_1
 # Misc dependencies
-, guile, parallel, libopus, libpulseaudio
+, guile, parallel, libopus, libpulseaudio, buildEnv, glib, glibmm, libsigcxx
 }:
 
-stdenv.mkDerivation rec {
+let
+  deps = with gst_all_1; [ glib glibmm libsigcxx gstreamermm gstreamer gst-plugins-base ];
+  allHeaders = buildEnv {
+    name = "arcane-dep-headers";
+    paths = deps;
+    extraOutputsToInstall = [ "dev" "out" ];
+  };
+in stdenv.mkDerivation rec {
   name = "arcane-chat-0.0.1";
 
   src = ./.;
@@ -18,9 +25,9 @@ stdenv.mkDerivation rec {
 
   buildInputs = with gst_all_1; [
     boost zeromq libmsgpack qtbase nlohmann_json libtoxcore-dev obs-studio
-    gstreamer gstreamermm gst-libav gst-plugins-base gst-plugins-good
+    gst-libav gst-plugins-good
     gst-plugins-ugly gst-plugins-bad qt-gstreamer libopus libpulseaudio
-  ];
+  ] ++ deps;
 
   cmakeFlags = "-GNinja";
 
@@ -68,6 +75,7 @@ stdenv.mkDerivation rec {
       cmakeFlags="$OLD_CMAKE_FLAGS"
       unset OLD_CMAKE_FLAGS BUILD_LOG
       refresh-plugin-build "${toString src}"
+      echo for qtcreator: ${allHeaders}
       note "Entering nix-shell"
   '';
 }
