@@ -109,11 +109,13 @@ set(CHAT_LIB_SOURCES
   src/infowidget.cpp
   src/channelmodel.cpp
   src/audiocall.cpp
+  src/toxinputstream.cpp
   src/toxoutputstream.cpp
   ${UI_HEADERS}
 )
 
 set(GST_SOURCES
+  src/audiocall.cpp
   src/toxinputstream.cpp
   src/toxoutputstream.cpp
 )
@@ -134,7 +136,7 @@ set_property(TARGET server PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 #cotire(server)
 
 add_executable(gst src/gst.cpp ${GST_SOURCES})
-target_link_libraries(gst ${GENERAL_LIBRARIES})
+target_link_libraries(gst chat ${GENERAL_LIBRARIES})
 set_property(TARGET gst PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 #cotire(gst)
 

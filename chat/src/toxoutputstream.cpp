@@ -21,7 +21,8 @@ static gssize tox_write_fn(GOutputStream* stream,
     ToxOutputStream *stream2 = reinterpret_cast<ToxOutputStream*>(stream);
     qDebug() << __func__ << stream << ": " << buffer << count << QThread::currentThread() << QByteArray((char*)buffer,60).toHex();;
 
-    return stream2->call->write_fn(QByteArray(static_cast<const char*>(buffer),count));
+    return count;
+    // return stream2->call->write_fn(QByteArray(static_cast<const char*>(buffer),count));
     //int retval = g_output_stream_write(stream, buffer, count, cancellable, error);
     //qDebug() << retval << (*error)->message;
     //return count;

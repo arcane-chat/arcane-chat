@@ -98,6 +98,47 @@ void test_toxinputstream(ref<Gio::InputStream> gis) {
     pipeline->set_state(Gst::STATE_NULL);
 }
 
+void test_opus_quiet(ref<Gio::OutputStream> gos) {
+    ref<Glib::MainLoop> mainloop = Glib::MainLoop::create();
+    ref<Gst::Pipeline> pipeline = Gst::Pipeline::create("gst-test");
+
+    auto src = make_element("audiotestsrc");
+    /*swap*/auto conv = make_element("removesilence");
+    auto sink = make_element("giostreamsink");
+
+    if(!pipeline || !src || !sink) {
+        std::cerr << "One element could not be created\n";
+        return;
+    }
+
+    //src->set_property("volume", 0);
+    //src->set_property("is-live", true);
+    src->set_property("wave", 8);
+    ///*swap*/conv->set_property("dtx", true);
+    conv->set_property("remove", true);
+    sink->set_property("stream", gos);
+
+    try {
+        //~pipeline->add(src)->add(sink);
+        /*swap*/pipeline->add(src)->add(conv)->add(sink);
+    } catch(const Glib::Error& ex) {
+        std::cerr << "Error while adding elements to the pipeline: "
+                  << ex.what() << "\n";
+        return;
+    }
+
+    try {
+        //~src->link(sink);
+        /*swap*/src->link(conv)->link(sink);
+    } catch(const std::runtime_error& ex) {
+        std::cout << "Exception while linking elements: " << ex.what() << "\n";
+    }
+
+    pipeline->set_state(Gst::STATE_PLAYING);
+    mainloop->run();
+    pipeline->set_state(Gst::STATE_NULL);
+}
+
 int main(int argc, char** argv) {
     Gst::init(argc, argv);
     Gio::init();
@@ -105,7 +146,12 @@ int main(int argc, char** argv) {
     gpointer out = g_object_new(TOX_TYPE_OUTPUT, nullptr);
     qDebug() << "instance" << out << QThread::currentThread();
     ref<Gio::OutputStream> gos = Glib::wrap(static_cast<GOutputStream*>(out));
-    test_toxoutputstream(gos);
+    test_opus_quiet(gos);
+
+    // gpointer out = g_object_new(TOX_TYPE_OUTPUT, nullptr);
+    // qDebug() << "instance" << out << QThread::currentThread();
+    // ref<Gio::OutputStream> gos = Glib::wrap(static_cast<GOutputStream*>(out));
+    // test_toxoutputstream(gos);
 
     // gpointer in = g_object_new(TOX_TYPE_INPUT, nullptr);
     // qDebug() << "instance" << in << QThread::currentThread();

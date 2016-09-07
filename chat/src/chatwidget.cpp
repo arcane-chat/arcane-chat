@@ -52,9 +52,13 @@ void ChatWidget::return_pressed() {
     cs->text->append(QString("&lt;%1&gt; %2").arg(core->username).arg(msg));
     core->send_message(cs->f->friend_number, false, msg);
     if (msg == "!call") {
-        AudioCall *ac = new AudioCall(core,cs->f);
+        qDebug() << "!call was triggered";
+        AudioCall *ac = new AudioCall(core, cs->f);
+        qDebug() << "WOLF 1";
         ac->create_instance();
+        qDebug() << "WOLF 2";
         ac->create_pipeline();
+        qDebug() << "WOLF 3";
     }
     ui->lineEdit->setText("");
 }

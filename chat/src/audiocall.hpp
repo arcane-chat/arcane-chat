@@ -27,6 +27,9 @@ Q_SIGNALS:
 
 public Q_SLOTS:
 private:
+    bool on_bus_message(const Glib::RefPtr<Gst::Bus>&,
+                        const Glib::RefPtr<Gst::Message>& message);
+
     ToxOutputStream *outputstream;
     Glib::RefPtr<Gio::OutputStream> reference;
     chat::Core *core;
