@@ -31,7 +31,21 @@ int main(int argc, char** argv) {
     int ret = 1;
 
     {
-        chat::Core core{"/tmp/client_savedata"};
+        chat::Core core { "/tmp/client_savedata" };
+        if(argc == 2) {
+            QByteArray hex;
+            hex.append(QCoreApplication::arguments().at(1));
+            core.friend_add(QByteArray::fromHex(hex), "quq");
+            for(int i = 0; i < 100; i++) {
+                for(chat::Friend* fr : core.get_friends()) {
+                    if(fr->connection != tox::LinkType::none) {
+                        core.send_lossless_packet(fr, "PING123456_LOSSLESS");
+                        core.send_lossy_packet(fr, "PING654321_LOSSY");
+                    }
+                }
+                usleep(5000);
+            }
+        }
         Tracer* tracer = new Tracer(&core);
         MainWindow* mw = new MainWindow(&core);
         mw->show();

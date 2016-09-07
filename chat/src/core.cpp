@@ -43,6 +43,14 @@ tox::MessageType convert_message_type(TOX_MESSAGE_TYPE message_type) {
     }
 }
 
+inline const uint8_t* str_to_bytes(const char* str) {
+    return reinterpret_cast<const uint8_t*>(str);
+}
+
+inline uint8_t* str_to_bytes(char* str) {
+    return reinterpret_cast<uint8_t*>(str);
+}
+
 QByteArray make_qba(const uint8_t* data, size_t length) {
     return QByteArray(reinterpret_cast<const char*>(data), length);
 }
@@ -318,6 +326,34 @@ void Core::friend_add_norequest(const QByteArray public_key) {
     case TOX_ERR_FRIEND_ADD_OK:
         f = new Friend{friend_number, public_key, QString(),
                        tox::LinkType::none};
+
+        friends.insert(f->friend_number, f);
+        emit on_new_friend(f);
+
+        break;
+    case TOX_ERR_FRIEND_ADD_ALREADY_SENT: qDebug() << "already sent"; break;
+    case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM: qDebug() << "crc error"; break;
+    default: qDebug() << "error code: " << error;
+    }
+    save_state();
+}
+
+void Core::friend_add(const QByteArray tox_id, std::string message) {
+    TOX_ERR_FRIEND_ADD error;
+    Friend* f;
+    uint32_t friend_number = tox_friend_add(tox,
+                                            str_to_bytes(tox_id.data()),
+                                            str_to_bytes(message.c_str()),
+                                            message.size(),
+                                            &error);
+    switch(error) {
+    case TOX_ERR_FRIEND_ADD_OK:
+        f = new Friend {
+            friend_number,
+            tox_id,
+            QString(),
+            tox::LinkType::none
+        };
 
         friends.insert(f->friend_number, f);
         emit on_new_friend(f);

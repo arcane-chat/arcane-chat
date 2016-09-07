@@ -27,10 +27,11 @@ public:
     void handle_lossy_packet(Friend* fr, QByteArray message);
     void handle_lossless_packet(Friend* fr, QByteArray message);
     void handle_friend_connection_status(Friend* fr, tox::LinkType link);
-    const QMap<uint32_t, Friend*> get_friends() { return friends; }
+    const QMap<uint32_t, Friend*>& get_friends() { return friends; }
     void send_message(uint32_t friend_number, bool action, QString message);
     void save_state();
-    void friend_add_norequest(const QByteArray public_key);
+    void friend_add_norequest(QByteArray public_key);
+    void friend_add(QByteArray tox_id, std::string message);
     void send_lossy_packet(Friend*, QByteArray data);
     void send_lossless_packet(Friend*, QByteArray data);
     void call_start(Friend *fr);
