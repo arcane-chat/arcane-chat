@@ -112,14 +112,17 @@ set(CHAT_LIB_SOURCES
 
 add_library(chat SHARED ${CHAT_LIB_SOURCES})
 target_link_libraries(chat ${GENERAL_LIBRARIES})
+set_property(TARGET chat PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 cotire(chat)
 
 add_executable(client src/client.cpp)
 target_link_libraries(client chat ${GENERAL_LIBRARIES})
+set_property(TARGET client PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 cotire(client)
 
 add_executable(gst src/gst.cpp src/toxoutputstream.cpp)
 target_link_libraries(gst ${GENERAL_LIBRARIES})
+set_property(TARGET gst PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 cotire(gst)
 
 install(
