@@ -1,12 +1,14 @@
 #include <gstreamermm.h>
 #include <glibmm.h>
 #include <giomm/init.h>
+#include <giomm/inputstream.h>
 #include <giomm/outputstream.h>
 #include <iostream>
 #include <iomanip>
 #include <sys/socket.h>
 #include <thread>
 #include "toxoutputstream.hpp"
+#include "toxinputstream.hpp"
 #include <QThread>
 
 template <typename T>
@@ -63,13 +65,52 @@ void test_toxoutputstream(ref<Gio::OutputStream> gos) {
     pipeline->set_state(Gst::STATE_NULL);
 }
 
+void test_toxinputstream(ref<Gio::InputStream> gis) {
+    ref<Glib::MainLoop> mainloop = Glib::MainLoop::create();
+    ref<Gst::Pipeline> pipeline = Gst::Pipeline::create("gst-test");
+
+    auto src = make_element("giostreamsrc");
+    auto sink = make_element("pulsesink");
+
+    if(!pipeline || !src || !sink) {
+        std::cerr << "One element could not be created\n";
+        return;
+    }
+
+    sink->set_property("stream", gis);
+
+    try {
+        pipeline->add(src)->add(sink);
+    } catch(const Glib::Error& ex) {
+        std::cerr << "Error while adding elements to the pipeline: "
+                  << ex.what() << "\n";
+        return;
+    }
+
+    try {
+        src->link(sink);
+    } catch(const std::runtime_error& ex) {
+        std::cout << "Exception while linking elements: " << ex.what() << "\n";
+    }
+
+    pipeline->set_state(Gst::STATE_PLAYING);
+    mainloop->run();
+    pipeline->set_state(Gst::STATE_NULL);
+}
+
 int main(int argc, char** argv) {
     Gst::init(argc, argv);
     Gio::init();
+
     gpointer out = g_object_new(TOX_TYPE_OUTPUT, nullptr);
     qDebug() << "instance" << out << QThread::currentThread();
     ref<Gio::OutputStream> gos = Glib::wrap(static_cast<GOutputStream*>(out));
     test_toxoutputstream(gos);
+
+    // gpointer in = g_object_new(TOX_TYPE_INPUT, nullptr);
+    // qDebug() << "instance" << in << QThread::currentThread();
+    // ref<Gio::InputStream> gis = Glib::wrap(static_cast<GInputStream*>(in));
+    // test_toxinputstream(gis);
 }
 
 // #include <iostream>
