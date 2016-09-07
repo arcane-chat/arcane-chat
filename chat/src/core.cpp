@@ -41,122 +41,122 @@ namespace {
     QByteArray make_qba(const uint8_t* data, size_t length) {
         return QByteArray(reinterpret_cast<const char*>(data), length);
     }
-}
 
-void callback_friend_message(Tox* tox,
-                             uint32_t friend_number,
-                             TOX_MESSAGE_TYPE type,
-                             const uint8_t* message,
-                             size_t length,
-                             void* user_data) {
-    Q_UNUSED(tox);
-    Core* core = reinterpret_cast<Core*>(user_data);
-    core->handle_message(friend_number, convert_message_type(type),
-                         make_qba(message, length));
-}
-
-void callback_friend_lossy_packet(Tox* tox,
-                                  uint32_t friend_number,
-                                  const uint8_t* data,
-                                  size_t length,
-                                  void* user_data) {
-    Q_UNUSED(tox);
-    Core* core = reinterpret_cast<Core*>(user_data);
-    core->handle_lossy_packet(friend_number, make_qba(data, length));
-}
-
-void callback_friend_lossless_packet(Tox* tox,
-                                     uint32_t friend_number,
-                                     const uint8_t* data,
-                                     size_t length,
-                                     void* user_data) {
-    Q_UNUSED(tox);
-    Core* core = reinterpret_cast<Core*>(user_data);
-    core->handle_lossless_packet(friend_number,
-                                 make_qba(data, length));
-}
-
-void callback_friend_typing(Tox* tox,
-                            uint32_t friend_number,
-                            bool is_typing,
-                            void* user_data) {
-    Q_UNUSED(tox);
-    Core* core = reinterpret_cast<Core*>(user_data);
-    qDebug() << friend_number << is_typing << "is typing";
-}
-
-void callback_friend_request(Tox* tox,
-                             const uint8_t* public_key,
-                             const uint8_t* message,
-                             size_t length,
-                             void* user_data) {
-    Core* core = reinterpret_cast<Core*>(user_data);
-    std::string msg { message, message + length };
-    TOX_ERR_FRIEND_ADD error;
-    // Accept any friend request sent to us
-    tox_friend_add_norequest(tox, public_key, &error);
-    switch(error) {
-    case TOX_ERR_FRIEND_ADD_OK:
-        break;
-    case TOX_ERR_FRIEND_ADD_ALREADY_SENT:
-        qDebug() << "already sent";
-        break;
-    case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM:
-        qDebug() << "crc error";
-        break;
-    default:
-        qDebug() << "error code: " << error;
-    }
-    core->save_state();
-}
-
-void callback_friend_connection_status(Tox* tox,
-                                       uint32_t friend_number,
-                                       TOX_CONNECTION connection_status,
-                                       void* user_data) {
-    Q_UNUSED(tox);
-    Core* core = reinterpret_cast<Core*>(user_data);
-    tox::LinkType link_type = convert_link_type(connection_status);
-    core->handle_friend_connection_status(friend_number, link_type);
-    std::cout << __func__
-              << " " << friend_number
-              << " " << connection_status
-              << "\n";
-}
-
-void callback_self_connection_status(Tox* tox,
-                                     TOX_CONNECTION connection_status,
-                                     void* user_data) {
-    Core* core = reinterpret_cast<Core*>(user_data);
-    uint8_t toxid[TOX_ADDRESS_SIZE];
-    tox_self_get_address(tox, toxid);
-    std::string tox_printable_id = tox::utils::to_hex(toxid, TOX_ADDRESS_SIZE);
-
-    const char* msg = nullptr;
-
-    switch(connection_status) {
-    case TOX_CONNECTION_NONE:
-        msg = "offline";
-        std::cout << "connection lost\n";
-        break;
-    case TOX_CONNECTION_TCP:
-        msg = "connected via tcp";
-        std::cout << "tcp connection established\n";
-        break;
-    case TOX_CONNECTION_UDP:
-        msg = "connected via udp";
-        std::cout << "udp connection established\n";
-        break;
+    void callback_friend_message(Tox* tox,
+                                 uint32_t friend_number,
+                                 TOX_MESSAGE_TYPE type,
+                                 const uint8_t* message,
+                                 size_t length,
+                                 void* user_data) {
+        Q_UNUSED(tox);
+        Core* core = reinterpret_cast<Core*>(user_data);
+        core->handle_message(friend_number, convert_message_type(type),
+                             make_qba(message, length));
     }
 
-    if(msg != nullptr) {
-        std::cout << "status = " << msg << ", "
-                  << "id = " << tox_printable_id << "\n";
+    void callback_friend_lossy_packet(Tox* tox,
+                                      uint32_t friend_number,
+                                      const uint8_t* data,
+                                      size_t length,
+                                      void* user_data) {
+        Q_UNUSED(tox);
+        Core* core = reinterpret_cast<Core*>(user_data);
+        core->handle_lossy_packet(friend_number, make_qba(data, length));
     }
 
-    core->save_state();
-    fflush(stdout);
-}
+    void callback_friend_lossless_packet(Tox* tox,
+                                         uint32_t friend_number,
+                                         const uint8_t* data,
+                                         size_t length,
+                                         void* user_data) {
+        Q_UNUSED(tox);
+        Core* core = reinterpret_cast<Core*>(user_data);
+        core->handle_lossless_packet(friend_number,
+                                     make_qba(data, length));
+    }
+
+    void callback_friend_typing(Tox* tox,
+                                uint32_t friend_number,
+                                bool is_typing,
+                                void* user_data) {
+        Q_UNUSED(tox);
+        Core* core = reinterpret_cast<Core*>(user_data);
+        qDebug() << friend_number << is_typing << "is typing";
+    }
+
+    void callback_friend_request(Tox* tox,
+                                 const uint8_t* public_key,
+                                 const uint8_t* message,
+                                 size_t length,
+                                 void* user_data) {
+        Core* core = reinterpret_cast<Core*>(user_data);
+        std::string msg { message, message + length };
+        TOX_ERR_FRIEND_ADD error;
+        // Accept any friend request sent to us
+        tox_friend_add_norequest(tox, public_key, &error);
+        switch(error) {
+        case TOX_ERR_FRIEND_ADD_OK:
+            break;
+        case TOX_ERR_FRIEND_ADD_ALREADY_SENT:
+            qDebug() << "already sent";
+            break;
+        case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM:
+            qDebug() << "crc error";
+            break;
+        default:
+            qDebug() << "error code: " << error;
+        }
+        core->save_state();
+    }
+
+    void callback_friend_connection_status(Tox* tox,
+                                           uint32_t friend_number,
+                                           TOX_CONNECTION connection_status,
+                                           void* user_data) {
+        Q_UNUSED(tox);
+        Core* core = reinterpret_cast<Core*>(user_data);
+        tox::LinkType link_type = convert_link_type(connection_status);
+        core->handle_friend_connection_status(friend_number, link_type);
+        std::cout << __func__
+                  << " " << friend_number
+                  << " " << connection_status
+                  << "\n";
+    }
+
+    void callback_self_connection_status(Tox* tox,
+                                         TOX_CONNECTION connection_status,
+                                         void* user_data) {
+        Core* core = reinterpret_cast<Core*>(user_data);
+        uint8_t toxid[TOX_ADDRESS_SIZE];
+        tox_self_get_address(tox, toxid);
+        std::string tox_printable_id = tox::utils::to_hex(toxid, sizeof(toxid));
+
+        const char* msg = nullptr;
+
+        switch(connection_status) {
+        case TOX_CONNECTION_NONE:
+            msg = "offline";
+            std::cout << "connection lost\n";
+            break;
+        case TOX_CONNECTION_TCP:
+            msg = "connected via tcp";
+            std::cout << "tcp connection established\n";
+            break;
+        case TOX_CONNECTION_UDP:
+            msg = "connected via udp";
+            std::cout << "udp connection established\n";
+            break;
+        }
+
+        if(msg != nullptr) {
+            std::cout << "status = " << msg << ", "
+                      << "id = " << tox_printable_id << "\n";
+        }
+
+        core->save_state();
+        fflush(stdout);
+    }
+} // namespace
 
 Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
     tox::options opts;
