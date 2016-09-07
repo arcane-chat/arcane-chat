@@ -3,15 +3,14 @@
 
 #include "channelmodel.hpp"
 
-ChannelModel::ChannelModel(QList<chat::Friend*> friends) {
+ChannelModel::ChannelModel(QMap<uint32_t, chat::Friend*> friends) {
     root = new Node(NodeType::Root, nullptr);
     Node* legacyFolder = new Node(NodeType::LegacyFolder, root);
     root->children.append(legacyFolder);
 
     for(chat::Friend* f : friends) {
         FriendNode* t = new FriendNode(legacyFolder, f);
-        connect(t,    SIGNAL(changed(Node*)),
-                this, SLOT(node_changed(Node*)));
+        connect(t, SIGNAL(changed(Node*) ), this, SLOT(node_changed(Node*) ));
         legacyFolder->children.append(t);
     }
 }
@@ -80,10 +79,10 @@ QVariant FriendNode::data() {
 
 FriendNode::FriendNode(Node* parent, chat::Friend* f)
     : Node(NodeType::LegacyFriend, parent), f(f) {
-    connect(f,    SIGNAL(connection_changed(tox::LinkType, tox::LinkType)),
-            this, SLOT(connection_changed(tox::LinkType, tox::LinkType)));
-    connect(f,    SIGNAL(message(bool, QByteArray)),
-            this, SLOT(message(bool, QByteArray)));
+    connect(f, SIGNAL(connection_changed(tox::LinkType, tox::LinkType)), this,
+            SLOT(connection_changed(tox::LinkType, tox::LinkType)));
+    connect(f, SIGNAL(message(bool, QByteArray)), this,
+            SLOT(message(bool, QByteArray)));
 }
 
 void FriendNode::connection_changed(tox::LinkType old_state,

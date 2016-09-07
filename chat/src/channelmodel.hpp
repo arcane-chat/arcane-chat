@@ -36,7 +36,7 @@ private slots:
 class ChannelModel : public QAbstractItemModel {
     Q_OBJECT
 public:
-    explicit ChannelModel(QList<chat::Friend*> friends);
+    explicit ChannelModel(QMap<uint32_t, chat::Friend*> friends);
     QModelIndex index(int row, int column, const QModelIndex& parent) const;
     QModelIndex parent(const QModelIndex& child) const;
     int rowCount(const QModelIndex& parent) const;

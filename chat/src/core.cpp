@@ -64,9 +64,12 @@ void callback_friend_lossy_packet(Tox* tox,
                                   void* user_data) {
     Q_UNUSED(tox);
     Core* core = reinterpret_cast<Core*>(user_data);
+    auto fr = core->get_friends().find(friend_number);
+    Q_ASSERT(fr != core->get_friends().end());
+
     if((data[0] == arcane_lossy_packet_id) && (length > 1)) {
         QByteArray arr = make_qba(data + 1, length - 1);
-        core->handle_lossy_packet(friend_number, arr);
+        core->handle_lossy_packet(*fr, arr);
     }
 }
 
@@ -77,9 +80,12 @@ void callback_friend_lossless_packet(Tox* tox,
                                      void* user_data) {
     Q_UNUSED(tox);
     Core* core = reinterpret_cast<Core*>(user_data);
+    auto fr = core->get_friends().find(friend_number);
+    Q_ASSERT(fr != core->get_friends().end());
+
     if((data[0] == arcane_lossless_packet_id) && (length > 1)) {
         QByteArray arr = make_qba(data + 1, length - 1);
-        core->handle_lossless_packet(friend_number, arr);
+        core->handle_lossless_packet(*fr, arr);
     }
 }
 
@@ -111,7 +117,10 @@ void callback_friend_connection_status(Tox* tox,
     Q_UNUSED(tox);
     Core* core = reinterpret_cast<Core*>(user_data);
     tox::LinkType link_type = convert_link_type(connection_status);
-    core->handle_friend_connection_status(friend_number, link_type);
+    auto fr = core->get_friends().find(friend_number);
+    Q_ASSERT(fr != core->get_friends().end());
+
+    core->handle_friend_connection_status(*fr, link_type);
     std::cout << __func__ << " " << friend_number << " " << connection_status
               << "\n";
 }
@@ -233,7 +242,7 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
             new Friend{friends[i], make_qba(pubkey, TOX_PUBLIC_KEY_SIZE),
                        QString(make_qba(name, size)), newlink};
 
-        this->friends.append(f);
+        this->friends.insert(f->friend_number, f);
     }
 }
 
@@ -262,21 +271,16 @@ void Core::handle_message(uint32_t friend_number,
     }
 }
 
-void Core::handle_lossless_packet(uint32_t friend_number, QByteArray message) {
-    emit on_lossless_packet(friend_number, message);
+void Core::handle_lossless_packet(Friend* fr, QByteArray message) {
+    emit on_lossless_packet(fr, message);
 }
 
-void Core::handle_lossy_packet(uint32_t friend_number, QByteArray message) {
-    emit on_lossy_packet(friend_number, message);
+void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
+    emit on_lossy_packet(fr, message);
 }
 
-void Core::handle_friend_connection_status(uint32_t friend_number,
-                                           tox::LinkType link) {
-    for(chat::Friend* f : friends) {
-        if(f->friend_number == friend_number) {
-            f->set_connection(link);
-        }
-    }
+void Core::handle_friend_connection_status(Friend* fr, tox::LinkType link) {
+    fr->set_connection(link);
 }
 
 void Core::send_message(uint32_t friend_number, bool action, QString message) {
@@ -313,7 +317,7 @@ void Core::friend_add_norequest(const QByteArray public_key) {
         f = new Friend{friend_number, public_key, QString(),
                        tox::LinkType::none};
 
-        friends.append(f);
+        friends.insert(f->friend_number, f);
         emit on_new_friend(f);
 
         break;

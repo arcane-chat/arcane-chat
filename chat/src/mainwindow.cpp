@@ -8,7 +8,7 @@
 
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QList<chat::Friend*> friends, chat::Core* core)
+MainWindow::MainWindow(QMap<uint32_t, chat::Friend*> friends, chat::Core* core)
     : ui(new Ui::MainWindow) {
     ui->setupUi(this);
 

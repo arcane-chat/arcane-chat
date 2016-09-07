@@ -4,7 +4,7 @@
 
 #include <QObject>
 #include <QTimer>
-#include <QList>
+#include <QMap>
 
 #include <boost/filesystem.hpp>
 
@@ -24,12 +24,11 @@ public:
     void handle_message(uint32_t friend_number,
                         tox::MessageType type,
                         QByteArray message);
-    void handle_lossy_packet(uint32_t friend_number, QByteArray message);
-    void handle_lossless_packet(uint32_t friend_number, QByteArray message);
-    void handle_friend_connection_status(uint32_t friend_number,
-                                         tox::LinkType link);
+    void handle_lossy_packet(Friend* fr, QByteArray message);
+    void handle_lossless_packet(Friend* fr, QByteArray message);
+    void handle_friend_connection_status(Friend* fr, tox::LinkType link);
 
-    const QList<Friend*> get_friends() { return friends; }
+    const QMap<uint32_t, Friend*> get_friends() { return friends; }
     void send_message(uint32_t friend_number, bool action, QString message);
     void save_state();
     void friend_add_norequest(const QByteArray public_key);
@@ -38,10 +37,10 @@ public:
     QString username;
 
 signals:
-    void on_message(Friend*, bool action, QString message);
-    void on_lossless_packet(uint32_t friend_number, QByteArray message);
-    void on_lossy_packet(uint32_t friend_number, QByteArray message);
-    void on_new_friend(Friend*);
+    void on_message(Friend* fr, bool action, QString message);
+    void on_lossless_packet(Friend* fr, QByteArray message);
+    void on_lossy_packet(Friend* fr, QByteArray message);
+    void on_new_friend(Friend* fr);
 
 private slots:
     void check_tox();
@@ -49,7 +48,7 @@ private slots:
 private:
     Tox* tox;
     QTimer iterator;
-    QList<Friend*> friends;
+    QMap<uint32_t, Friend*> friends;
     std::string savedata_path;
 };
 } // namespace chat
