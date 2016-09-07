@@ -111,6 +111,11 @@ set(CHAT_LIB_SOURCES
   ${UI_HEADERS}
 )
 
+set(GST_SOURCES
+  src/toxinputstream.cpp
+  src/toxoutputstream.cpp
+)
+
 add_library(chat SHARED ${CHAT_LIB_SOURCES})
 target_link_libraries(chat ${GENERAL_LIBRARIES})
 set_property(TARGET chat PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
@@ -126,7 +131,7 @@ target_link_libraries(server chat ${GENERAL_LIBRARIES})
 set_property(TARGET server PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 cotire(server)
 
-add_executable(gst src/gst.cpp src/toxoutputstream.cpp)
+add_executable(gst src/gst.cpp ${GST_SOURCES})
 target_link_libraries(gst ${GENERAL_LIBRARIES})
 set_property(TARGET gst PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 cotire(gst)
