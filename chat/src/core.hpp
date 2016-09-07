@@ -6,6 +6,8 @@
 #include <QTimer>
 #include <QList>
 
+#include <boost/filesystem.hpp>
+
 #include "friend.hpp"
 
 namespace chat {
@@ -13,14 +15,15 @@ namespace chat {
         Q_OBJECT
 
     public:
-        explicit Core(Tox* tox);
+        explicit Core();
+        ~Core();
 
         void handle_message(uint32_t friend_number,
                             TOX_MESSAGE_TYPE type,
                             QByteArray message);
         void handle_lossy_packet(uint32_t friend_number, QByteArray message);
         void handle_lossless_packet(uint32_t friend_number, QByteArray message);
-        void handle_friend_connection_update(uint32_t friend_number,
+        void handle_friend_connection_status(uint32_t friend_number,
                                              TOX_CONNECTION link);
 
         const QList<Friend*> get_friends() { return friends; }
