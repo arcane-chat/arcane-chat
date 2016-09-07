@@ -33,6 +33,7 @@ AudioCall::AudioCall(QObject *parent) : QObject(parent), outputstream(nullptr)
 
 void AudioCall::create_instance() {
     outputstream = static_cast<ToxOutputStream*> (g_object_new(TOX_TYPE_OUTPUT, nullptr));
+    outputstream->call = this;
     reference = Glib::wrap(reinterpret_cast<GOutputStream*>(outputstream));
 }
 
@@ -49,4 +50,19 @@ void AudioCall::create_pipeline() {
     }
 
     sink->set_property("stream", reference);
+
+    try {
+        pipeline->add(src)->add(sink);
+    } catch(const Glib::Error& ex) {
+        std::cerr << "Error while adding elements to the pipeline: " << ex.what() << "\n";
+        return;
+    }
+
+    pipeline->set_state(Gst::STATE_PLAYING);
+    mainloop->run();
+    pipeline->set_state(Gst::STATE_NULL);
+}
+
+ssize_t AudioCall::write_fn(QByteArray data) {
+
 }

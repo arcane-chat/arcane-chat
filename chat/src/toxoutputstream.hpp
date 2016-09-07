@@ -1,7 +1,11 @@
+#pragma once
+
 #include <glib-object.h>
 #include <gio/gio.h>
 
 #include <QDebug>
+
+class AudioCall;
 
 G_BEGIN_DECLS
 
@@ -11,7 +15,7 @@ typedef struct _ToxOutputStream ToxOutputStream;
 
 struct _ToxOutputStream {
     GOutputStream parent_class;
-
+    AudioCall *call;
 };
 
 GType tox_output_stream_get_type();
