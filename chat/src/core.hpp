@@ -18,7 +18,7 @@ namespace chat {
         Q_OBJECT
 
     public:
-        explicit Core();
+        explicit Core(std::string path);
         ~Core();
 
         void handle_message(uint32_t friend_number,

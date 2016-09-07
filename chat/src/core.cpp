@@ -9,6 +9,7 @@
 
 #include "core.hpp"
 #include "utils.hpp"
+#include "options.hpp"
 
 using namespace chat;
 
@@ -165,33 +166,26 @@ namespace {
     }
 } // namespace
 
-Core::Core() : tox(nullptr) {
-    struct Tox_Options* opts = tox_options_new(nullptr);
-    opts->start_port = 33445;
-    opts->end_port = 33445 + 100;
-    int oldstate = open("/tmp/savedata", O_RDONLY);
-    if(oldstate >= 0) {
-        struct stat info;
-        fstat(oldstate, &info);
-        uint8_t* temp = new uint8_t[info.st_size];
-        ssize_t size = read(oldstate, temp, info.st_size);
-        close(oldstate);
-        assert(size == info.st_size);
-        opts->savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
-        opts->savedata_data = temp;
-        opts->savedata_length = size;
+Core::Core(std::string path) : tox(nullptr) {
+    tox::options opts;
+    opts.set_start_port(33445);
+    opts.set_end_port(33445 + 100);
+    {
+        std::ifstream state_file { path, std::ios::binary };
+        if(state_file.is_open()) {
+            std::ostringstream ss;
+            ss << state_file.rdbuf();
+            std::string st = ss.str();
+            opts.set_savedata_type(tox::SaveDataType::tox_save);
+            opts.set_savedata_data(std::vector<uint8_t>(st.begin(), st.end()));
+        }
     }
     TOX_ERR_NEW new_error;
-    tox = tox_new(opts, &new_error);
+    tox = tox_new(opts.get_underlying(), &new_error);
     if(!tox) {
-        opts->ipv6_enabled = false;
-        tox = tox_new(opts, &new_error);
+        opts.set_ipv6_enabled(false);
+        tox = tox_new(opts.get_underlying(), &new_error);
     }
-    if(opts->savedata_data) {
-        delete opts->savedata_data;
-    }
-    tox_options_free(opts);
-    opts = 0;
     uint8_t toxid[TOX_ADDRESS_SIZE];
     tox_self_get_address(tox, toxid);
     std::cout << "my id is "

@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     int ret = 1;
 
     {
-        chat::Core core;
+        chat::Core core { "/tmp/server_savedata" };
         ret = app.exec();
     }
 

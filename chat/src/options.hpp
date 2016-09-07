@@ -31,5 +31,9 @@ namespace tox {
 
         void set_savedata_type(tox::SaveDataType type);
         void set_savedata_data(std::vector<uint8_t> data);
+
+        inline struct Tox_Options* get_underlying() {
+            return underlying_;
+        }
     };
 }

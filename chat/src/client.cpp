@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     int ret = 1;
 
     {
-        chat::Core core;
+        chat::Core core { "/tmp/client_savedata" };
         // Tracer* tracer = new Tracer(&core);
         QList<chat::Friend*> friends = core.get_friends();
         MainWindow* mw = new MainWindow(friends, &core);
