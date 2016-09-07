@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <QBuffer>
+#include <QDataStream>
 
 #include "core.hpp"
 #include "utils.hpp"
@@ -339,5 +341,46 @@ void Core::send_lossless_packet(Friend* fr, QByteArray data) {
     auto packet = data.prepend(arcane_lossless_packet_id);
     tox_friend_send_lossless_packet(
         tox, fr->friend_number, reinterpret_cast<const uint8_t*>(packet.data()),
-        packet.length(), nullptr);
+                packet.length(), nullptr);
+}
+
+void Core::call_start(Friend *fr)
+{
+    QBuffer packet;
+    packet.open(QBuffer::WriteOnly);
+    {
+        QDataStream out(&packet);
+
+        out << (uint8_t) 0x01; // todo, enum maybe?
+    }
+    qDebug() << packet.buffer().toHex();
+    send_lossy_packet(fr, packet.buffer());
+}
+
+void Core::call_data(Friend *fr, QByteArray data)
+{
+    QBuffer packet;
+    packet.open(QBuffer::WriteOnly);
+    {
+        QDataStream out(&packet);
+
+        out << (uint8_t) 0x02; // todo, enum maybe?
+        out << (uint32_t) data.size();
+        out.writeRawData(data.data(),data.size());
+    }
+    qDebug() << packet.buffer().toHex();
+    send_lossy_packet(fr, packet.buffer());
+}
+
+void Core::call_stop(Friend *fr)
+{
+    QBuffer packet;
+    packet.open(QBuffer::WriteOnly);
+    {
+        QDataStream out(&packet);
+
+        out << (uint8_t) 0x03; // todo, enum maybe?
+    }
+    qDebug() << packet.buffer().toHex();
+    send_lossy_packet(fr, packet.buffer());
 }

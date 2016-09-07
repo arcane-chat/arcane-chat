@@ -10,6 +10,7 @@
 
 namespace chat {
     class Core;
+    class Friend;
 }
 
 class AudioCall : public QObject
@@ -19,6 +20,7 @@ public:
     explicit AudioCall(QObject *parent = 0);
     void create_instance();
     void create_pipeline();
+    void stop_everything();
     ssize_t write_fn(QByteArray data);
 Q_SIGNALS:
 
@@ -26,6 +28,7 @@ public Q_SLOTS:
 private:
     ToxOutputStream *outputstream;
     Glib::RefPtr<Gio::OutputStream> reference;
+    Glib::RefPtr<Glib::MainLoop> mainloop;
     chat::Core *core;
-
+    chat::Friend *fr;
 };

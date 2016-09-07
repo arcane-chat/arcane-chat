@@ -22,7 +22,7 @@ namespace chat {
         QString name;
         tox::LinkType connection;
         QString last_message; // temporary until voice works
-    signals:
+    Q_SIGNALS:
         void connection_changed(tox::LinkType old_state,
                                 tox::LinkType new_state);
         void message(bool action, QByteArray message);

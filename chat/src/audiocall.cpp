@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "audiocall.hpp"
+#include "core.hpp"
 
 template <typename T>
 using ref = Glib::RefPtr<T>;
@@ -38,7 +39,8 @@ void AudioCall::create_instance() {
 }
 
 void AudioCall::create_pipeline() {
-    ref<Glib::MainLoop> mainloop = Glib::MainLoop::create();
+    core->call_start(fr);
+    mainloop = Glib::MainLoop::create();
     ref<Gst::Pipeline> pipeline = Gst::Pipeline::create("gst-test");
 
     auto src = make_element("audiotestsrc");
@@ -63,6 +65,12 @@ void AudioCall::create_pipeline() {
     pipeline->set_state(Gst::STATE_NULL);
 }
 
-ssize_t AudioCall::write_fn(QByteArray data) {
+void AudioCall::stop_everything()
+{
+    mainloop->quit();
+    core->call_stop(fr);
+}
 
+ssize_t AudioCall::write_fn(QByteArray data) {
+    core->call_data(fr,data);
 }
