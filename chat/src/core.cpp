@@ -59,7 +59,7 @@ namespace {
                                  size_t length,
                                  void* user_data) {
         Q_UNUSED(tox);
-        Core* core = (Core*) user_data;
+        Core* core = reinterpret_cast<Core*>(user_data);
         core->handle_message(friend_number, convert_message_type(type),
                              make_qba(message, length));
     }
@@ -70,7 +70,7 @@ namespace {
                              size_t length,
                              void* user_data) {
         Q_UNUSED(tox);
-        Core* core = (Core*) user_data;
+        Core* core = reinterpret_cast<Core*>(user_data);
         core->handle_lossy_packet(friend_number, make_qba(data, length));
     }
 
@@ -80,7 +80,7 @@ namespace {
                                 size_t length,
                                 void* user_data) {
         Q_UNUSED(tox);
-        Core* core = (Core*) user_data;
+        Core* core = reinterpret_cast<Core*>(user_data);
         core->handle_lossless_packet(friend_number,
                                      make_qba(data, length));
     }
@@ -121,7 +121,7 @@ namespace {
                                   TOX_CONNECTION connection_status,
                                   void* user_data) {
         Q_UNUSED(tox);
-        Core* core = (Core*) user_data;
+        Core* core = reinterpret_cast<Core*>(user_data);
         tox::LinkType link_type = convert_link_type(connection_status);
         core->handle_friend_connection_status(friend_number, link_type);
         std::cout << __func__
@@ -304,7 +304,7 @@ void Core::handle_friend_connection_status(uint32_t friend_number,
 void Core::send_message(uint32_t friend_number, bool action, QString message) {
     TOX_ERR_FRIEND_SEND_MESSAGE error;
     QByteArray bytes = message.toUtf8();
-    uint8_t* msg = (uint8_t*) bytes.data();
+    uint8_t* msg = reinterpret_cast<uint8_t*>(bytes.data());
     size_t size = bytes.size();
     tox_friend_send_message(tox, friend_number,
                             TOX_MESSAGE_TYPE_NORMAL,

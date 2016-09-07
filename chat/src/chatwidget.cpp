@@ -45,7 +45,7 @@ void ChatWidget::on_message(Friend* f, bool action, QString message) {
 void ChatWidget::return_pressed() {
     auto msg = ui->lineEdit->text();
     qDebug() << msg;
-    ChatSection* cs = (ChatSection*) ui->tabWidget->currentWidget();
+    ChatSection* cs = reinterpret_cast<ChatSection*>(ui->tabWidget->currentWidget());
     cs->text->append(QString("&lt;%1&gt; %2").arg(core->username).arg(msg));
     core->send_message(cs->f->friend_number, false, msg);
     ui->lineEdit->setText("");

@@ -40,7 +40,7 @@ void MainWindow::on_doubleclick(QModelIndex index) {
     Node* node = model->getNode(index);
     qDebug() << "item clicked!" << index << node;
     if(node->type == NodeType::LegacyFriend) {
-        FriendNode* fn = (FriendNode*) node;
+        FriendNode* fn = reinterpret_cast<FriendNode*>(node);
         chatWidget->open_chat(fn);
     }
 }

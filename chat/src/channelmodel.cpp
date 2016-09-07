@@ -10,7 +10,8 @@ ChannelModel::ChannelModel(QList<chat::Friend*> friends) {
 
     for(chat::Friend* f : friends) {
         FriendNode* t = new FriendNode(legacyFolder, f);
-        connect(t, SIGNAL(changed(Node*) ), this, SLOT(node_changed(Node*) ));
+        connect(t,    SIGNAL(changed(Node*)),
+                this, SLOT(node_changed(Node*)));
         legacyFolder->children.append(t);
     }
 }
@@ -52,7 +53,7 @@ QVariant ChannelModel::data(const QModelIndex& index, int role) const {
 
 Node* ChannelModel::getNode(const QModelIndex& index) const {
     if(index.internalPointer()) {
-        return (Node*) index.internalPointer();
+        return reinterpret_cast<Node*>(index.internalPointer());
     } else {
         return root;
     }
@@ -89,6 +90,7 @@ void FriendNode::connection_changed(tox::LinkType old_state,
                                     tox::LinkType new_state) {
     emit changed(this);
 }
+
 void FriendNode::message(bool action, QByteArray message) {
     emit changed(this);
 }
