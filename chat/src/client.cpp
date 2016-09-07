@@ -33,8 +33,7 @@ int main(int argc, char** argv) {
     {
         chat::Core core{"/tmp/client_savedata"};
         Tracer* tracer = new Tracer(&core);
-        QMap<uint32_t, Friend*> friends = core.get_friends();
-        MainWindow* mw = new MainWindow(friends, &core);
+        MainWindow* mw = new MainWindow(&core);
         mw->show();
         ret = app.exec();
     }

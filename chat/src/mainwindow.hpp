@@ -21,8 +21,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QMap<uint32_t, chat::Friend*> friends,
-                        chat::Core* core);
+    explicit MainWindow(chat::Core* core);
     ~MainWindow();
 
 private slots:

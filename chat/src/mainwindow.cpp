@@ -8,8 +8,7 @@
 
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QMap<uint32_t, chat::Friend*> friends, chat::Core* core)
-    : ui(new Ui::MainWindow) {
+MainWindow::MainWindow(chat::Core* core) : ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
     QDockWidget* dock = new QDockWidget(tr("Chat"), this);
@@ -28,7 +27,7 @@ MainWindow::MainWindow(QMap<uint32_t, chat::Friend*> friends, chat::Core* core)
     addDockWidget(Qt::RightDockWidgetArea, dock);
     ui->menuView->addAction(dock->toggleViewAction());
 
-    model = new ChannelModel(friends);
+    model = new ChannelModel(core->get_friends());
     ui->treeView->setModel(model);
 
     connect(ui->treeView, SIGNAL(doubleClicked(QModelIndex)), this,
