@@ -7,12 +7,12 @@
 #include "utils.hpp"
 
 Tracer::Tracer(chat::Core* core) {
-    connect(core, SIGNAL(on_message(Friend*, bool, QString)), this,
-            SLOT(on_message(Friend*, bool, QString)));
-    connect(core, SIGNAL(on_lossless_packet(uint32_t, QByteArray)), this,
-            SLOT(on_lossless_packet(uint32_t, QByteArray)));
-    connect(core, SIGNAL(on_lossy_packet(uint32_t, QByteArray)), this,
-            SLOT(on_lossy_packet(uint32_t, QByteArray)));
+    connect(core, SIGNAL(on_message(Friend*, bool, QString)),
+            this, SLOT(on_message(Friend*, bool, QString)));
+    connect(core, SIGNAL(on_lossless_packet(uint32_t, QByteArray)),
+            this, SLOT(on_lossless_packet(uint32_t, QByteArray)));
+    connect(core, SIGNAL(on_lossy_packet(uint32_t, QByteArray)),
+            this, SLOT(on_lossy_packet(uint32_t, QByteArray)));
 }
 
 void Tracer::on_message(Friend* friend_number, bool type, QString message) {

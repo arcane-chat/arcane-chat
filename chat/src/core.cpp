@@ -21,6 +21,9 @@ namespace {
     constexpr const char* bootstrap_key =
         "A09162D68618E742FFBCA1C2C70385E6679604B2D80EA6E84AD0996A1AC8A074";
 
+    constexpr uint8_t arcane_lossy_packet_id = 211;
+    constexpr uint8_t arcane_lossless_packet_id = 171;
+
     tox::LinkType convert_link_type(TOX_CONNECTION link_type) {
         switch(link_type) {
         case TOX_CONNECTION_NONE: return tox::LinkType::none;
@@ -61,7 +64,10 @@ namespace {
                                       void* user_data) {
         Q_UNUSED(tox);
         Core* core = reinterpret_cast<Core*>(user_data);
-        core->handle_lossy_packet(friend_number, make_qba(data, length));
+        if((data[0] == arcane_lossy_packet_id) && (length > 1)) {
+            QByteArray arr = make_qba(data + 1, length - 1);
+            core->handle_lossy_packet(friend_number, arr);
+        }
     }
 
     void callback_friend_lossless_packet(Tox* tox,
@@ -71,8 +77,10 @@ namespace {
                                          void* user_data) {
         Q_UNUSED(tox);
         Core* core = reinterpret_cast<Core*>(user_data);
-        core->handle_lossless_packet(friend_number,
-                                     make_qba(data, length));
+        if((data[0] == arcane_lossless_packet_id) && (length > 1)) {
+            QByteArray arr = make_qba(data + 1, length - 1);
+            core->handle_lossless_packet(friend_number, arr);
+        }
     }
 
     void callback_friend_typing(Tox* tox,
