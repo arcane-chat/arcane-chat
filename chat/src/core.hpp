@@ -33,6 +33,7 @@ public:
     void send_message(uint32_t friend_number, bool action, QString message);
     void save_state();
     void friend_add_norequest(const QByteArray public_key);
+    void send_lossy_packet(Friend*, QByteArray data);
 
     QString username;
 

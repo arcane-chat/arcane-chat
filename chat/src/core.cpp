@@ -323,3 +323,10 @@ void Core::friend_add_norequest(const QByteArray public_key) {
     }
     save_state();
 }
+
+void Core::send_lossy_packet(Friend* fr, QByteArray data) {
+    auto packet = data.prepend(arcane_lossy_packet_id);
+    tox_friend_send_lossy_packet(
+        tox, fr->friend_number, reinterpret_cast<const uint8_t*>(packet.data()),
+        packet.length(), nullptr);
+}
