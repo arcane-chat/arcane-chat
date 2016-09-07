@@ -12,13 +12,6 @@
 
 using namespace chat;
 
-
-namespace tox {
-    namespace bootstrap {
-    } // namespace bootstrap
-} // namespace tox
-
-
 namespace {
     constexpr const char* bootstrap_address = "23.226.230.47";
 
@@ -38,12 +31,20 @@ namespace {
         close(fd);
     }
 
-    chat::Link convert_link(TOX_CONNECTION link) {
-        switch(link) {
-        case TOX_CONNECTION_NONE: return chat::Link::none;
-        case TOX_CONNECTION_TCP:  return chat::Link::tcp;
-        case TOX_CONNECTION_UDP:  return chat::Link::udp;
-        default: Q_ASSERT(false); return chat::Link::none;
+    tox::LinkType convert_link_type(TOX_CONNECTION link_type) {
+        switch(link_type) {
+        case TOX_CONNECTION_NONE: return tox::LinkType::none;
+        case TOX_CONNECTION_TCP:  return tox::LinkType::tcp;
+        case TOX_CONNECTION_UDP:  return tox::LinkType::udp;
+        default: Q_ASSERT(false); return tox::LinkType::none;
+        }
+    }
+
+    tox::MessageType convert_message_type(TOX_MESSAGE_TYPE message_type) {
+        switch(message_type) {
+        case TOX_MESSAGE_TYPE_NORMAL: return tox::MessageType::normal;
+        case TOX_MESSAGE_TYPE_ACTION: return tox::MessageType::action;
+        default: Q_ASSERT(false);     return tox::MessageType::normal;
         }
     }
 
@@ -59,7 +60,8 @@ namespace {
                                  void* user_data) {
         Q_UNUSED(tox);
         Core* core = (Core*) user_data;
-        core->handle_message(friend_number, type, make_qba(message, length));
+        core->handle_message(friend_number, convert_message_type(type),
+                             make_qba(message, length));
     }
 
     void friend_lossy_packet(Tox* tox,
@@ -96,9 +98,6 @@ namespace {
                         const uint8_t* message,
                         size_t length,
                         void* user_data) {
-        Q_UNUSED(message);
-        Q_UNUSED(length);
-        Q_UNUSED(user_data);
         TOX_ERR_FRIEND_ADD error;
         // Accept any friend request sent to us
         tox_friend_add_norequest(tox, public_key, &error);
@@ -123,7 +122,8 @@ namespace {
                                   void* user_data) {
         Q_UNUSED(tox);
         Core* core = (Core*) user_data;
-        core->handle_friend_connection_status(friend_number, connection_status);
+        tox::LinkType link_type = convert_link_type(connection_status);
+        core->handle_friend_connection_status(friend_number, link_type);
         std::cout << __func__
                   << " " << friend_number
                   << " " << connection_status
@@ -246,18 +246,15 @@ Core::Core() : tox(nullptr) {
         TOX_CONNECTION link =
             tox_friend_get_connection_status(tox, friends[i], nullptr);
 
-        chat::Link newlink;
+        tox::LinkType newlink = convert_link_type(link);
 
-        switch(link) {
-        case TOX_CONNECTION_NONE: newlink = chat::Link::none; break;
-        case TOX_CONNECTION_TCP: newlink = chat::Link::tcp; break;
-        case TOX_CONNECTION_UDP: newlink = chat::Link::udp; break;
-        default: Q_ASSERT(false); return;
-        }
+        Friend* f = new Friend {
+            friends[i],
+            make_qba(pubkey, TOX_PUBLIC_KEY_SIZE),
+            QString(make_qba(name, size)),
+            newlink
+        };
 
-        Friend* f = new Friend(
-            friends[i], QByteArray((const char*) pubkey, TOX_PUBLIC_KEY_SIZE),
-            QString(QByteArray((const char*) name, size)), newlink);
         this->friends.append(f);
     }
 }
@@ -275,14 +272,14 @@ void Core::check_tox() {
 }
 
 void Core::handle_message(uint32_t friend_number,
-                          TOX_MESSAGE_TYPE type,
+                          tox::MessageType type,
                           QByteArray message) {
     QString text(message);
-    bool action = (type == TOX_MESSAGE_TYPE_ACTION);
+    bool is_action = (type == tox::MessageType::action);
     for(chat::Friend* f : friends) {
         if(f->friend_number == friend_number) {
-            emit on_message(f, action, text);
-            f->new_message(action, message);
+            emit on_message(f, is_action, text);
+            f->new_message(is_action, message);
         }
     }
 }
@@ -296,12 +293,10 @@ void Core::handle_lossy_packet(uint32_t friend_number, QByteArray message) {
 }
 
 void Core::handle_friend_connection_status(uint32_t friend_number,
-                                           TOX_CONNECTION link) {
-    chat::Link newlink = convert_link(link);
-
+                                           tox::LinkType link) {
     for(chat::Friend* f : friends) {
         if(f->friend_number == friend_number) {
-            f->set_connection(newlink);
+            f->set_connection(link);
         }
     }
 }

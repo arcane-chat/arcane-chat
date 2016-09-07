@@ -1,16 +1,30 @@
 #pragma once
 
 namespace tox {
-    enum class proxy_type {
-        none = TOX_PROXY_TYPE_NONE,
-        http = TOX_PROXY_TYPE_HTTP,
-        socks5 = TOX_PROXY_TYPE_SOCKS5
+    //! FIXME: doc
+    enum class ProxyType {
+        none,  //!< FIXME: doc
+        http,  //!< FIXME: doc
+        socks5 //!< FIXME: doc
     };
 
-    enum class savedata_type {
-        none = TOX_SAVEDATA_TYPE_NONE,
-        tox_save = TOX_SAVEDATA_TYPE_TOX_SAVE,
-        secret_key = TOX_SAVEDATA_TYPE_SECRET_KEY
+    //! FIXME: doc
+    enum class SaveDataType {
+        none,      //!< FIXME: doc
+        tox_save,  //!< FIXME: doc
+        secret_key //!< FIXME: doc
     };
 
+    //! Message types for handle_message.
+    enum class MessageType {
+        normal, //!< Normal text message, like /msg on IRC.
+        action  //!< A message describing an user action, like /me from IRC.
+    };
+
+    //! FIXME: doc
+    enum class LinkType {
+        none, //!< FIXME: doc
+        tcp,  //!< FIXME: doc
+        udp   //!< FIXME: doc
+    };
 } // namespace tox

@@ -103,6 +103,7 @@ set(CHAT_LIB_SOURCES
   src/core.cpp
   src/friend.cpp
   src/utils.cpp
+  src/options.cpp
   src/mainwindow.cpp
   src/chatwidget.cpp
   src/infowidget.cpp
@@ -119,6 +120,11 @@ add_executable(client src/client.cpp)
 target_link_libraries(client chat ${GENERAL_LIBRARIES})
 set_property(TARGET client PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 cotire(client)
+
+add_executable(server src/server.cpp)
+target_link_libraries(server chat ${GENERAL_LIBRARIES})
+set_property(TARGET server PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+cotire(server)
 
 add_executable(gst src/gst.cpp src/toxoutputstream.cpp)
 target_link_libraries(gst ${GENERAL_LIBRARIES})

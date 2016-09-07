@@ -43,35 +43,35 @@ int ChannelModel::columnCount(const QModelIndex&) const { return 1; }
 
 QVariant ChannelModel::data(const QModelIndex& index, int role) const {
     Node* node = getNode(index);
-    if(role == Qt::DisplayRole) {
-        if(index.column() == 0) {
-            return node->data();
-        } else
-            return QVariant();
-    } else
+    if((role == Qt::DisplayRole) && (index.column() == 0)) {
+        return node->data();
+    } else {
         return QVariant();
+    }
 }
 
 Node* ChannelModel::getNode(const QModelIndex& index) const {
     if(index.internalPointer()) {
         return (Node*) index.internalPointer();
-    } else
+    } else {
         return root;
+    }
 }
 
 QVariant Node::data() {
     if(type == NodeType::LegacyFolder) {
         return "Legacy Clients";
-    } else
+    } else {
         return "data!";
+    }
 }
 
 QVariant FriendNode::data() {
     QString state;
     switch(f->connection) {
-    case Link::none: state = "offline"; break;
-    case Link::tcp: state = "tcp"; break;
-    case Link::udp: state = "udp"; break;
+    case tox::LinkType::none: state = "offline"; break;
+    case tox::LinkType::tcp: state = "tcp"; break;
+    case tox::LinkType::udp: state = "udp"; break;
     }
 
     return QString("%1 - %2 - %3").arg(state).arg(f->name).arg(f->last_message);
@@ -79,14 +79,14 @@ QVariant FriendNode::data() {
 
 FriendNode::FriendNode(Node* parent, chat::Friend* f)
     : Node(NodeType::LegacyFriend, parent), f(f) {
-    connect(f, SIGNAL(connection_changed(Link, Link)), this,
-            SLOT(connection_changed(Link, Link)));
-    connect(f, SIGNAL(message(bool, QByteArray)), this,
-            SLOT(message(bool, QByteArray)));
+    connect(f,    SIGNAL(connection_changed(tox::LinkType, tox::LinkType)),
+            this, SLOT(connection_changed(tox::LinkType, tox::LinkType)));
+    connect(f,    SIGNAL(message(bool, QByteArray)),
+            this, SLOT(message(bool, QByteArray)));
 }
 
-void FriendNode::connection_changed(chat::Link old_state,
-                                    chat::Link new_state) {
+void FriendNode::connection_changed(tox::LinkType old_state,
+                                    tox::LinkType new_state) {
     emit changed(this);
 }
 void FriendNode::message(bool action, QByteArray message) {

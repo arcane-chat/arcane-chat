@@ -21,9 +21,6 @@ signals:
     void changed(Node* self);
 };
 
-// FIXME
-using namespace chat;
-
 class FriendNode : public Node {
     Q_OBJECT
 public:
@@ -32,14 +29,14 @@ public:
 
     chat::Friend* f;
 private slots:
-    void connection_changed(Link old_state, Link new_state);
+    void connection_changed(tox::LinkType old_state, tox::LinkType new_state);
     void message(bool action, QByteArray message);
 };
 
 class ChannelModel : public QAbstractItemModel {
     Q_OBJECT
 public:
-    ChannelModel(QList<chat::Friend*> friends);
+    explicit ChannelModel(QList<chat::Friend*> friends);
     QModelIndex index(int row, int column, const QModelIndex& parent) const;
     QModelIndex parent(const QModelIndex& child) const;
     int rowCount(const QModelIndex& parent) const;

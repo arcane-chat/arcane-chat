@@ -8,7 +8,10 @@
 
 #include <boost/filesystem.hpp>
 
+#include "enums.hpp"
 #include "friend.hpp"
+
+struct Tox;
 
 namespace chat {
     class Core : public QObject {
@@ -19,12 +22,12 @@ namespace chat {
         ~Core();
 
         void handle_message(uint32_t friend_number,
-                            TOX_MESSAGE_TYPE type,
+                            tox::MessageType type,
                             QByteArray message);
         void handle_lossy_packet(uint32_t friend_number, QByteArray message);
         void handle_lossless_packet(uint32_t friend_number, QByteArray message);
         void handle_friend_connection_status(uint32_t friend_number,
-                                             TOX_CONNECTION link);
+                                             tox::LinkType link);
 
         const QList<Friend*> get_friends() { return friends; }
         void send_message(uint32_t friend_number, bool action, QString message);
@@ -44,4 +47,4 @@ namespace chat {
         QTimer iterator;
         QList<Friend*> friends;
     };
-}
+} // namespace chat

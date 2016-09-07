@@ -4,28 +4,27 @@
 #include <QByteArray>
 #include <QString>
 #include <QObject>
+#include "enums.hpp"
 
 namespace chat {
-
-    enum class Link { none, tcp, udp };
-
     class Friend : public QObject {
         Q_OBJECT
     public:
         Friend(uint32_t friend_number,
                QByteArray pubkey,
                QString name,
-               Link connection);
-        void set_connection(Link connection);
+               tox::LinkType connection);
+        void set_connection(tox::LinkType connection);
         void new_message(bool action, QByteArray message);
 
         uint32_t friend_number;
         QByteArray publickey;
         QString name;
-        Link connection;
+        tox::LinkType connection;
         QString last_message; // temporary until voice works
     signals:
-        void connection_changed(Link old_state, Link new_state);
+        void connection_changed(tox::LinkType old_state,
+                                tox::LinkType new_state);
         void message(bool action, QByteArray message);
     };
 
