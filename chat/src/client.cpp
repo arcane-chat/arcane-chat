@@ -7,7 +7,12 @@
 #include <cstring>
 #include <signal.h>
 
+#include <giomm/init.h>
+#include <gstreamermm.h>
+#include <glibmm.h>
+
 #include <QApplication>
+#include <QDebug>
 
 #include "options.hpp"
 #include "core.hpp"
@@ -15,16 +20,26 @@
 #include "friend.hpp"
 #include "mainwindow.hpp"
 
+Glib::RefPtr<Glib::MainLoop> mainloop;
+
 void handler(int signum) {
     std::cout << "Quitting...\n";
-    QCoreApplication::quit();
+    //QCoreApplication::quit();
+    mainloop->quit();
 }
 
 //! yes yes, i know, avoiding glib vs qt fallout
 void audio_call_init(int argc, char **argv);
 
 int main(int argc, char** argv) {
-    audio_call_init(argc, argv);
+    //audio_call_init(argc, argv);
+
+    Gst::init(argc, argv);
+    Gio::init();
+    mainloop = Glib::MainLoop::create();
+
+
+
     QApplication app(argc, argv);
     struct sigaction interrupt;
     memset(&interrupt, 0, sizeof(interrupt));
@@ -53,7 +68,13 @@ int main(int argc, char** argv) {
         Tracer* tracer = new Tracer(&core);
         MainWindow* mw = new MainWindow(&core);
         mw->show();
-        ret = app.exec();
+
+        qDebug() << "entering glib mainloop";
+        mainloop->run();
+        qDebug() << "done";
+
+
+        //ret = app.exec();
     }
 
     std::cout << "clean shutdown\n";

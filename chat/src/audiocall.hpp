@@ -4,6 +4,7 @@
 
 #include <glibmm.h>
 #include <giomm/outputstream.h>
+#include <gstreamermm.h>
 
 #include <QObject>
 #include "toxoutputstream.hpp"
@@ -28,7 +29,7 @@ public Q_SLOTS:
 private:
     ToxOutputStream *outputstream;
     Glib::RefPtr<Gio::OutputStream> reference;
-    Glib::RefPtr<Glib::MainLoop> mainloop;
     chat::Core *core;
     chat::Friend *fr;
+    Glib::RefPtr<Gst::Pipeline> pipeline;
 };

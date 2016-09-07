@@ -45,17 +45,6 @@ void ChatWidget::on_message(Friend* f, bool action, QString message) {
     cs->text->append(QString("&lt;%1&gt; %2").arg(f->name).arg(message));
 }
 
-class Foo : public QThread {
-public:
-    Foo(Core *core, Friend *fr) : ac(new AudioCall(core,fr)) {}
-private:
-    void run() {
-        ac->create_instance();
-        ac->create_pipeline();
-    }
-    AudioCall *ac;
-};
-
 void ChatWidget::return_pressed() {
     auto msg = ui->lineEdit->text();
     qDebug() << msg;
@@ -63,8 +52,9 @@ void ChatWidget::return_pressed() {
     cs->text->append(QString("&lt;%1&gt; %2").arg(core->username).arg(msg));
     core->send_message(cs->f->friend_number, false, msg);
     if (msg == "!call") {
-        Foo *temporary_hack = new Foo(core,cs->f);
-        temporary_hack->start();
+        AudioCall *ac = new AudioCall(core,cs->f);
+        ac->create_instance();
+        ac->create_pipeline();
     }
     ui->lineEdit->setText("");
 }

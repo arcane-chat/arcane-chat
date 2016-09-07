@@ -1,9 +1,9 @@
-#include <gstreamermm.h>
 #include <iostream>
 #include <giomm/init.h>
 
 #include "audiocall.hpp"
 #include "core.hpp"
+#include <QThread>
 
 template <typename T>
 using ref = Glib::RefPtr<T>;
@@ -40,9 +40,9 @@ void AudioCall::create_instance() {
 }
 
 void AudioCall::create_pipeline() {
+    qDebug() << "starting the call from" << QThread::currentThread();
     core->call_start(fr);
-    mainloop = Glib::MainLoop::create();
-    ref<Gst::Pipeline> pipeline = Gst::Pipeline::create("gst-test");
+    pipeline = Gst::Pipeline::create("gst-test");
 
     auto src = make_element("audiotestsrc");
     auto sink = make_element("giostreamsink");
@@ -62,22 +62,16 @@ void AudioCall::create_pipeline() {
     }
 
     pipeline->set_state(Gst::STATE_PLAYING);
-    qDebug() << "entering glib mainloop";
-    mainloop->run();
-    pipeline->set_state(Gst::STATE_NULL);
+    qDebug() << "call setup";
 }
 
 void AudioCall::stop_everything()
 {
-    mainloop->quit();
+    pipeline->set_state(Gst::STATE_NULL);
     core->call_stop(fr);
 }
 
 ssize_t AudioCall::write_fn(QByteArray data) {
     core->call_data(fr,data);
-}
-
-void audio_call_init(int argc, char **argv) {
-    Gst::init(argc, argv);
-    Gio::init();
+    return data.size();
 }
