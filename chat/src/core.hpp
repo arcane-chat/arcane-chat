@@ -40,7 +40,7 @@ signals:
     void on_message(Friend*, bool action, QString message);
     void on_lossless_packet(uint32_t friend_number, QByteArray message);
     void on_lossy_packet(uint32_t friend_number, QByteArray message);
-    void new_friend(Friend*);
+    void on_new_friend(Friend*);
 
 private slots:
     void check_tox();

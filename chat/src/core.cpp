@@ -314,7 +314,7 @@ void Core::friend_add_norequest(const QByteArray public_key) {
                        tox::LinkType::none};
 
         friends.append(f);
-        emit new_friend(f);
+        emit on_new_friend(f);
 
         break;
     case TOX_ERR_FRIEND_ADD_ALREADY_SENT: qDebug() << "already sent"; break;
