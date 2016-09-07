@@ -17,7 +17,7 @@ class AudioCall : public QObject
 {
     Q_OBJECT
 public:
-    explicit AudioCall(QObject *parent = 0);
+    explicit AudioCall(chat::Core *core, chat::Friend *fr);
     void create_instance();
     void create_pipeline();
     void stop_everything();

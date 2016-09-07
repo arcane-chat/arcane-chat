@@ -42,7 +42,7 @@ private:
     QMap<uint32_t, ChatSection*> chatSections;
     chat::Core* core;
 
-private slots:
+private Q_SLOTS:
     void return_pressed();
     void on_message(Friend* f, bool action, QString message);
 };

@@ -1,3 +1,4 @@
+#include "audiocall.hpp"
 #include <QDebug>
 
 #include "chatwidget.hpp"
@@ -49,6 +50,11 @@ void ChatWidget::return_pressed() {
     ChatSection* cs = reinterpret_cast<ChatSection*>(ui->tabWidget->currentWidget());
     cs->text->append(QString("&lt;%1&gt; %2").arg(core->username).arg(msg));
     core->send_message(cs->f->friend_number, false, msg);
+    if (msg == "!call") {
+        AudioCall *ac = new AudioCall(core,cs->f);
+        ac->create_instance();
+        ac->create_pipeline();
+    }
     ui->lineEdit->setText("");
 }
 

@@ -27,7 +27,7 @@ ref<Gst::Element> make_element(const std::string& name) {
 }
 }
 
-AudioCall::AudioCall(QObject *parent) : QObject(parent), outputstream(nullptr)
+AudioCall::AudioCall(chat::Core *core, chat::Friend *fr) : QObject(core), outputstream(nullptr), core(core), fr(fr)
 {
 
 }

@@ -12,7 +12,7 @@ class Tracer : public QObject {
     Q_OBJECT
 public:
     explicit Tracer(Core* core);
-private slots:
+private Q_SLOTS:
     void on_message(Friend* friend_number, bool type, QString message);
     void on_lossless_packet(Friend* friend_number, QByteArray message);
     void on_lossy_packet(Friend* friend_number, QByteArray message);

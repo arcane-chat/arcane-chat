@@ -17,7 +17,7 @@ public:
     Node* parent;
     QList<Node*> children;
 
-signals:
+Q_SIGNALS:
     void changed(Node* self);
 };
 
@@ -28,7 +28,7 @@ public:
     virtual QVariant data();
 
     chat::Friend* f;
-private slots:
+private Q_SLOTS:
     void connection_changed(tox::LinkType old_state, tox::LinkType new_state);
     void message(bool action, QByteArray message);
 };
@@ -47,6 +47,6 @@ public:
     Node* root;
 
 private:
-private slots:
+private Q_SLOTS:
     void node_changed(Node*);
 };
