@@ -111,6 +111,7 @@ set(CHAT_LIB_SOURCES
   src/audiocall.cpp
   src/toxinputstream.cpp
   src/toxoutputstream.cpp
+  src/toxsource.cpp
   ${UI_HEADERS}
 )
 
@@ -118,6 +119,7 @@ set(GST_SOURCES
   src/audiocall.cpp
   src/toxinputstream.cpp
   src/toxoutputstream.cpp
+  src/toxsource.cpp
 )
 
 add_library(chat SHARED ${CHAT_LIB_SOURCES})
