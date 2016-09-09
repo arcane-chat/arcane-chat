@@ -143,6 +143,9 @@ target_link_libraries(gst chat ${GENERAL_LIBRARIES})
 set_property(TARGET gst PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 #cotire(gst)
 
+add_executable(state_test src/state_test.cpp)
+target_link_libraries(state_test ${GENERAL_LIBRARIES})
+
 install(
   TARGETS client gst chat
   RUNTIME DESTINATION bin
