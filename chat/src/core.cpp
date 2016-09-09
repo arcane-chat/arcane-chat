@@ -311,9 +311,14 @@ void Core::call_control(uint8_t type, Friend *fr, QByteArray data) {
     static QMap<Friend*,AudioCall*> calls;
 
     if (type == 0x01) {
-        AudioCall *ac = new AudioCall(this,fr);
-        calls.insert(fr,ac);
-        ac->start();
+        auto it = calls.find(fr);
+        if (it == calls.end()) {
+            AudioCall *ac = new AudioCall(this,fr);
+            calls.insert(fr,ac);
+            ac->start();
+        } else {
+            qDebug() << "call acked";
+        }
     }
     if (type == 0x02) {
         auto it = calls.find(fr);
@@ -445,9 +450,9 @@ void Core::call_data(Friend *fr, QByteArray data)
         out << (uint32_t) data.size();
         out.writeRawData(data.data(),data.size());
     }
-    if (packet.size() < 500) {
-        qDebug() << packet.size() << packet.buffer();
-    } else qDebug() << packet.size() << "sent";
+    if (packet.size() < 200) {
+        //qDebug() << packet.size() << packet.buffer();
+    } //else qDebug() << packet.size() << "sent";
     send_lossy_packet(fr, packet.buffer());
 }
 

@@ -87,7 +87,7 @@ void AudioCall::start() {
   //const char *caps = "audio/x-raw, format=(string)S16LE, channels=(int)1, rate=(int)48000, layout=(string)interleaved";
   const char *caps = "application/x-gdp";
 
-  QString outbound_pipeline = QString("audiotestsrc ! opusenc ! gdppay ! appsink name=\"toxsink\" caps=\"%1\"").arg(caps);
+  QString outbound_pipeline = QString("pulsesrc ! opusenc ! gdppay ! appsink name=\"toxsink\" caps=\"%1\"").arg(caps);
   qDebug() << outbound_pipeline;
   outbound = QGst::Parse::launch(outbound_pipeline).dynamicCast<QGst::Pipeline>();
   m_sink.audioCall = this;
@@ -96,7 +96,7 @@ void AudioCall::start() {
   QGlib::connect(outbound->bus(), "message::error", this, &AudioCall::onBusMessage);
   outbound->bus()->addSignalWatch();
 
-  QString inbound_pipeline = QString("appsrc name=\"toxsrc\" caps=\"%1\" is-live=true format=3 ! gdpdepay ! opusdec ! autoaudiosink").arg(caps);
+  QString inbound_pipeline = QString("appsrc name=\"toxsrc\" caps=\"%1\" is-live=true format=3 ! gdpdepay ! opusdec ! pulsesink").arg(caps);
   inbound = QGst::Parse::launch(inbound_pipeline).dynamicCast<QGst::Pipeline>();
   m_src.setElement(inbound->getElementByName("toxsrc"));
   QGlib::connect(inbound->bus(), "message::error", this, &AudioCall::onBusMessage);

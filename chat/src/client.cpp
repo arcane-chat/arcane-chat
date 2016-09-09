@@ -21,12 +21,12 @@
 #include "mainwindow.hpp"
 #include <Qt5GStreamer/QGst/Init>
 
-Glib::RefPtr<Glib::MainLoop> mainloop;
+//Glib::RefPtr<Glib::MainLoop> mainloop;
 
 void handler(int signum) {
     std::cout << "Quitting...\n";
-    //QCoreApplication::quit();
-    mainloop->quit();
+    QCoreApplication::quit();
+    //mainloop->quit();
 }
 
 //! yes yes, i know, avoiding glib vs qt fallout
@@ -69,14 +69,13 @@ int main(int argc, char** argv) {
                 usleep(5000);
             }
         }
-        Tracer* tracer = new Tracer(&core);
+        //Tracer* tracer = new Tracer(&core);
         MainWindow* mw = new MainWindow(&core);
         mw->show();
 
         qDebug() << "entering glib mainloop";
         //mainloop->run();
         qDebug() << "done";
-
 
         ret = app.exec();
     }
