@@ -8,6 +8,11 @@
 
 #include "ui_chatwidget.h"
 
+#include <Qt5GStreamer/QGst/Parse>
+#include <Qt5GStreamer/QGlib/Error>
+#include <Qt5GStreamer/QGlib/Connect>
+#include <Qt5GStreamer/QGst/Bus>
+
 ChatWidget::ChatWidget(Core* core, QWidget* parent)
     : QWidget(parent), ui(new Ui::ChatWidget), core(core) {
     ui->setupUi(this);
@@ -45,6 +50,13 @@ void ChatWidget::on_message(Friend* f, bool action, QString message) {
     cs->text->append(QString("&lt;%1&gt; %2").arg(f->name).arg(message));
 }
 
+void video_test() {
+  QString outbound_pipeline = QString("playbin uri=file:///tmp/foo.mkv");
+  qDebug() << outbound_pipeline;
+  auto outbound = QGst::Parse::launch(outbound_pipeline).dynamicCast<QGst::Pipeline>();
+  //m_sink.setBlockSize(1000);
+  outbound->setState(QGst::StatePlaying);
+}
 void ChatWidget::return_pressed() {
     auto msg = ui->lineEdit->text();
     qDebug() << msg;
@@ -57,10 +69,14 @@ void ChatWidget::return_pressed() {
             core->call_control(0x01,cs->f,QByteArray());
         }
     } else {
-        QByteArray one = qPrintable(msg);
-        QByteArray two = QByteArray::fromHex(one);
-        qDebug() << two;
-        core->friend_add(two,"request");
+        if (msg == "!foo") {
+            video_test();
+        } else {
+            QByteArray one = qPrintable(msg);
+            QByteArray two = QByteArray::fromHex(one);
+            qDebug() << two;
+            core->friend_add(two,"request");
+        }
     }
     ui->lineEdit->setText("");
 }
