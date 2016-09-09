@@ -4,7 +4,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QDataStream>
-//#include <QHostAddress>
+#include <QHostAddress>
 
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
@@ -67,21 +67,28 @@ int main(int argc, char **argv) {
                 ds3.setByteOrder(QDataStream::BigEndian);
                 while (!ds3.atEnd()) {
                     uint8_t proto;
-                    char address[16];
+                    union {
+                        char raw[16];
+                        quint8 v6[16];
+                        quint32 v4;
+                    } address;
+                    //char address[16];
                     uint16_t port;
                     char nodeid[32];
                     ds3 >> proto;
-                    if (proto == 2) ds3.readRawData(address,4);
-                    else if (proto == 10) ds3.readRawData(address,16);
+                    if (proto == 2) {
+                        //ds3.readRawData(address.raw,4);
+                        ds3 >> address.v4;
+                    } else if (proto == 10) ds3.readRawData(address.raw,16);
                     else Q_ASSERT(false);
                     ds3 >> port;
                     ds3.readRawData(nodeid,32);
                     QByteArray nodeidhex(nodeid,32);
-                    //QHostAddress ip;
-                    //if (proto == 2) ip = QHostAddress(reinterpret_cast<quint32>(*address));
-                    //else ip = QHostAddress(reinterpret_cast<quint8*>(address));
+                    QHostAddress ip;
+                    if (proto == 2) ip = QHostAddress(address.v4);
+                    else ip = QHostAddress(address.v6);
 
-                    qDebug() << QByteArray(address, proto == 2 ? 4 : 16).toHex() << port << nodeidhex.toHex();
+                    qDebug() << ip << port << nodeidhex.toHex();
                 }
             }
             break;
