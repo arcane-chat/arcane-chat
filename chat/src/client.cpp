@@ -21,26 +21,14 @@
 #include "mainwindow.hpp"
 #include <Qt5GStreamer/QGst/Init>
 
-//Glib::RefPtr<Glib::MainLoop> mainloop;
-
 void handler(int signum) {
     std::cout << "Quitting...\n";
     QCoreApplication::quit();
-    //mainloop->quit();
 }
-
-//! yes yes, i know, avoiding glib vs qt fallout
-void audio_call_init(int argc, char **argv);
-
 int main(int argc, char** argv) {
-    //audio_call_init(argc, argv);
 
     QGst::init(&argc, &argv);
-
-    //Gst::init(argc, argv);
     Gio::init();
-    //mainloop = Glib::MainLoop::create();
-
 
     QApplication app(argc, argv);
 
@@ -72,10 +60,6 @@ int main(int argc, char** argv) {
         //Tracer* tracer = new Tracer(&core);
         MainWindow* mw = new MainWindow(&core);
         mw->show();
-
-        qDebug() << "entering glib mainloop";
-        //mainloop->run();
-        qDebug() << "done";
 
         ret = app.exec();
     }
