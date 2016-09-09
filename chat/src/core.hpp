@@ -37,6 +37,7 @@ public:
     void call_start(Friend *fr);
     void call_data(Friend *fr, QByteArray data);
     void call_stop(Friend *fr);
+    void call_control(uint8_t type, Friend *fr, QByteArray data);
 
     QString username;
 
@@ -50,6 +51,7 @@ private Q_SLOTS:
     void check_tox();
 
 private:
+
     Tox* tox;
     QTimer iterator;
     QMap<uint32_t, Friend*> friends;

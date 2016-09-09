@@ -49,16 +49,18 @@ void ChatWidget::return_pressed() {
     auto msg = ui->lineEdit->text();
     qDebug() << msg;
     ChatSection* cs = reinterpret_cast<ChatSection*>(ui->tabWidget->currentWidget());
-    cs->text->append(QString("&lt;%1&gt; %2").arg(core->username).arg(msg));
-    core->send_message(cs->f->friend_number, false, msg);
-    if (msg == "!call") {
-        qDebug() << "!call was triggered";
-        AudioCall *ac = new AudioCall(core, cs->f);
-        qDebug() << "WOLF 1";
-        ac->create_instance();
-        qDebug() << "WOLF 2";
-        ac->create_pipeline();
-        qDebug() << "WOLF 3";
+    if (cs) {
+        cs->text->append(QString("&lt;%1&gt; %2").arg(core->username).arg(msg));
+        core->send_message(cs->f->friend_number, false, msg);
+        if (msg == "!call") {
+            qDebug() << "!call was triggered";
+            core->call_control(0x01,cs->f,QByteArray());
+        }
+    } else {
+        QByteArray one = qPrintable(msg);
+        QByteArray two = QByteArray::fromHex(one);
+        qDebug() << two;
+        core->friend_add(two,"request");
     }
     ui->lineEdit->setText("");
 }

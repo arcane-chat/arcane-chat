@@ -4,7 +4,7 @@
 , boost, zeromq, libmsgpack, libtoxcore-dev, nlohmann_json, qtbase, obs-studio
 , gst_all_1
 # Misc dependencies
-, guile, parallel, libopus, libpulseaudio, buildEnv, glib, glibmm, libsigcxx
+, guile, parallel, libopus, libpulseaudio, buildEnv, glib, glibmm, libsigcxx, enableDebugging
 }:
 
 let
@@ -14,6 +14,10 @@ let
     paths = deps;
     extraOutputsToInstall = [ "dev" "out" ];
   };
+  qt-gstreamer' = gst_all_1.qt-gstreamer.overrideDerivation (oldAttrs: {
+    src = /home/clever/x/qt-gstreamer-1.2.0;
+    enableParallelBuilding = true;
+  });
 in stdenv.mkDerivation rec {
   name = "arcane-chat-0.0.1";
 

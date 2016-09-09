@@ -19,6 +19,7 @@
 #include "utils.hpp"
 #include "friend.hpp"
 #include "mainwindow.hpp"
+#include <Qt5GStreamer/QGst/Init>
 
 Glib::RefPtr<Glib::MainLoop> mainloop;
 
@@ -34,13 +35,15 @@ void audio_call_init(int argc, char **argv);
 int main(int argc, char** argv) {
     //audio_call_init(argc, argv);
 
-    Gst::init(argc, argv);
-    Gio::init();
-    mainloop = Glib::MainLoop::create();
+    QGst::init(&argc, &argv);
 
+    //Gst::init(argc, argv);
+    Gio::init();
+    //mainloop = Glib::MainLoop::create();
 
 
     QApplication app(argc, argv);
+
     struct sigaction interrupt;
     memset(&interrupt, 0, sizeof(interrupt));
     interrupt.sa_handler = &handler;
@@ -48,6 +51,7 @@ int main(int argc, char** argv) {
     sigaction(SIGTERM, &interrupt, nullptr);
 
     int ret = 1;
+
 
     {
         chat::Core core { "/tmp/client_savedata" };
@@ -70,11 +74,11 @@ int main(int argc, char** argv) {
         mw->show();
 
         qDebug() << "entering glib mainloop";
-        mainloop->run();
+        //mainloop->run();
         qDebug() << "done";
 
 
-        //ret = app.exec();
+        ret = app.exec();
     }
 
     std::cout << "clean shutdown\n";

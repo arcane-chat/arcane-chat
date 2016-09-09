@@ -9,6 +9,7 @@
 #include <QBuffer>
 #include <QDataStream>
 
+#include "audiocall.hpp"
 #include "core.hpp"
 #include "utils.hpp"
 #include "options.hpp"
@@ -285,9 +286,50 @@ void Core::handle_lossless_packet(Friend* fr, QByteArray message) {
 }
 
 void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
+
     emit on_lossy_packet(fr, message);
+    QDataStream ds(message);
+    uint8_t typecode;
+    ds >> typecode;
+    if (typecode == 0x01) {
+        call_control(0x01, fr, QByteArray());
+    }
+    if (typecode == 0x02) {
+        uint32_t size;
+        ds >> size;
+        char buffer[size];
+        ds.readRawData(buffer,size);
+        call_control(0x02, fr, QByteArray(buffer,size));
+    }
+    if (typecode == 0x03) {
+        call_control(0x03, fr, QByteArray());
+    }
 }
 
+//! temporary hack
+void Core::call_control(uint8_t type, Friend *fr, QByteArray data) {
+    static QMap<Friend*,AudioCall*> calls;
+
+    if (type == 0x01) {
+        AudioCall *ac = new AudioCall(this,fr);
+        calls.insert(fr,ac);
+        ac->start();
+    }
+    if (type == 0x02) {
+        auto it = calls.find(fr);
+        if (it != calls.end()) {
+            (*it)->packet(data);
+        }
+    }
+    if (type == 0x03) {
+        auto it = calls.find(fr);
+        if (it != calls.end()) {
+            (*it)->stop();
+            delete *it;
+            calls.remove(fr);
+        }
+    }
+}
 void Core::handle_friend_connection_status(Friend* fr, tox::LinkType link) {
     fr->set_connection(link);
 }
@@ -403,7 +445,9 @@ void Core::call_data(Friend *fr, QByteArray data)
         out << (uint32_t) data.size();
         out.writeRawData(data.data(),data.size());
     }
-    qDebug() << packet.buffer().toHex();
+    if (packet.size() < 500) {
+        qDebug() << packet.size() << packet.buffer();
+    } else qDebug() << packet.size() << "sent";
     send_lossy_packet(fr, packet.buffer());
 }
 

@@ -112,6 +112,7 @@ set(CHAT_LIB_SOURCES
   src/toxinputstream.cpp
   src/toxoutputstream.cpp
   src/toxsource.cpp
+  src/toxsink.cpp
   ${UI_HEADERS}
 )
 
