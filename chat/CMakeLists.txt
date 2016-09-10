@@ -12,7 +12,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 find_package(PkgConfig REQUIRED)
 find_package(Boost     REQUIRED program_options thread filesystem)
-#find_package(Protobuf  REQUIRED)
+find_package(Protobuf  REQUIRED)
 
 pkg_check_modules(ZMQ REQUIRED libzmq)
 pkg_check_modules(MSG REQUIRED msgpack)
@@ -45,12 +45,16 @@ find_package(Qt5Widgets   REQUIRED)
 find_package(Qt5GStreamer REQUIRED)
 find_package(LibObs       REQUIRED)
 
+set(COMMON_FLAGS
+  "-g -Wall -Dforeach=foreach"
+)
+
 set(CMAKE_C_FLAGS
-  "${CMAKE_C_FLAGS} -g -std=c11 -Wall"
+  "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=c11"
 )
 
 set(CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS} -g -std=c++17 -Wall -Wno-deprecated-declarations"
+  "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17 -Wno-deprecated-declarations"
 )
 
 include_directories(

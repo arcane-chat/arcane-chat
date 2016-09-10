@@ -2,9 +2,9 @@
 { stdenv, cmake, pkgconfig, doxygen, ghostscript, ninja, makeWrapper
 # Program dependencies
 , boost, zeromq, libmsgpack, libtoxcore-dev, nlohmann_json, qtbase, obs-studio
-, gst_all_1
+, gst_all_1, protobuf3_0
 # Misc dependencies
-, guile, parallel, libopus, libpulseaudio, buildEnv, glib, glibmm, libsigcxx, enableDebugging
+, guile, parallel, buildEnv, glib, glibmm, libsigcxx, enableDebugging
 }:
 
 let
@@ -25,18 +25,16 @@ in stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     cmake pkgconfig ninja doxygen ghostscript guile parallel makeWrapper
+    protobuf3_0
   ];
 
   buildInputs = with gst_all_1; [
     boost zeromq libmsgpack qtbase nlohmann_json libtoxcore-dev obs-studio
-    gst-libav gst-plugins-good
-    gst-plugins-ugly gst-plugins-bad qt-gstreamer libopus libpulseaudio
+    gst-libav gst-plugins-good gst-plugins-ugly gst-plugins-bad qt-gstreamer
+    protobuf3_0
   ] ++ deps;
 
   cmakeFlags = "-GNinja";
-  NIX_CFLAGS_COMPILE = [
-    "-Dforeach=foreach" # glib has a foreach function, qt has a foreach macro
-  ];
 
   buildPhase = "ninja";
 
