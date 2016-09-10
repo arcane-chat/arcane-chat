@@ -52,38 +52,22 @@ int main(int argc, char** argv) {
     };
     parser.addOption(sendFriendRequestOption);
 
+    QCommandLineOption tracerOption = {
+        QStringList() << "t" << "tracer",
+        qca::translate("main", "Verbosely output a trace of some Qt signals.")
+    };
+    parser.addOption(tracerOption);
+
+    QCommandLineOption headlessOption = {
+        QStringList() << "h" << "headless",
+        qca::translate("main", "Run the client headlessly."),
+    };
+    parser.addOption(headlessOption);
+
     parser.process(app);
 
     // EXAMPLES OF PARSER USE:
-
-    // // fixme
-    // parser.addPositionalArgument(
-    //     "source", qca::translate("main", "Source file to copy."));
-    // const QStringList args = parser.positionalArguments();
-
-    // // A boolean option with a single name (-p)
-    // QCommandLineOption showProgressOption = {
-    //     "p", qca::translate("main", "Show progress during copy")
-    // };
-    // parser.addOption(showProgressOption);
-    // bool showProgress = parser.isSet(showProgressOption);
-
-    // // A boolean option with multiple names (-f, --force)
-    // QCommandLineOption forceOption = {
-    //     QStringList() << "f" << "force",
-    //     qca::translate("main", "Overwrite existing files.")
-    // };
-    // parser.addOption(forceOption);
-    // bool force = parser.isSet(forceOption);
-
-    // // An option with a value
-    // QCommandLineOption targetDirectoryOption = {
-    //     QStringList() << "t" << "target-directory",
-    //     qca::translate("main", "Copy all source files into <directory>."),
-    //     qca::translate("main", "directory")
-    // };
-    // parser.addOption(targetDirectoryOption);
-    // QString targetDir = parser.value(targetDirectoryOption);
+    //     https://gist.github.com/taktoa/d8b33c1aa81d97a15fb0dff43ba22b98
 
     int ret = 1;
 
@@ -96,9 +80,14 @@ int main(int argc, char** argv) {
             core.friend_add(QByteArray::fromHex(hex), "placeholder");
         }
 
-        // Tracer* tracer = new Tracer(&core);
-        MainWindow* mw = new MainWindow(&core);
-        mw->show();
+        if(parser.isSet(tracerOption)) {
+            new Tracer(&core);
+        }
+
+        if(!parser.isSet(headlessOption)) {
+            MainWindow* mw = new MainWindow(&core);
+            mw->show();
+        }
 
         struct sigaction interrupt;
         memset(&interrupt, 0, sizeof(interrupt));

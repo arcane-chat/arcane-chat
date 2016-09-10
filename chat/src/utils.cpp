@@ -6,7 +6,7 @@
 
 #include "utils.hpp"
 
-Tracer::Tracer(chat::Core* core) {
+Tracer::Tracer(chat::Core* core) : QObject(core) {
     connect(core, SIGNAL(on_message(Friend*, bool, QString)), this,
             SLOT(on_message(Friend*, bool, QString)));
     connect(core, SIGNAL(on_lossless_packet(Friend*, QByteArray)), this,
