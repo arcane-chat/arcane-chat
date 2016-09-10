@@ -1,0 +1,17 @@
+package Arcane;
+
+message RpcMessage {
+    required int32 method_id = 1;
+    optional int32 data_size = 2 [ default = 0 ];
+    optional int32 token = 3 [ default = 0 ];
+}
+
+enum Methods {
+    call_start = 1;
+    call_data = 2;
+    call_stop = 3;
+}
+
+message CallData {
+    required bytes data = 1;
+}
