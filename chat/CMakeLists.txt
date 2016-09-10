@@ -138,16 +138,6 @@ set(GST_SOURCES
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS network.proto)
 
-# find_program(iwyu_path NAMES include-what-you-use iwyu)
-# if(NOT iwyu_path)
-#   message(FATAL_ERROR "Could not find the program include-what-you-use")
-# endif()
-#  
-# set(iwyu_config
-#     ${iwyu_path}
-#     -Xiwyu
-#     --mapping_file=${my_mapping})
-
 add_library(chat SHARED ${CHAT_LIB_SOURCES} ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(chat ${GENERAL_LIBRARIES})
 set_property(TARGET chat PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
