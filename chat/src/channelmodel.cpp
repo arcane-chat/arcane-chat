@@ -74,9 +74,9 @@ QVariant FriendNode::data() {
     case tox::LinkType::udp: state = "udp"; break;
     }
     if (f->connection == tox::LinkType::none) {
-        return QString("%1 - %2 - %3").arg(state).arg(f->name).arg(f->last_message);
+        return QString("%1 , %2").arg(state).arg(f->name);
     } else {
-        return QString("%1 - %2 - %3 - %4 - %5").arg(state).arg(f->name).arg(f->last_message).arg(f->rtt.toString()).arg(f->offset.toString());
+        return QString("%1 , %2 rtt: %3 offset: %4").arg(state).arg(f->name).arg(f->rtt.toString()).arg(f->offset.toString());
     }
 
 }
@@ -96,7 +96,6 @@ void FriendNode::connection_changed(tox::LinkType old_state,
 }
 
 void FriendNode::message(bool action, QByteArray message) {
-    emit changed(this);
 }
 void FriendNode::latency_update() {
     emit changed(this);

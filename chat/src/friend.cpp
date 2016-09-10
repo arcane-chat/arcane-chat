@@ -31,7 +31,6 @@ namespace chat {
 
     int Friend::random_delay(int min, int range) {
       int ret = (rand() % range + min) * 1000;
-      qDebug() << min << range << ret;
       return ret;
     }
 

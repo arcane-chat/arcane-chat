@@ -39,7 +39,7 @@ namespace chat {
     private Q_SLOTS:
         void too_idle();
     private:
-        int random_delay(int min = 60, int range = 60);
+        int random_delay(int min = 10, int range = 30);
         QTimer idle_timer;
         Core *core;
     };
