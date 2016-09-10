@@ -19,7 +19,7 @@ namespace chat {
         if (connection == tox::LinkType::none) {
           idle_timer.stop();
         } else {
-          idle_timer.start(random_delay());
+          idle_timer.start(random_delay(0,10));
         }
         emit connection_changed(old_state, connection);
     }
@@ -30,19 +30,41 @@ namespace chat {
     }
 
     int Friend::random_delay(int min, int range) {
-      return (rand() % range + min) * 1000;
+      int ret = (rand() % range + min) * 1000;
+      qDebug() << min << range << ret;
+      return ret;
     }
 
     void Friend::too_idle() {
       core->send_ping(this, QByteArray("wake up"));
-      idle_timer.start(random_delay());
+      idle_timer.start(random_delay(10,10));
     }
+
     void Friend::on_pong(qint64 sent, qint64 received, QByteArray payload) {
-      qDebug() << "latency to" << name << "is" << (core->get_uptime() - sent) << "and offset" << (core->get_uptime() - received);
+      qint64 now = core->get_uptime();
+
+      qint64 rtt = now - sent;
+      double in_ms = (double)rtt / 1000000;
+      qint64 offset = now - received;
+      double offset_sec = (double)offset / 1000000000;
+      qDebug() << "latency to" << name << "is" << in_ms << "ms and offset" << offset_sec << "seconds";
       idle_timer.start(random_delay());
+
+      this->rtt.append(rtt);
+      this->offset.append(offset);
+
+      emit latency_update();
     }
     void Friend::on_ping(qint64 sent, QByteArray payload) {
-      qDebug() << "clock offset to" << name << "is" << (sent - core->get_uptime()) << "+/- latency";
+      qint64 now = core->get_uptime();
+
+      qint64 offset = now - sent;
+      double offset_sec = (double)offset / 1000000000;
+      qDebug() << "clock offset to" << name << "is" << offset_sec << "seconds +/- latency";
       idle_timer.start(random_delay(40,40));
+
+      this->offset.append(offset);
+
+      emit latency_update();
     }
 } // namespace chat

@@ -7,6 +7,8 @@
 #include <QString>
 #include <QObject>
 #include <QTimer>
+#include <QList>
+#include "stats.hpp"
 
 namespace chat {
     class Core;
@@ -27,10 +29,13 @@ namespace chat {
         QString last_message; // temporary until voice works
         void on_pong(qint64 sent, qint64 received, QByteArray payload);
         void on_ping(qint64 sent, QByteArray payload);
+        Stats rtt, offset;
+
     Q_SIGNALS:
         void connection_changed(tox::LinkType old_state,
                                 tox::LinkType new_state);
         void message(bool action, QByteArray message);
+        void latency_update();
     private Q_SLOTS:
         void too_idle();
     private:

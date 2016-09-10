@@ -492,7 +492,7 @@ void Core::call_stop(Friend *fr) {
 }
 
 qint64 Core::get_uptime() {
-    return uptime.elapsed() + uptime_offset;
+    return uptime.nsecsElapsed() + uptime_offset;
 }
 void Core::send_ping(Friend *fr, QByteArray payload) {
     Arcane::PingPayload p;

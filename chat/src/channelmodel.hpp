@@ -31,6 +31,7 @@ public:
 private Q_SLOTS:
     void connection_changed(tox::LinkType old_state, tox::LinkType new_state);
     void message(bool action, QByteArray message);
+    void latency_update();
 };
 
 class ChannelModel : public QAbstractItemModel {

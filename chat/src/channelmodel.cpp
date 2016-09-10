@@ -73,8 +73,12 @@ QVariant FriendNode::data() {
     case tox::LinkType::tcp: state = "tcp"; break;
     case tox::LinkType::udp: state = "udp"; break;
     }
+    if (f->connection == tox::LinkType::none) {
+        return QString("%1 - %2 - %3").arg(state).arg(f->name).arg(f->last_message);
+    } else {
+        return QString("%1 - %2 - %3 - %4 - %5").arg(state).arg(f->name).arg(f->last_message).arg(f->rtt.toString()).arg(f->offset.toString());
+    }
 
-    return QString("%1 - %2 - %3").arg(state).arg(f->name).arg(f->last_message);
 }
 
 FriendNode::FriendNode(Node* parent, chat::Friend* f)
@@ -83,6 +87,7 @@ FriendNode::FriendNode(Node* parent, chat::Friend* f)
             SLOT(connection_changed(tox::LinkType, tox::LinkType)));
     connect(f, SIGNAL(message(bool, QByteArray)), this,
             SLOT(message(bool, QByteArray)));
+    connect(f, SIGNAL(latency_update()), this, SLOT(latency_update()));
 }
 
 void FriendNode::connection_changed(tox::LinkType old_state,
@@ -91,6 +96,9 @@ void FriendNode::connection_changed(tox::LinkType old_state,
 }
 
 void FriendNode::message(bool action, QByteArray message) {
+    emit changed(this);
+}
+void FriendNode::latency_update() {
     emit changed(this);
 }
 
