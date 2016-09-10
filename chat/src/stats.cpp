@@ -32,10 +32,20 @@ void Stats::append(qint64 i) {
 }
 
 qint64 Stats::stddev() {
-	qint64 avg = average();
-	qint64 sum = 0;
+	double avg = average();
+	double sum = 0;
 	for (qint64 x : list) {
 		sum += (avg - x) * (avg - x);
 	}
 	return sqrt(sum);
+}
+
+void Stats::clear() {
+    list.clear();
+}
+
+void Stats::shift(qint64 offset) {
+    for (qint64 &x : list) {
+        x -= offset;
+    }
 }

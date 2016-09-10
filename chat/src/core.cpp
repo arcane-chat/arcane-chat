@@ -237,7 +237,7 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
 
     tox_self_get_friend_list(tox, friends);
 
-    qDebug() << "I have " << count << " friends!";
+    qDebug() << "I have" << count << "friends!";
 
     for(int i = 0; i < count; i++) {
         tox_friend_get_public_key(tox, friends[i], pubkey, &error);
@@ -259,8 +259,38 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
 
         this->friends.insert(f->friend_number, f);
     }
+
+    QTimer *syncer = new QTimer(this);
+    connect(syncer, SIGNAL(timeout()), this, SLOT(sync_clock()));
+    syncer->setSingleShot(false);
+    syncer->start(60000);
 }
 
+void Core::sync_clock() {
+    qint64 total_offset = 0;
+    int online = 0;
+    for (Friend *fr : friends) {
+        if (fr->connection == tox::LinkType::none) continue;
+        if (fr->offset.stddev() > (1000000000l * 60)) continue;
+        total_offset += fr->offset.average();
+        online++;
+    }
+    if (online == 0) return;
+    qDebug() << "average offset" << ((double)total_offset / online / 1000 / 1000 / 1000) << "sec";
+    if (uptime_offset == 0) {
+        shift_clock(total_offset / online);
+    } else {
+        shift_clock(total_offset / online / 2);
+    }
+}
+
+void Core::shift_clock(qint64 offset) {
+    uptime_offset -= offset;
+    for (Friend *fr : friends) {
+        if (fr->connection == tox::LinkType::none) continue;
+        fr->offset.shift(offset);
+    }
+}
 Core::~Core() {
     save_state();
     tox_kill(tox);

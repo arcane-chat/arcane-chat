@@ -18,6 +18,7 @@ namespace chat {
         this->connection = connection;
         if (connection == tox::LinkType::none) {
           idle_timer.stop();
+          offset.clear();
         } else {
           idle_timer.start(random_delay(0,10));
         }

@@ -55,8 +55,10 @@ public Q_SLOTS:
 private Q_SLOTS:
     void check_tox();
     void feed_tox(int sock);
+    void sync_clock();
 
 private:
+    void shift_clock(qint64 offset);
 
     Tox* tox;
     QTimer iterator;
