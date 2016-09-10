@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 2.8.11)
-project(arcane-chat)
+cmake_minimum_required(VERSION 3.5.0)
+project(arcane-chat VERSION 0.0.1)
 
 add_subdirectory(doc)
 
@@ -46,7 +46,7 @@ find_package(Qt5GStreamer REQUIRED)
 find_package(LibObs       REQUIRED)
 
 set(COMMON_FLAGS
-  "-g -Wall -Dforeach=foreach"
+  "-g -Wall -Dforeach=foreach -DARCANE_CHAT_VERSION=\"\\\"${PROJECT_VERSION}\\\"\""
 )
 
 set(CMAKE_C_FLAGS

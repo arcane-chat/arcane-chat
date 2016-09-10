@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
         "arcane-chat-plugins",
         "private elements for arcane-chat",
         register_elements,
-        "0.1",
+        ARCANE_CHAT_VERSION,
         "LGPL",
         "my-application-source",
         "my-application",
