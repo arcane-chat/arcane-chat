@@ -40,6 +40,7 @@ public:
     void call_control(uint8_t type, Friend *fr, QByteArray data);
     void send_packet(Friend *fr, Arcane::Methods methodid, ::google::protobuf::Message *payload=0);
     qint64 get_uptime();
+    void set_username(QString username);
 
     QString username;
 

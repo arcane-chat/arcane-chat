@@ -8,8 +8,8 @@ namespace chat {
                    QByteArray pubkey,
                    QString name,
                    tox::LinkType connection, Core *core)
-        : friend_number(friend_number), publickey(pubkey), name(name),
-          connection(connection), core(core) {
+        : friend_number(friend_number), publickey(pubkey),
+          connection(connection), core(core), username(name) {
       connect(&idle_timer, SIGNAL(timeout()), this, SLOT(too_idle()));
     }
 
@@ -44,10 +44,10 @@ namespace chat {
       qint64 now = core->get_uptime();
 
       qint64 rtt = now - sent;
-      double in_ms = (double)rtt / 1000000;
+      //double in_ms = (double)rtt / 1000000;
       qint64 offset = now - received;
-      double offset_sec = (double)offset / 1000000000;
-      qDebug() << "latency to" << name << "is" << in_ms << "ms and offset" << offset_sec << "seconds";
+      //double offset_sec = (double)offset / 1000000000;
+      //qDebug() << "latency to" << name << "is" << in_ms << "ms and offset" << offset_sec << "seconds";
       idle_timer.start(random_delay());
 
       this->rtt.append(rtt);
@@ -55,16 +55,28 @@ namespace chat {
 
       emit latency_update();
     }
+
     void Friend::on_ping(qint64 sent, QByteArray payload) {
       qint64 now = core->get_uptime();
 
       qint64 offset = now - sent;
-      double offset_sec = (double)offset / 1000000000;
-      qDebug() << "clock offset to" << name << "is" << offset_sec << "seconds +/- latency";
+      //double offset_sec = (double)offset / 1000000000;
+      //qDebug() << "clock offset to" << name << "is" << offset_sec << "seconds +/- latency";
       idle_timer.start(random_delay(40,40));
 
       this->offset.append(offset);
 
       emit latency_update();
+    }
+
+    void Friend::on_other(qint64 sent) {
+        qint64 offset = core->get_uptime() - sent;
+        this->offset.append(offset);
+        emit latency_update();
+    }
+
+    void Friend::set_username(QString username) {
+      this->username = username;
+      emit username_changed();
     }
 } // namespace chat

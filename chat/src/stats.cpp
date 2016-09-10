@@ -49,3 +49,7 @@ void Stats::shift(qint64 offset) {
         x -= offset;
     }
 }
+
+int Stats::count() {
+    return list.size();
+}

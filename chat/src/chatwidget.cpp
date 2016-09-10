@@ -31,7 +31,7 @@ void ChatWidget::open_chat(FriendNode* fn) {
         ui->tabWidget->setCurrentWidget(cs);
     } else {
         ChatSection* cs = new ChatSection(fn->f);
-        ui->tabWidget->addTab(cs, fn->f->name);
+        ui->tabWidget->addTab(cs, fn->f->get_username());
         ui->tabWidget->setCurrentWidget(cs);
         chatSections.insert(fn->f->friend_number, cs);
     }
@@ -44,19 +44,20 @@ void ChatWidget::on_message(Friend* f, bool action, QString message) {
         cs = *i;
     } else {
         cs = new ChatSection(f);
-        ui->tabWidget->addTab(cs, f->name);
+        ui->tabWidget->addTab(cs, f->get_username());
         chatSections.insert(f->friend_number, cs);
     }
-    cs->text->append(QString("&lt;%1&gt; %2").arg(f->name).arg(message));
+    cs->text->append(QString("&lt;%1&gt; %2").arg(f->get_username()).arg(message));
 }
 
-void video_test() {
+static void video_test() {
   QString outbound_pipeline = QString("playbin uri=file:///tmp/foo.mkv");
   qDebug() << outbound_pipeline;
   auto outbound = QGst::Parse::launch(outbound_pipeline).dynamicCast<QGst::Pipeline>();
   //m_sink.setBlockSize(1000);
   outbound->setState(QGst::StatePlaying);
 }
+
 void ChatWidget::return_pressed() {
     auto msg = ui->lineEdit->text();
     qDebug() << msg;
@@ -69,13 +70,15 @@ void ChatWidget::return_pressed() {
             core->call_control(0x01,cs->f,QByteArray());
         }
     } else {
+        QStringList words = msg.split(" ");
         if (msg == "!foo") {
             video_test();
-        } else {
-            QByteArray one = qPrintable(msg);
+        } else if (words[0] == "/add") {
+            QByteArray one = qPrintable(words[1]);
             QByteArray two = QByteArray::fromHex(one);
-            qDebug() << two;
             core->friend_add(two,"request");
+        } else if (words[0] == "/nick") {
+            core->set_username(words[1]);
         }
     }
     ui->lineEdit->setText("");

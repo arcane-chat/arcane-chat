@@ -1,8 +1,8 @@
-#include <iostream>
-#include <giomm/init.h>
-
 #include "audiocall.hpp"
 #include "core.hpp"
+
+#include <iostream>
+
 #include <QThread>
 #include <Qt5GStreamer/QGst/Parse>
 #include <Qt5GStreamer/QGlib/Error>
@@ -63,6 +63,7 @@ AudioCall::AudioCall(chat::Core *core, chat::Friend *fr)
 AudioCall::~AudioCall() {
     stop();
 }
+
 void AudioCall::stop() {
     qDebug() << __func__;
     outbound->setState(QGst::StateNull);
@@ -78,6 +79,7 @@ void AudioCall::packet(QByteArray data) {
     buf->unmap(mi);
     m_src.pushBuffer(buf);
 }
+
 ssize_t AudioCall::write_fn(QByteArray data) {
     core->call_data(fr, data);
     return data.size();

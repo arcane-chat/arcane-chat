@@ -1,9 +1,9 @@
 #undef QT_NO_DEBUG
 
 #include <QCoreApplication>
-#include <QFile>
-#include <QDebug>
 #include <QDataStream>
+#include <QDebug>
+#include <QFile>
 #include <QHostAddress>
 
 int main(int argc, char **argv) {

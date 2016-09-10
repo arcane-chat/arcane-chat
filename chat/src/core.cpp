@@ -102,6 +102,14 @@ void callback_friend_lossless_packet(Tox* tox,
     }
 }
 
+void callback_friend_name(Tox* tox, uint32_t friend_number, const uint8_t *name, size_t length, void *user_data) {
+    Q_UNUSED(tox);
+    Core* core = reinterpret_cast<Core*>(user_data);
+    auto fr = core->get_friends().find(friend_number);
+    Q_ASSERT(fr != core->get_friends().end());
+
+    (*fr)->set_username(QString(make_qba(name,length)));
+}
 void callback_friend_typing(Tox* tox,
                             uint32_t friend_number,
                             bool is_typing,
@@ -206,6 +214,7 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
     tox_bootstrap(tox, bootstrap_address, bootstrap_port,
                   bootstrap_pub_key.data(), nullptr);
 
+    tox_callback_friend_name(tox, callback_friend_name);
     tox_callback_friend_typing(tox, callback_friend_typing);
     tox_callback_friend_request(tox, callback_friend_request);
     tox_callback_friend_message(tox, callback_friend_message);
@@ -214,15 +223,23 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
     tox_callback_friend_connection_status(tox, callback_friend_connection_status);
     tox_callback_self_connection_status(tox, callback_self_connection_status);
 
-    std::string username = ({
-        std::stringstream ss;
-        ss << "arcane-" << rand();
-        ss.str();
-    });
-    tox_self_set_name(tox, reinterpret_cast<const uint8_t*>(username.c_str()),
-                      username.size(), nullptr);
 
-    this->username = username.c_str();
+    int current_name_size = tox_self_get_name_size(tox);
+    if (current_name_size) {
+        uint8_t buffer[current_name_size];
+        tox_self_get_name(tox, buffer);
+        this->username = QString::fromStdString(std::string(reinterpret_cast<char*>(buffer),current_name_size));
+    } else {
+        std::string username = ({
+            std::stringstream ss;
+            ss << "arcane-" << rand();
+            ss.str();
+        });
+        tox_self_set_name(tox, reinterpret_cast<const uint8_t*>(username.c_str()),
+                          username.size(), nullptr);
+
+        this->username = username.c_str();
+    }
 
     iterator.setSingleShot(true);
     connect(&iterator, SIGNAL(timeout()), this, SLOT(check_tox()));
@@ -266,21 +283,39 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
     syncer->start(60000);
 }
 
+void Core::set_username(QString username) {
+    TOX_ERR_SET_INFO error;
+    QByteArray raw = qPrintable(username);
+    tox_self_set_name(tox, reinterpret_cast<const uint8_t*>(raw.data()), raw.size(), &error);
+    if (error != TOX_ERR_SET_INFO_OK) {
+        qDebug() << "error changing nick" << error;
+        return;
+    }
+    this->username = username;
+}
+
 void Core::sync_clock() {
     qint64 total_offset = 0;
     int online = 0;
     for (Friend *fr : friends) {
         if (fr->connection == tox::LinkType::none) continue;
-        if (fr->offset.stddev() > (1000000000l * 60)) continue;
+        if (fr->offset.stddev() > (1000000000l * 10)) continue;
+        if (fr->offset.count() < 5) continue;
         total_offset += fr->offset.average();
         online++;
     }
     if (online == 0) return;
-    qDebug() << "average offset" << ((double)total_offset / online / 1000 / 1000 / 1000) << "sec";
+    qint64 average = total_offset / online;
+    qDebug() << "average offset" << ((double)average / 1000 / 1000 / 1000) << "sec" << average;
     if (uptime_offset == 0) {
-        shift_clock(total_offset / online);
+        shift_clock(average);
     } else {
-        shift_clock(total_offset / online / 2);
+        // once within 10ms, it will slow down the drift rate
+        if ((average > -10000000) & (average < 10000000)) {
+            shift_clock(average / 10);
+        } else {
+            shift_clock(average / 2);
+        }
     }
 }
 
@@ -343,6 +378,7 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
     case Arcane::call_data: {
         Arcane::CallData data;
         data.ParseFromString(payload.toStdString());
+        fr->on_other(data.sent());
         call_control(0x02, fr, QByteArray::fromStdString(data.data()));
         break; }
     case Arcane::call_stop:
@@ -514,6 +550,7 @@ void Core::call_start(Friend *fr) {
 void Core::call_data(Friend *fr, QByteArray data) {
     Arcane::CallData datapacket;
     datapacket.set_data(data.toStdString());
+    datapacket.set_sent(get_uptime());
     send_packet(fr, Arcane::call_data, &datapacket);
 }
 

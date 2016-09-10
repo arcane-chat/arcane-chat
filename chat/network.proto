@@ -18,6 +18,7 @@ enum Methods {
 
 message CallData {
     bytes data = 1;
+    int64 sent = 2;
 }
 
 message PingPayload {
