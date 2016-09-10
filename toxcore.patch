@@ -1,0 +1,51 @@
+diff --git a/other/apidsl/tox.in.h b/other/apidsl/tox.in.h
+index 7953d4f..874728c 100644
+--- a/other/apidsl/tox.in.h
++++ b/other/apidsl/tox.in.h
+@@ -811,6 +811,12 @@ const uint32_t iteration_interval();
+  */
+ void iterate(any user_data);
+ 
++/**
++ * return the FD# for the UDP socket, to allow integration into the client
++ * mainloop.
++ */
++uint32_t fd_udp();
++
+ 
+ /*******************************************************************************
+  *
+diff --git a/toxcore/tox.c b/toxcore/tox.c
+index 4074665..fa6f77d 100644
+--- a/toxcore/tox.c
++++ b/toxcore/tox.c
+@@ -480,6 +480,12 @@ void tox_iterate(Tox *tox, void *user_data)
+     do_groupchats(m->group_chat_object, user_data);
+ }
+ 
++uint32_t tox_fd_udp(Tox *tox)
++{
++    Messenger *m = tox;
++    return m->net->sock;
++}
++
+ void tox_self_get_address(const Tox *tox, uint8_t *address)
+ {
+     if (address) {
+diff --git a/toxcore/tox.h b/toxcore/tox.h
+index 60110ea..6298a93 100644
+--- a/toxcore/tox.h
++++ b/toxcore/tox.h
+@@ -944,6 +944,12 @@ uint32_t tox_iteration_interval(const Tox *tox);
+  */
+ void tox_iterate(Tox *tox, void *user_data);
+ 
++/**
++ * return the FD# for the UDP socket, to allow integration into the client
++ * mainloop.
++ */
++uint32_t tox_fd_udp(Tox *tox);
++
+ 
+ /*******************************************************************************
+  *
