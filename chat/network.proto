@@ -1,17 +1,27 @@
+syntax = "proto3";
+
 package Arcane;
 
 message RpcMessage {
-    required int32 method_id = 1;
-    optional int32 data_size = 2 [ default = 0 ];
-    optional int32 token = 3 [ default = 0 ];
+    int32 method_id = 1;
+    int32 data_size = 2;
+    int32 token = 3;
 }
 
 enum Methods {
-    call_start = 1;
-    call_data = 2;
-    call_stop = 3;
+    call_start = 0;
+    call_data = 1;
+    call_stop = 2;
+    ping = 3;
+    pong = 4;
 }
 
 message CallData {
-    required bytes data = 1;
+    bytes data = 1;
+}
+
+message PingPayload {
+	int64 sent = 1;
+	int64 received = 2;
+	bytes data = 3;
 }

@@ -131,8 +131,10 @@ set(GST_SOURCES
   src/toxsource.cpp
 )
 
-add_library(chat SHARED ${CHAT_LIB_SOURCES})
-target_link_libraries(chat ${GENERAL_LIBRARIES})
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS network.proto)
+
+add_library(chat SHARED ${CHAT_LIB_SOURCES} ${PROTO_HDRS} ${PROTO_SRCS})
+target_link_libraries(chat ${GENERAL_LIBRARIES} ${PROTOBUF_LIBRARIES})
 set_property(TARGET chat PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 #cotire(chat)
 

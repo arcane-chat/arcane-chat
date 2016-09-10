@@ -1,18 +1,19 @@
+#include "audiocall.hpp"
+#include "core.hpp"
+#include "utils.hpp"
+#include "options.hpp"
+
 #include <iostream>
 #include <cassert>
-#include <QDebug>
 #include <sstream>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+#include <QDebug>
 #include <QBuffer>
 #include <QDataStream>
-
-#include "audiocall.hpp"
-#include "core.hpp"
-#include "utils.hpp"
-#include "options.hpp"
 
 using namespace chat;
 
@@ -172,6 +173,8 @@ void callback_self_connection_status(Tox* tox,
 
 Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
     tox::options opts;
+    uptime.start();
+    uptime_offset = 0;
     opts.set_start_port(33445);
     opts.set_end_port(33445 + 100);
     {
@@ -250,7 +253,7 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
 
         Friend* f =
             new Friend{friends[i], make_qba(pubkey, TOX_PUBLIC_KEY_SIZE),
-                       QString(make_qba(name, size)), newlink};
+                       QString(make_qba(name, size)), newlink, this};
 
         this->friends.insert(f->friend_number, f);
     }
@@ -286,23 +289,42 @@ void Core::handle_lossless_packet(Friend* fr, QByteArray message) {
 }
 
 void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
+    QByteArray payload;
 
     emit on_lossy_packet(fr, message);
-    QDataStream ds(message);
-    uint8_t typecode;
-    ds >> typecode;
-    if (typecode == 0x01) {
+
+    uint8_t header_size = message[0];
+    QByteArray header = message.mid(1,header_size);
+    Arcane::RpcMessage rpc;
+    rpc.ParseFromString(header.toStdString());
+    uint32_t typecode = rpc.method_id();
+    payload = message.mid(1+header_size, rpc.data_size());
+
+    switch (typecode) {
+    case Arcane::call_start:
         call_control(0x01, fr, QByteArray());
-    }
-    if (typecode == 0x02) {
-        uint32_t size;
-        ds >> size;
-        char buffer[size];
-        ds.readRawData(buffer,size);
-        call_control(0x02, fr, QByteArray(buffer,size));
-    }
-    if (typecode == 0x03) {
+        break;
+    case Arcane::call_data: {
+        Arcane::CallData data;
+        data.ParseFromString(payload.toStdString());
+        call_control(0x02, fr, QByteArray::fromStdString(data.data()));
+        break; }
+    case Arcane::call_stop:
         call_control(0x03, fr, QByteArray());
+        break;
+    case Arcane::ping: {
+        Arcane::PingPayload data;
+        data.ParseFromString(payload.toStdString());
+        data.set_received(get_uptime());
+        send_packet(fr, Arcane::pong, &data);
+        fr->on_ping(data.sent(), QByteArray::fromStdString(data.data()));
+        break; }
+    case Arcane::pong: {
+        Arcane::PingPayload data;
+        data.ParseFromString(payload.toStdString());
+        fr->on_pong(data.sent(), data.received(), QByteArray::fromStdString(data.data()));
+        emit on_pong(fr, data.sent(), data.received(), QByteArray::fromStdString(data.data()));
+        break; }
     }
 }
 
@@ -371,7 +393,7 @@ void Core::friend_add_norequest(const QByteArray public_key) {
     switch(error) {
     case TOX_ERR_FRIEND_ADD_OK:
         f = new Friend{friend_number, public_key, QString(),
-                       tox::LinkType::none};
+                       tox::LinkType::none, this};
 
         friends.insert(f->friend_number, f);
         emit on_new_friend(f);
@@ -398,7 +420,8 @@ void Core::friend_add(const QByteArray tox_id, std::string message) {
             friend_number,
             tox_id,
             QString(),
-            tox::LinkType::none
+            tox::LinkType::none,
+            this
         };
 
         friends.insert(f->friend_number, f);
@@ -426,45 +449,43 @@ void Core::send_lossless_packet(Friend* fr, QByteArray data) {
                 packet.length(), nullptr);
 }
 
-void Core::call_start(Friend *fr)
-{
-    QBuffer packet;
-    packet.open(QBuffer::WriteOnly);
-    {
-        QDataStream out(&packet);
-
-        out << (uint8_t) 0x01; // todo, enum maybe?
+void Core::send_packet(Friend *fr, Arcane::Methods methodid, ::google::protobuf::Message *payload) {
+    Arcane::RpcMessage msg;
+    msg.set_method_id(methodid);
+    if (payload) {
+        Q_ASSERT(false);
     }
-    qDebug() << packet.buffer().toHex();
-    send_lossy_packet(fr, packet.buffer());
+    std::string packet1;
+    msg.SerializeToString(&packet1);
+    QByteArray header = QByteArray::fromStdString(packet1);
+
+    QByteArray packet;
+    packet.append((uint8_t) header.size());
+    packet.append(header);
+    //qDebug() << packet.toHex();
+    send_lossy_packet(fr, packet);
 }
 
-void Core::call_data(Friend *fr, QByteArray data)
-{
-    QBuffer packet;
-    packet.open(QBuffer::WriteOnly);
-    {
-        QDataStream out(&packet);
-
-        out << (uint8_t) 0x02; // todo, enum maybe?
-        out << (uint32_t) data.size();
-        out.writeRawData(data.data(),data.size());
-    }
-    if (packet.size() < 200) {
-        //qDebug() << packet.size() << packet.buffer();
-    } //else qDebug() << packet.size() << "sent";
-    send_lossy_packet(fr, packet.buffer());
+void Core::call_start(Friend *fr) {
+    send_packet(fr, Arcane::call_start);
 }
 
-void Core::call_stop(Friend *fr)
-{
-    QBuffer packet;
-    packet.open(QBuffer::WriteOnly);
-    {
-        QDataStream out(&packet);
+void Core::call_data(Friend *fr, QByteArray data) {
+    Arcane::CallData datapacket;
+    datapacket.set_data(data.toStdString());
+    send_packet(fr, Arcane::call_data, &datapacket);
+}
 
-        out << (uint8_t) 0x03; // todo, enum maybe?
-    }
-    qDebug() << packet.buffer().toHex();
-    send_lossy_packet(fr, packet.buffer());
+void Core::call_stop(Friend *fr) {
+    send_packet(fr, Arcane::call_stop);
+}
+
+qint64 Core::get_uptime() {
+    return uptime.elapsed() + uptime_offset;
+}
+void Core::send_ping(Friend *fr, QByteArray payload) {
+    Arcane::PingPayload p;
+    p.set_sent(get_uptime());
+    p.set_data(payload.toStdString());
+    send_packet(fr, Arcane::ping, &p);
 }
