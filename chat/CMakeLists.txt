@@ -12,6 +12,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 find_package(PkgConfig REQUIRED)
 find_package(Boost     REQUIRED program_options thread filesystem)
+#find_package(Protobuf  REQUIRED)
 
 pkg_check_modules(ZMQ REQUIRED libzmq)
 pkg_check_modules(MSG REQUIRED msgpack)
@@ -39,6 +40,7 @@ pkg_check_modules(GST REQUIRED
 
 find_package(Qt5Core      REQUIRED)
 find_package(Qt5Gui       REQUIRED)
+find_package(Qt5Network   REQUIRED)
 find_package(Qt5Widgets   REQUIRED)
 find_package(Qt5GStreamer REQUIRED)
 find_package(LibObs       REQUIRED)
@@ -61,6 +63,7 @@ include_directories(
   ${GST_INCLUDE_DIRS}
   ${X11_INCLUDE_DIRS}
   ${LIBOBS_INCLUDE_DIRS}
+  ${PROTOBUF_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -85,6 +88,7 @@ set(GENERAL_LIBRARIES
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
+  Qt5::Network
   Qt5GLib
   Qt5GStreamer
   Qt5GStreamerUi
