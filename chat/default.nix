@@ -5,6 +5,7 @@
 , gst_all_1, protobuf3_0
 # Misc dependencies
 , guile, parallel, buildEnv, glib, glibmm, libsigcxx, enableDebugging
+, include-what-you-use, python
 }:
 
 let
@@ -25,7 +26,7 @@ in stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     cmake pkgconfig ninja doxygen ghostscript guile parallel makeWrapper
-    protobuf3_0
+    protobuf3_0 include-what-you-use python
   ];
 
   buildInputs = with gst_all_1; [

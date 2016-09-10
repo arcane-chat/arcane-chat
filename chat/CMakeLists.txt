@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.0)
 project(arcane-chat VERSION 0.0.1)
 
 add_subdirectory(doc)
@@ -60,6 +60,7 @@ set(CMAKE_CXX_FLAGS
 include_directories(
   ${CMAKE_SOURCE_DIR}/src
   ${CMAKE_BINARY_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
   ${Boost_INCLUDE_DIRS}
   ${ZMQ_INCLUDE_DIRS}
   ${MSG_INCLUDE_DIRS}
@@ -67,7 +68,7 @@ include_directories(
   ${GST_INCLUDE_DIRS}
   ${X11_INCLUDE_DIRS}
   ${LIBOBS_INCLUDE_DIRS}
-  ${PROTOBUF_INCLUDE_DIRS}
+  ${Protobuf_INCLUDE_DIRS}
 )
 
 link_directories(
@@ -103,6 +104,9 @@ set(GENERAL_LIBRARIES
   ${GST_LIBRARIES}
   ${X11_LIBRARIES}
   ${LIBOBS_LIBRARIES}
+  ${Protobuf_LIBRARIES}
+  ${Protobuf_LITE_LIBRARIES}
+  ${Protobuf_PROTOC_LIBRARIES}
 )
 
 QT5_WRAP_UI(UI_HEADERS src/mainwindow.ui src/chatwidget.ui src/infowidget.ui)
@@ -121,6 +125,7 @@ set(CHAT_LIB_SOURCES
   src/toxoutputstream.cpp
   src/toxsource.cpp
   src/toxsink.cpp
+  src/stats.cpp
   ${UI_HEADERS}
 )
 
@@ -133,8 +138,18 @@ set(GST_SOURCES
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS network.proto)
 
-add_library(chat SHARED ${CHAT_LIB_SOURCES} ${PROTO_HDRS} ${PROTO_SRCS})
-target_link_libraries(chat ${GENERAL_LIBRARIES} ${PROTOBUF_LIBRARIES})
+# find_program(iwyu_path NAMES include-what-you-use iwyu)
+# if(NOT iwyu_path)
+#   message(FATAL_ERROR "Could not find the program include-what-you-use")
+# endif()
+#  
+# set(iwyu_config
+#     ${iwyu_path}
+#     -Xiwyu
+#     --mapping_file=${my_mapping})
+
+add_library(chat SHARED ${CHAT_LIB_SOURCES} ${PROTO_SRCS} ${PROTO_HDRS})
+target_link_libraries(chat ${GENERAL_LIBRARIES})
 set_property(TARGET chat PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 #cotire(chat)
 
@@ -155,6 +170,17 @@ set_property(TARGET gst PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 
 add_executable(state_test state_util/state_test.cpp)
 target_link_libraries(state_test ${GENERAL_LIBRARIES})
+set_property(TARGET state_test PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+#cotire(state_test)
+
+find_program(iwyu_tool_path NAMES iwyu_tool.py)
+if(iwyu_tool_path)
+  add_custom_target(iwyu
+    COMMAND "${iwyu_tool_path}" -p "${CMAKE_BINARY_DIR}"
+    COMMENT "Running include-what-you-use tool"
+    VERBATIM
+  )
+endif()
 
 install(
   TARGETS client gst chat
