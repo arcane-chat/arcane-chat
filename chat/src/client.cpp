@@ -23,9 +23,12 @@
 #include "mainwindow.hpp"
 #include "version.hpp"
 
-void handler(int signum) {
-    std::cout << "Quitting...\n";
-    QCoreApplication::quit();
+using qca = QCoreApplication;
+
+void handler(int /* signum */) {
+    qDebug() << "sending qca::quit()\n";
+    qca::quit();
+    qDebug() << "signal handler finished\n";
 }
 
 int main(int argc, char** argv) {
@@ -34,10 +37,8 @@ int main(int argc, char** argv) {
 
     QApplication app(argc, argv);
 
-    using qca = QCoreApplication;
-
-    QCoreApplication::setApplicationName("arcane-chat-client");
-    QCoreApplication::setApplicationVersion(ARCANE_CHAT_VERSION);
+    qca::setApplicationName("arcane-chat-client");
+    qca::setApplicationVersion(ARCANE_CHAT_VERSION);
 
     QCommandLineParser parser;
 
@@ -59,8 +60,8 @@ int main(int argc, char** argv) {
     parser.addOption(tracerOption);
 
     QCommandLineOption headlessOption = {
-        QStringList() << "h" << "headless",
-        qca::translate("main", "Run the client headlessly."),
+        QStringList() << "headless",
+        qca::translate("main", "Run the client headlessly.")
     };
     parser.addOption(headlessOption);
 
@@ -77,6 +78,7 @@ int main(int argc, char** argv) {
         if(parser.isSet(sendFriendRequestOption)) {
             QByteArray hex;
             hex.append(parser.value(sendFriendRequestOption));
+            // TODO: figure out an appropriate message to send
             core.friend_add(QByteArray::fromHex(hex), "placeholder");
         }
 
@@ -89,6 +91,7 @@ int main(int argc, char** argv) {
             mw->show();
         }
 
+        // Set up a signal handler for SIGINT/SIGTERM
         struct sigaction interrupt;
         memset(&interrupt, 0, sizeof(interrupt));
         interrupt.sa_handler = &handler;
@@ -98,6 +101,6 @@ int main(int argc, char** argv) {
         ret = app.exec();
     }
 
-    std::cout << "clean shutdown\n";
+    qDebug() << "clean shutdown\n";
     return ret;
 }
