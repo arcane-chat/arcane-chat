@@ -30,7 +30,7 @@ namespace chat {
     }
 
     int Friend::random_delay(int min, int range) {
-      return (rand() % min + range) * 1000;
+      return (rand() % range + min) * 1000;
     }
 
     void Friend::too_idle() {
@@ -43,6 +43,6 @@ namespace chat {
     }
     void Friend::on_ping(qint64 sent, QByteArray payload) {
       qDebug() << "clock offset to" << name << "is" << (sent - core->get_uptime()) << "+/- latency";
-      idle_timer.start(random_delay(50,50));
+      idle_timer.start(random_delay(40,40));
     }
 } // namespace chat

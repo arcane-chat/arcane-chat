@@ -1,7 +1,21 @@
 { nixpkgs ? { outPath = <nixpkgs>; } }:
 
-rec {
-  linuxPkgs = import nixpkgs.outPath {};
+let
+  config = {
+    packageOverrides = pkgs2: {
+      libtoxcore-dev = pkgs2.libtoxcore-dev.overrideDerivation (oldAttrs: {
+        src = pkgs2.fetchFromGitHub {
+          owner = "TokTok";
+          repo = "toxcore";
+          rev = "05f474b4df8171412237f46c943822edd202b4a9";
+          sha256 = "1wq0nbdcq125gcg7pqwqwa0pvh7zg78drd2f585b0a00m1rhzpdy";
+        };
+        patches = [ ./toxcore.patch ];
+      });
+    };
+  };
+in rec {
+  linuxPkgs = import nixpkgs.outPath { inherit config; };
   linuxCallPackage = linuxPkgs.qt56.newScope linux;
   linux = rec {
     # Boilerplate

@@ -14,6 +14,7 @@
 #include <QDebug>
 #include <QBuffer>
 #include <QDataStream>
+#include <QSocketNotifier>
 
 using namespace chat;
 
@@ -193,6 +194,10 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
         opts.set_ipv6_enabled(false);
         tox = tox_new(opts.get_underlying(), &new_error);
     }
+
+    QSocketNotifier *notifier = new QSocketNotifier(tox_fd_udp(tox), QSocketNotifier::Read, this);
+    connect(notifier, SIGNAL(activated(int)), this, SLOT(feed_tox(int)));
+
     uint8_t toxid[TOX_ADDRESS_SIZE];
     tox_self_get_address(tox, toxid);
     std::cout << "my id is " << tox::utils::to_hex(toxid, TOX_ADDRESS_SIZE)
@@ -201,16 +206,13 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
     tox_bootstrap(tox, bootstrap_address, bootstrap_port,
                   bootstrap_pub_key.data(), nullptr);
 
-    tox_callback_friend_typing(tox, callback_friend_typing, this);
-    tox_callback_friend_request(tox, callback_friend_request, this);
-    tox_callback_friend_message(tox, callback_friend_message, this);
-    tox_callback_friend_lossy_packet(tox, callback_friend_lossy_packet, this);
-    tox_callback_friend_lossless_packet(tox, callback_friend_lossless_packet,
-                                        this);
-    tox_callback_friend_connection_status(
-        tox, callback_friend_connection_status, this);
-    tox_callback_self_connection_status(tox, callback_self_connection_status,
-                                        this);
+    tox_callback_friend_typing(tox, callback_friend_typing);
+    tox_callback_friend_request(tox, callback_friend_request);
+    tox_callback_friend_message(tox, callback_friend_message);
+    tox_callback_friend_lossy_packet(tox, callback_friend_lossy_packet);
+    tox_callback_friend_lossless_packet(tox, callback_friend_lossless_packet);
+    tox_callback_friend_connection_status(tox, callback_friend_connection_status);
+    tox_callback_self_connection_status(tox, callback_self_connection_status);
 
     std::string username = ({
         std::stringstream ss;
@@ -264,9 +266,13 @@ Core::~Core() {
     tox_kill(tox);
 }
 
+void Core::feed_tox(int sock) {
+    tox_iterate(tox, this);
+    iterator.setInterval(tox_iteration_interval(tox));
+    iterator.start();
+}
 void Core::check_tox() {
-    tox_iterate(tox);
-    // ^^^ will call the callback functions defined and registered
+    tox_iterate(tox, this);
     iterator.setInterval(tox_iteration_interval(tox));
     iterator.start();
 }

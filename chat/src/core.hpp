@@ -54,6 +54,7 @@ public Q_SLOTS:
     void send_ping(Friend *fr, QByteArray payload);
 private Q_SLOTS:
     void check_tox();
+    void feed_tox(int sock);
 
 private:
 
