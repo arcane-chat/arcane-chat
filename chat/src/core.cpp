@@ -452,8 +452,12 @@ void Core::send_lossless_packet(Friend* fr, QByteArray data) {
 void Core::send_packet(Friend *fr, Arcane::Methods methodid, ::google::protobuf::Message *payload) {
     Arcane::RpcMessage msg;
     msg.set_method_id(methodid);
+    QByteArray data;
     if (payload) {
-        Q_ASSERT(false);
+        std::string tmp;
+        payload->SerializeToString(&tmp);
+        data = QByteArray::fromStdString(tmp);
+        msg.set_data_size(data.size());
     }
     std::string packet1;
     msg.SerializeToString(&packet1);
@@ -462,6 +466,7 @@ void Core::send_packet(Friend *fr, Arcane::Methods methodid, ::google::protobuf:
     QByteArray packet;
     packet.append((uint8_t) header.size());
     packet.append(header);
+    packet.append(data);
     //qDebug() << packet.toHex();
     send_lossy_packet(fr, packet);
 }

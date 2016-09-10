@@ -35,14 +35,14 @@ namespace chat {
 
     void Friend::too_idle() {
       core->send_ping(this, QByteArray("wake up"));
-      idle_timer.start(random_delay(10,60));
+      idle_timer.start(random_delay());
     }
     void Friend::on_pong(qint64 sent, qint64 received, QByteArray payload) {
-      qDebug() << "latency to" << name << "is" << (received - sent);
-      idle_timer.start(random_delay(10,10));
+      qDebug() << "latency to" << name << "is" << (core->get_uptime() - sent) << "and offset" << (core->get_uptime() - received);
+      idle_timer.start(random_delay());
     }
     void Friend::on_ping(qint64 sent, QByteArray payload) {
       qDebug() << "clock offset to" << name << "is" << (sent - core->get_uptime()) << "+/- latency";
-      idle_timer.start(random_delay());
+      idle_timer.start(random_delay(50,50));
     }
 } // namespace chat
