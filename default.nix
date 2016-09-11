@@ -68,6 +68,7 @@ let
             wrapProgram $out/bin/include-what-you-use --add-flags "$FLAGS"
         '';
       });
+      gst_all_1 = pkgs.recurseIntoAttrs (pkgs.callPackage ./fixes/gstreamer {});
     };
   };
 in rec {
@@ -78,7 +79,6 @@ in rec {
     super = linuxPkgs;
 
     # Our packages
-    gst_all_1 = super.recurseIntoAttrs (linuxCallPackage ./fixes/gstreamer {});
     arcane-chat = linuxCallPackage ./chat {};
   };
 
@@ -87,9 +87,10 @@ in rec {
       config         = "x86_64-w64-mingw32";
       arch           = "x86_64";
       libc           = "msvcrt";
-      platform       = {};
+      #platform       = {};
       openssl.system = "mingw64";
     };
+    inherit config;
   };
   windowsCallPackage = windowsPkgs.qt56.newScope windows;
   windows = rec {
@@ -112,7 +113,10 @@ in rec {
     };
 
     # Our packages
-    arcane-chat = windowsCallPackage ./chat {};
+    arcane-chat = windowsCallPackage ./chat {
+      doxygen = null;
+      include-what-you-use = null;
+    };
   };
 
   darwinPkgs = import nixpkgs.outPath { system = "x86_64-darwin"; };
