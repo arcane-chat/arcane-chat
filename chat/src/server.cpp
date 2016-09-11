@@ -1,5 +1,4 @@
 #include <iostream>
-#include <boost/algorithm/hex.hpp>
 #include <vector>
 #include <cassert>
 #include <cstdio>

@@ -3,15 +3,13 @@
 #include <math.h>
 #include <QDebug>
 
-namespace {
-    QString shorten(qint64 ns) {
-        if ((ns > -1000) & (ns < 1000)) return QString("%1ns").arg(ns);
-        if ((ns > -1000000) & (ns < 1000000)) return QString("%1μs").arg(ns/1000);
-        if ((ns > -1000000000) & (ns < 1000000000)) return QString("%1ms").arg(ns/1000000);
-        qint64 sec = ns/1000000000;
-        if ((sec > -60) & (sec < 60)) return QString("%1sec").arg(sec);
-        return QString("%1min").arg(sec/60);
-    }
+QString Stats::shorten(qint64 ns) {
+    if ((ns > -1000) & (ns < 1000)) return QString("%1ns").arg(ns);
+    if ((ns > -1000000) & (ns < 1000000)) return QString("%1μs").arg(ns/1000);
+    if ((ns > -1000000000) & (ns < 1000000000)) return QString("%1ms").arg(ns/1000000);
+    qint64 sec = ns/1000000000;
+    if ((sec > -60) & (sec < 60)) return QString("%1sec").arg(sec);
+    return QString("%1min").arg(sec/60);
 }
 
 QString Stats::toString() {
@@ -27,7 +25,7 @@ qint64 Stats::average() {
 
 void Stats::append(qint64 i) {
 	list.append(i);
-	if (list.size() > 10) list.removeFirst();
+	if (list.size() > 200) list.removeFirst();
 	//qDebug() << list;
 }
 

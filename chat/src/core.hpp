@@ -3,10 +3,11 @@
 #include "network.pb.h"
 #include "enums.hpp"
 #include "friend.hpp"
+#include "callcontrol.hpp"
 
 #include <tox/tox.h>
 
-#include <boost/filesystem.hpp>
+#include <fstream>
 
 #include <QObject>
 #include <QTimer>
@@ -37,10 +38,10 @@ public:
     void call_start(Friend *fr);
     void call_data(Friend *fr, QByteArray data);
     void call_stop(Friend *fr);
-    void call_control(uint8_t type, Friend *fr, QByteArray data);
     void send_packet(Friend *fr, Arcane::Methods methodid, ::google::protobuf::Message *payload=0);
     qint64 get_uptime();
     void set_username(QString username);
+    void open_call_control(Friend *fr);
 
     QString username;
 
@@ -67,5 +68,6 @@ private:
     std::string savedata_path;
     QElapsedTimer uptime;
     quint64 uptime_offset;
+    QMap<Friend*,CallControl*> calls;
 };
 } // namespace chat

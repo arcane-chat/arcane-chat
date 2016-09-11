@@ -126,6 +126,7 @@ set(CHAT_LIB_SOURCES
   src/toxsource.cpp
   src/toxsink.cpp
   src/stats.cpp
+  src/callcontrol.cpp
   ${UI_HEADERS}
 )
 

@@ -10,6 +10,7 @@ public:
 	void clear();
 	void shift(qint64 offset);
 	int count();
+	static QString shorten(qint64 n);
 private:
 	QList<qint64> list;
 };

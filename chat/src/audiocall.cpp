@@ -23,8 +23,10 @@ public:
 };
 }
 
+using namespace chat;
+
 AudioCall::AudioCall(chat::Core *core, chat::Friend *fr)
-    : QObject(core), /*outputstream(nullptr),*/ core(core), fr(fr) {}
+    : QObject(core), started(false), /*outputstream(nullptr),*/ core(core), fr(fr) {}
 
 // bool AudioCall::on_bus_message(const ref<Gst::Bus>&, const ref<Gst::Message>& message) {
 //     switch(message->get_message_type()) {
@@ -61,7 +63,7 @@ AudioCall::AudioCall(chat::Core *core, chat::Friend *fr)
 
 
 AudioCall::~AudioCall() {
-    stop();
+    if (started) stop();
 }
 
 void AudioCall::stop() {
@@ -69,6 +71,7 @@ void AudioCall::stop() {
     outbound->setState(QGst::StateNull);
     inbound->setState(QGst::StateNull);
     core->call_stop(fr);
+    started = false;
 }
 
 void AudioCall::packet(QByteArray data) {
@@ -85,11 +88,11 @@ ssize_t AudioCall::write_fn(QByteArray data) {
     return data.size();
 }
 
-void AudioCall::start() {
+void AudioCall::start(QString inbound_pipeline, QString outbound_pipeline) {
     //const char *caps = "audio/x-raw, format=(string)S16LE, channels=(int)1, rate=(int)48000, layout=(string)interleaved";
     const char *caps = "application/x-gdp";
 
-    QString outbound_pipeline = QString("pulsesrc ! opusenc ! gdppay ! appsink name=\"toxsink\" caps=\"%1\"").arg(caps);
+    //QString outbound_pipeline = QString("pulsesrc ! opusenc ! gdppay ! appsink name=\"toxsink\" caps=\"%1\"").arg(caps);
     qDebug() << outbound_pipeline;
     outbound = QGst::Parse::launch(outbound_pipeline).dynamicCast<QGst::Pipeline>();
     m_sink.audioCall = this;
@@ -98,7 +101,7 @@ void AudioCall::start() {
     QGlib::connect(outbound->bus(), "message::error", this, &AudioCall::onBusMessage);
     outbound->bus()->addSignalWatch();
 
-    QString inbound_pipeline = QString("appsrc name=\"toxsrc\" caps=\"%1\" is-live=true format=3 ! gdpdepay ! opusdec ! pulsesink").arg(caps);
+    //QString inbound_pipeline = QString("appsrc name=\"toxsrc\" caps=\"%1\" is-live=true format=3 ! gdpdepay ! opusdec ! pulsesink").arg(caps);
     inbound = QGst::Parse::launch(inbound_pipeline).dynamicCast<QGst::Pipeline>();
     m_src.setElement(inbound->getElementByName("toxsrc"));
     QGlib::connect(inbound->bus(), "message::error", this, &AudioCall::onBusMessage);
@@ -107,6 +110,7 @@ void AudioCall::start() {
     outbound->setState(QGst::StatePlaying);
     inbound->setState(QGst::StatePlaying);
     core->call_start(fr);
+    started = true;
 }
 
 void AudioCall::onBusMessage(const QGst::MessagePtr & message) {

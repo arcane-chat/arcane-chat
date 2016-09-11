@@ -1,10 +1,10 @@
 #include "audiocall.hpp"
-#include <QDebug>
-#include <QThread>
-
 #include "chatwidget.hpp"
 #include "channelmodel.hpp"
 #include "core.hpp"
+
+#include <QDebug>
+#include <QThread>
 
 #include "ui_chatwidget.h"
 
@@ -67,7 +67,7 @@ void ChatWidget::return_pressed() {
         core->send_message(cs->f->friend_number, false, msg);
         if (msg == "!call") {
             qDebug() << "!call was triggered";
-            core->call_control(0x01,cs->f,QByteArray());
+            core->open_call_control(cs->f);
         }
     } else {
         QStringList words = msg.split(" ");

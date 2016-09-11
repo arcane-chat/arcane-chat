@@ -22,12 +22,12 @@ private Q_SLOTS:
 namespace tox {
 namespace utils {
 //! Print a hexadecimal array.
-std::string to_hex(const std::vector<uint8_t>& bin);
+QString to_hex(const std::vector<uint8_t>& bin);
 
 //! Print a hexadecimal array.
-std::string to_hex(const uint8_t* bin_arr, size_t bin_size);
+QString to_hex(const uint8_t* bin_arr, size_t bin_size);
 
 //! Parse a hexadecimal array.
-std::vector<uint8_t> from_hex(const std::string& hex);
+QByteArray from_hex(const QString& hex);
 }
 }

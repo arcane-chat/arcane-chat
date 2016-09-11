@@ -116,6 +116,7 @@ void callback_friend_typing(Tox* tox,
                             void* user_data) {
     Q_UNUSED(tox);
     Core* core = reinterpret_cast<Core*>(user_data);
+    Q_UNUSED(core);
     qDebug() << friend_number << is_typing << "is typing";
 }
 
@@ -151,7 +152,7 @@ void callback_self_connection_status(Tox* tox,
     Core* core = reinterpret_cast<Core*>(user_data);
     uint8_t toxid[TOX_ADDRESS_SIZE];
     tox_self_get_address(tox, toxid);
-    std::string tox_printable_id = tox::utils::to_hex(toxid, sizeof(toxid));
+    QString tox_printable_id = tox::utils::to_hex(toxid, sizeof(toxid));
 
     const char* msg = nullptr;
 
@@ -171,7 +172,7 @@ void callback_self_connection_status(Tox* tox,
     }
 
     if(msg != nullptr) {
-        std::cout << "status = " << msg << ", "
+        qDebug() << "status = " << msg << ", "
                   << "id = " << tox_printable_id << "\n";
     }
 
@@ -208,11 +209,10 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
 
     uint8_t toxid[TOX_ADDRESS_SIZE];
     tox_self_get_address(tox, toxid);
-    std::cout << "my id is " << tox::utils::to_hex(toxid, TOX_ADDRESS_SIZE)
-              << "\n";
-    std::vector<uint8_t> bootstrap_pub_key{tox::utils::from_hex(bootstrap_key)};
+    qDebug() << "my id is " << tox::utils::to_hex(toxid, TOX_ADDRESS_SIZE);
+    QByteArray bootstrap_pub_key{tox::utils::from_hex(bootstrap_key)};
     tox_bootstrap(tox, bootstrap_address, bootstrap_port,
-                  bootstrap_pub_key.data(), nullptr);
+                  reinterpret_cast<const uint8_t*>(bootstrap_pub_key.data()), nullptr);
 
     tox_callback_friend_name(tox, callback_friend_name);
     tox_callback_friend_typing(tox, callback_friend_typing);
@@ -294,19 +294,32 @@ void Core::set_username(QString username) {
     this->username = username;
 }
 
+static qint64 normalize(qint64 x) {
+    if (x < 0) return -1 * x;
+    else return x;
+}
+
 void Core::sync_clock() {
     qint64 total_offset = 0;
     int online = 0;
+    int limit = 10;
+    if (uptime_offset == 0) limit = 5;
+
     for (Friend *fr : friends) {
         if (fr->connection == tox::LinkType::none) continue;
-        if (fr->offset.stddev() > (1000000000l * 10)) continue;
-        if (fr->offset.count() < 5) continue;
+        qDebug() << fr->get_username() << fr->offset.toString();
+        if (fr->offset.stddev() > (1000000000l * 10)) continue; // stddev over 1 sec
+        if (fr->offset.count() < limit) continue;
+        if (fr->offset.stddev() > normalize(fr->offset.average())) {
+            qDebug() << "too much jitter";
+            continue;
+        }
         total_offset += fr->offset.average();
         online++;
     }
     if (online == 0) return;
     qint64 average = total_offset / online;
-    qDebug() << "average offset" << ((double)average / 1000 / 1000 / 1000) << "sec" << average;
+    qDebug() << "average offset" << ((double)average / 1000 / 1000 / 1000) << "sec" << Stats::shorten(average);
     if (uptime_offset == 0) {
         shift_clock(average);
     } else {
@@ -321,6 +334,7 @@ void Core::sync_clock() {
 
 void Core::shift_clock(qint64 offset) {
     uptime_offset -= offset;
+    qDebug() << "shifting" << Stats::shorten(offset);
     for (Friend *fr : friends) {
         if (fr->connection == tox::LinkType::none) continue;
         fr->offset.shift(offset);
@@ -372,18 +386,35 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
     payload = message.mid(1+header_size, rpc.data_size());
 
     switch (typecode) {
-    case Arcane::call_start:
-        call_control(0x01, fr, QByteArray());
-        break;
+    case Arcane::call_start: {
+        auto it = calls.find(fr);
+        if (it == calls.end()) {
+            CallControl *cc = new CallControl(this,fr);
+            cc->show();
+            cc->start();
+            calls.insert(fr,cc);
+        } else {
+            qDebug() << "call acked";
+            (*it)->start();
+        }
+        break; }
     case Arcane::call_data: {
         Arcane::CallData data;
         data.ParseFromString(payload.toStdString());
         fr->on_other(data.sent());
-        call_control(0x02, fr, QByteArray::fromStdString(data.data()));
+        auto it = calls.find(fr);
+        if (it != calls.end()) {
+            (*it)->packet(QByteArray::fromStdString(data.data()));
+        }
         break; }
-    case Arcane::call_stop:
-        call_control(0x03, fr, QByteArray());
-        break;
+    case Arcane::call_stop: {
+        auto it = calls.find(fr);
+        if (it != calls.end()) {
+            (*it)->stop();
+            //delete *it;
+            //calls.remove(fr);
+        }
+        break; }
     case Arcane::ping: {
         Arcane::PingPayload data;
         data.ParseFromString(payload.toStdString());
@@ -400,35 +431,18 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
     }
 }
 
-//! temporary hack
-void Core::call_control(uint8_t type, Friend *fr, QByteArray data) {
-    static QMap<Friend*,AudioCall*> calls;
-
-    if (type == 0x01) {
-        auto it = calls.find(fr);
-        if (it == calls.end()) {
-            AudioCall *ac = new AudioCall(this,fr);
-            calls.insert(fr,ac);
-            ac->start();
-        } else {
-            qDebug() << "call acked";
-        }
-    }
-    if (type == 0x02) {
-        auto it = calls.find(fr);
-        if (it != calls.end()) {
-            (*it)->packet(data);
-        }
-    }
-    if (type == 0x03) {
-        auto it = calls.find(fr);
-        if (it != calls.end()) {
-            (*it)->stop();
-            delete *it;
-            calls.remove(fr);
-        }
+void Core::open_call_control(Friend *fr) {
+    auto it = calls.find(fr);
+    if (it == calls.end()) {
+        CallControl *cc = new CallControl(this,fr);
+        cc->show();
+        //cc->start();
+        calls.insert(fr,cc);
+    } else {
+        qDebug() << "call acked";
     }
 }
+
 void Core::handle_friend_connection_status(Friend* fr, tox::LinkType link) {
     fr->set_connection(link);
 }
