@@ -56,13 +56,14 @@ namespace chat {
       emit latency_update();
     }
 
+    // positive offsets, the sender is lagging behind
     void Friend::on_ping(qint64 sent, QByteArray payload) {
       qint64 now = core->get_uptime();
 
       qint64 offset = now - sent;
       //double offset_sec = (double)offset / 1000000000;
       //qDebug() << "clock offset to" << name << "is" << offset_sec << "seconds +/- latency";
-      idle_timer.start(random_delay(40,40));
+      idle_timer.start(random_delay(10,20));
 
       this->offset.append(offset);
 

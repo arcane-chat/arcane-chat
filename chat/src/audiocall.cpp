@@ -90,14 +90,14 @@ ssize_t AudioCall::write_fn(QByteArray data) {
 
 void AudioCall::start(QString inbound_pipeline, QString outbound_pipeline) {
     //const char *caps = "audio/x-raw, format=(string)S16LE, channels=(int)1, rate=(int)48000, layout=(string)interleaved";
-    const char *caps = "application/x-gdp";
+    //const char *caps = "application/x-gdp";
 
     //QString outbound_pipeline = QString("pulsesrc ! opusenc ! gdppay ! appsink name=\"toxsink\" caps=\"%1\"").arg(caps);
     qDebug() << outbound_pipeline;
     outbound = QGst::Parse::launch(outbound_pipeline).dynamicCast<QGst::Pipeline>();
     m_sink.audioCall = this;
     m_sink.setElement(outbound->getElementByName("toxsink"));
-    //m_sink.setBlockSize(1000);
+    m_sink.element()->setProperty("blocksize",1000);
     QGlib::connect(outbound->bus(), "message::error", this, &AudioCall::onBusMessage);
     outbound->bus()->addSignalWatch();
 

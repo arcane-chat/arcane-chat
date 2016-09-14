@@ -28,7 +28,7 @@ CallControl::CallControl(Core *core, Friend *fr) : core(core), fr(fr), ac(0) {
 	outbound = new QLineEdit("pulsesrc ! opusenc ! gdppay ! appsink name=\"toxsink\" caps=\"application/x-gdp\"",this);
 	layout->addWidget(outbound);
 
-	inbound = new QLineEdit("appsrc name=\"toxsrc\" caps=\"application/x-gdp\" is-live=true format=3 ! gdpdepay ! opusdec ! pulsesink");
+	inbound = new QLineEdit("appsrc name=\"toxsrc\" caps=\"application/x-gdp\" is-live=true format=3 ! gdpdepay ! decodebin ! pulsesink");
 	layout->addWidget(inbound);
 }
 

@@ -3,6 +3,7 @@
 let
   config = {
     packageOverrides = pkgs: {
+      #glib = pkgs.callPackage ./glib {};
       libtoxcore-dev = pkgs.libtoxcore-dev.overrideDerivation (old: {
         src = pkgs.fetchFromGitHub {
           owner = "TokTok";
