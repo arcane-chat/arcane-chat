@@ -42,6 +42,7 @@ find_package(Qt5Core      REQUIRED)
 find_package(Qt5Gui       REQUIRED)
 find_package(Qt5Network   REQUIRED)
 find_package(Qt5Widgets   REQUIRED)
+find_package(Qt5Script    REQUIRED)
 find_package(Qt5GStreamer REQUIRED)
 find_package(LibObs       REQUIRED)
 
@@ -94,6 +95,7 @@ set(GENERAL_LIBRARIES
   Qt5::Gui
   Qt5::Widgets
   Qt5::Network
+  Qt5::Script
   Qt5GLib
   Qt5GStreamer
   Qt5GStreamerUi
@@ -163,6 +165,9 @@ add_executable(state_test state_util/state_test.cpp)
 target_link_libraries(state_test ${GENERAL_LIBRARIES})
 set_property(TARGET state_test PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 #cotire(state_test)
+
+add_executable(kiss_test src/kisstest.cpp src/kiss.cpp)
+target_link_libraries(kiss_test ${GENERAL_LIBRARIES})
 
 find_program(iwyu_tool_path NAMES iwyu_tool.py)
 if(iwyu_tool_path)

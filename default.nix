@@ -16,7 +16,7 @@ let
 
       rtags = pkgs.stdenv.mkDerivation {
         name = pkgs.rtags.name;
-        src = pkgs.rtags;
+        src = pkgs.rtags.override { llvmPackages = pkgs.llvmPackages_39; };
         buildInputs = [ pkgs.makeWrapper ];
         buildPhase = "";
         installPhase = ''
