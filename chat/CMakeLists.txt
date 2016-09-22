@@ -101,6 +101,7 @@ set(GENERAL_LIBRARIES
   Qt5GStreamerUi
   Qt5GStreamerUtils
   sqlite3
+  sodium
   ${Boost_LIBRARIES}
   ${ZMQ_LIBRARIES}
   ${TOX_LIBRARIES}

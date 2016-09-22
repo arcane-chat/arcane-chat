@@ -58,7 +58,7 @@ void MainWindow::on_doubleclick(QModelIndex index) {
 }
 
 void MainWindow::on_actionCreateChannel_triggered() {
-    chat::Channel *chan = new chat::Channel();
+    chat::Channel *chan = chat::Channel::create_new();
     chan->set_name("new channel");
     core_->add_owned_channel(chan);
 }

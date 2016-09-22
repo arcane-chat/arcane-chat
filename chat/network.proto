@@ -26,3 +26,9 @@ message PingPayload {
 	int64 received = 2;
 	bytes data = 3;
 }
+
+message Channel {
+    bytes pubkey = 1;
+    string name = 2;
+    repeated bytes members = 3;
+}
