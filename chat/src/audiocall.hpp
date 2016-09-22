@@ -1,13 +1,12 @@
 #pragma once
 
-#define QT_NO_SIGNALS_SLOTS_KEYWORDS
-
-#include <QObject>
+#include "toxsink.hpp"
 
 #include <Qt5GStreamer/QGst/Pipeline>
 #include <Qt5GStreamer/QGst/Message>
 #include <Qt5GStreamer/QGst/Utils/ApplicationSource>
-#include "toxsink.hpp"
+
+#include <QObject>
 
 namespace chat {
     class Core;

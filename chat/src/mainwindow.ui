@@ -34,9 +34,27 @@
      <string>View</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuCommands">
+    <property name="title">
+     <string>Commands</string>
+    </property>
+    <addaction name="actionSet_Nick"/>
+    <addaction name="actionCreateChannel"/>
+   </widget>
    <addaction name="menuView"/>
+   <addaction name="menuCommands"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionSet_Nick">
+   <property name="text">
+    <string>Set Nick...</string>
+   </property>
+  </action>
+  <action name="actionCreateChannel">
+   <property name="text">
+    <string>Create Channel...</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

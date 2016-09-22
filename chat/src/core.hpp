@@ -1,9 +1,10 @@
 #pragma once
 
-#include "network.pb.h"
+#include "callcontrol.hpp"
+#include "channel.hpp"
 #include "enums.hpp"
 #include "friend.hpp"
-#include "callcontrol.hpp"
+#include "network.pb.h"
 
 #include <tox/tox.h>
 
@@ -15,11 +16,13 @@
 #include <QElapsedTimer>
 
 namespace chat {
+class CoreDb;
+
 class Core : public QObject {
     Q_OBJECT
 
 public:
-    explicit Core(std::string path);
+    explicit Core(QString path);
     ~Core();
 
     void handle_message(uint32_t friend_number,
@@ -28,7 +31,6 @@ public:
     void handle_lossy_packet(Friend* fr, QByteArray message);
     void handle_lossless_packet(Friend* fr, QByteArray message);
     void handle_friend_connection_status(Friend* fr, tox::LinkType link);
-    const QMap<uint32_t, Friend*>& get_friends() { return friends; }
     void send_message(uint32_t friend_number, bool action, QString message);
     void save_state();
     void friend_add_norequest(QByteArray public_key);
@@ -42,6 +44,11 @@ public:
     qint64 get_uptime();
     void set_username(QString username);
     void open_call_control(Friend *fr);
+    void add_owned_channel(chat::Channel *channel);
+    void join_channel(chat::Channel *channel);
+
+    const QMap<uint32_t, Friend*>& friends() { return friends_; }
+    const QList<Channel*>& channels() { return channels_; };
 
     QString username;
 
@@ -64,10 +71,12 @@ private:
 
     Tox* tox;
     QTimer iterator;
-    QMap<uint32_t, Friend*> friends;
-    std::string savedata_path;
+    QMap<uint32_t, Friend*> friends_;
     QElapsedTimer uptime;
     quint64 uptime_offset;
-    QMap<Friend*,CallControl*> calls;
+    QMap<Friend*,CallControl*> calls_;
+    QList<Channel*> channels_;
+    CoreDb *db;
+    Channel *current_channel_;
 };
 } // namespace chat

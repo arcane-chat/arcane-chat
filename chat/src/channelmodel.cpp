@@ -1,20 +1,43 @@
+#include "channelmodel.hpp"
+#include "core.hpp"
+
 #include <QDebug>
 #include <cassert>
 
-#include "channelmodel.hpp"
-
 using namespace gui;
+using namespace chat;
 
-ChannelModel::ChannelModel(QMap<uint32_t, chat::Friend*> friends) {
+ChannelModel::ChannelModel(Core *core) {
     root = new Node(NodeType::Root, nullptr);
-    Node* legacyFolder = new Node(NodeType::LegacyFolder, root);
+    legacyFolder = new Node(NodeType::LegacyFolder, root);
     root->children.append(legacyFolder);
 
-    for(chat::Friend* f : friends) {
+    channelFolder = new Node(NodeType::ChannelFolder, root);
+    root->children.append(channelFolder);
+
+    auto friends = core->friends();
+
+    for(Friend* f : friends) {
         FriendNode* t = new FriendNode(legacyFolder, f);
         connect(t, SIGNAL(changed(Node*) ), this, SLOT(node_changed(Node*) ));
         legacyFolder->children.append(t);
     }
+
+    connect(core, &Core::on_new_friend, this, &ChannelModel::on_new_friend);
+
+    auto channels = core->channels();
+    for (Channel *c : channels) {
+        ChannelNode *t = new ChannelNode(channelFolder, c);
+        connect(t, &Node::changed, this, &ChannelModel::node_changed);
+        channelFolder->children.append(t);
+    }
+}
+
+void ChannelModel::on_new_friend(Friend *fr) {
+    FriendNode *t = new FriendNode(legacyFolder, fr);
+    connect(t, &FriendNode::changed, this, &ChannelModel::node_changed);
+    legacyFolder->children.append(t);
+    // TODO, inform qt that the child count changed
 }
 
 int ChannelModel::rowCount(const QModelIndex& parent) const {
@@ -61,9 +84,12 @@ Node* ChannelModel::getNode(const QModelIndex& index) const {
 }
 
 QVariant Node::data() {
-    if(type == NodeType::LegacyFolder) {
+    switch (type) {
+    case NodeType::LegacyFolder:
         return "Legacy Clients";
-    } else {
+    case NodeType::ChannelFolder:
+        return "My Channels";
+    default:
         return "data!";
     }
 }
@@ -100,7 +126,8 @@ void FriendNode::connection_changed(tox::LinkType old_state,
 
 void FriendNode::message(bool action, QByteArray message) {
 }
-void FriendNode::simple_change() {
+
+void Node::simple_change() {
     emit changed(this);
 }
 
@@ -109,4 +136,35 @@ void ChannelModel::node_changed(Node* node) {
     int row = node->parent->children.indexOf(node);
     QModelIndex index = createIndex(row, 0, node);
     emit dataChanged(index, index);
+}
+
+ChannelNode::ChannelNode(Node *parent, Channel *c)
+    : Node(NodeType::ChannelNode, parent), channel_(c) {
+    connect(c, &Channel::members_changed, this, &ChannelNode::simple_change);
+    connect(c, &Channel::self_changed, this, &ChannelNode::self_changed);
+}
+
+QVariant ChannelNode::data() {
+    return channel_->name();
+}
+
+void ChannelNode::self_changed(bool joined) {
+    if (joined) {
+        MemberNode *mn = new MemberNode(this);
+        children.append(mn);
+    } else {
+        // TODO, handle leaving
+    }
+}
+
+MemberNode::MemberNode(ChannelNode *parent) : Node(NodeType::MemberNode, parent),
+    fr_(nullptr) {
+}
+
+QVariant MemberNode::data() {
+    if (fr_) {
+        return "friend";
+    } else {
+        return "self";
+    }
 }

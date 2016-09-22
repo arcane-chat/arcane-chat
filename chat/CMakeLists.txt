@@ -100,6 +100,7 @@ set(GENERAL_LIBRARIES
   Qt5GStreamer
   Qt5GStreamerUi
   Qt5GStreamerUtils
+  sqlite3
   ${Boost_LIBRARIES}
   ${ZMQ_LIBRARIES}
   ${TOX_LIBRARIES}
@@ -129,6 +130,8 @@ set(CHAT_LIB_SOURCES
   src/toxsink.cpp
   src/stats.cpp
   src/callcontrol.cpp
+  src/channel.cpp
+  src/core_db.cpp
   ${UI_HEADERS}
 )
 
@@ -167,7 +170,7 @@ set_property(TARGET state_test PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 #cotire(state_test)
 
 add_executable(kiss_test src/kisstest.cpp src/kiss.cpp src/kisscache.cpp)
-target_link_libraries(kiss_test sqlite3 ${GENERAL_LIBRARIES})
+target_link_libraries(kiss_test ${GENERAL_LIBRARIES})
 
 find_program(iwyu_tool_path NAMES iwyu_tool.py)
 if(iwyu_tool_path)

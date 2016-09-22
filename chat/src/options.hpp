@@ -1,9 +1,11 @@
 #pragma once
 
+#include "enums.hpp"
+
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "enums.hpp"
+#include <QByteArray>
 
 struct Tox_Options;
 
@@ -13,6 +15,7 @@ namespace tox {
         Tox_Options* underlying_;
         std::string proxy_host_;
         std::vector<uint8_t> savedata_data_;
+        QByteArray savedata_data2_;
 
     public:
         options();
@@ -31,6 +34,7 @@ namespace tox {
 
         void set_savedata_type(tox::SaveDataType type);
         void set_savedata_data(std::vector<uint8_t> data);
+        void set_savedata_data(QByteArray data);
 
         inline struct Tox_Options* get_underlying() {
             return underlying_;

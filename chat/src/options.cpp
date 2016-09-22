@@ -1,5 +1,8 @@
 #include "options.hpp"
+
 #include <tox/tox.h>
+
+#include <QDebug>
 
 namespace tox {
     options::options() : underlying_(tox_options_new(nullptr)) {}
@@ -47,5 +50,11 @@ namespace tox {
         savedata_data_ = data;
         underlying_->savedata_data = savedata_data_.data();
         underlying_->savedata_length = savedata_data_.size();
+    }
+
+    void options::set_savedata_data(QByteArray data) {
+        savedata_data2_ = data;
+        underlying_->savedata_data = reinterpret_cast<uint8_t*>(savedata_data2_.data());
+        underlying_->savedata_length = savedata_data2_.size();
     }
 }

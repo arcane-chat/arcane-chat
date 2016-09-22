@@ -1,3 +1,10 @@
+#include "options.hpp"
+#include "core.hpp"
+#include "utils.hpp"
+#include "friend.hpp"
+#include "mainwindow.hpp"
+#include "version.hpp"
+
 #include <iostream>
 #include <vector>
 #include <tox/tox.h>
@@ -7,26 +14,15 @@
 #include <signal.h>
 
 #include <giomm/init.h>
-#include <gstreamermm.h>
-#include <glibmm.h>
 
 #include <QApplication>
 #include <QDebug>
 #include <QCommandLineParser>
 #include <Qt5GStreamer/QGst/Init>
 
-#include "options.hpp"
-#include "core.hpp"
-#include "utils.hpp"
-#include "friend.hpp"
-#include "mainwindow.hpp"
-#include "version.hpp"
-
-using qca = QCoreApplication;
-
 void handler(int /* signum */) {
     qDebug() << "sending qca::quit()\n";
-    qca::quit();
+    QCoreApplication::quit();
     qDebug() << "signal handler finished\n";
 }
 
@@ -36,8 +32,8 @@ int main(int argc, char** argv) {
 
     QApplication app(argc, argv);
 
-    qca::setApplicationName("arcane-chat-client");
-    qca::setApplicationVersion(ARCANE_CHAT_VERSION);
+    app.setApplicationName("arcane-chat-client");
+    app.setApplicationVersion(ARCANE_CHAT_VERSION);
 
     QCommandLineParser parser;
 
@@ -47,20 +43,20 @@ int main(int argc, char** argv) {
 
     QCommandLineOption sendFriendRequestOption = {
         QStringList() << "r" << "request",
-        qca::translate("main", "Send a friend request to <toxid>."),
-        qca::translate("main", "toxid")
+        app.translate("main", "Send a friend request to <toxid>."),
+        app.translate("main", "toxid")
     };
     parser.addOption(sendFriendRequestOption);
 
     QCommandLineOption tracerOption = {
         QStringList() << "t" << "tracer",
-        qca::translate("main", "Verbosely output a trace of some Qt signals.")
+        app.translate("main", "Verbosely output a trace of some Qt signals.")
     };
     parser.addOption(tracerOption);
 
     QCommandLineOption headlessOption = {
         QStringList() << "headless",
-        qca::translate("main", "Run the client headlessly.")
+        app.translate("main", "Run the client headlessly.")
     };
     parser.addOption(headlessOption);
 
@@ -72,7 +68,7 @@ int main(int argc, char** argv) {
     int ret = 1;
 
     {
-        chat::Core core { "/tmp/client_savedata" };
+        chat::Core core { "/tmp/client/" };
 
         if(parser.isSet(sendFriendRequestOption)) {
             QByteArray hex;

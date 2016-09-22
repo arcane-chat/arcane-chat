@@ -2,6 +2,7 @@
 #include "core.hpp"
 #include "utils.hpp"
 #include "options.hpp"
+#include "core_db.hpp"
 
 #include <iostream>
 #include <cassert>
@@ -77,8 +78,8 @@ void callback_friend_lossy_packet(Tox* tox,
                                   void* user_data) {
     Q_UNUSED(tox);
     Core* core = reinterpret_cast<Core*>(user_data);
-    auto fr = core->get_friends().find(friend_number);
-    Q_ASSERT(fr != core->get_friends().end());
+    auto fr = core->friends().find(friend_number);
+    Q_ASSERT(fr != core->friends().end());
 
     if((data[0] == arcane_lossy_packet_id) && (length > 1)) {
         QByteArray arr = make_qba(data + 1, length - 1);
@@ -93,8 +94,8 @@ void callback_friend_lossless_packet(Tox* tox,
                                      void* user_data) {
     Q_UNUSED(tox);
     Core* core = reinterpret_cast<Core*>(user_data);
-    auto fr = core->get_friends().find(friend_number);
-    Q_ASSERT(fr != core->get_friends().end());
+    auto fr = core->friends().find(friend_number);
+    Q_ASSERT(fr != core->friends().end());
 
     if((data[0] == arcane_lossless_packet_id) && (length > 1)) {
         QByteArray arr = make_qba(data + 1, length - 1);
@@ -105,11 +106,12 @@ void callback_friend_lossless_packet(Tox* tox,
 void callback_friend_name(Tox* tox, uint32_t friend_number, const uint8_t *name, size_t length, void *user_data) {
     Q_UNUSED(tox);
     Core* core = reinterpret_cast<Core*>(user_data);
-    auto fr = core->get_friends().find(friend_number);
-    Q_ASSERT(fr != core->get_friends().end());
+    auto fr = core->friends().find(friend_number);
+    Q_ASSERT(fr != core->friends().end());
 
     (*fr)->set_username(QString(make_qba(name,length)));
 }
+
 void callback_friend_typing(Tox* tox,
                             uint32_t friend_number,
                             bool is_typing,
@@ -139,8 +141,8 @@ void callback_friend_connection_status(Tox* tox,
     Q_UNUSED(tox);
     Core* core = reinterpret_cast<Core*>(user_data);
     tox::LinkType link_type = convert_link_type(connection_status);
-    auto fr = core->get_friends().find(friend_number);
-    Q_ASSERT(fr != core->get_friends().end());
+    auto fr = core->friends().find(friend_number);
+    Q_ASSERT(fr != core->friends().end());
 
     core->handle_friend_connection_status(*fr, link_type);
     //std::cout << __func__ << " " << friend_number << " " << connection_status << "\n";
@@ -173,28 +175,35 @@ void callback_self_connection_status(Tox* tox,
 
     if(msg != nullptr) {
         qDebug() << "status = " << msg << ", "
-                  << "id = " << tox_printable_id << "\n";
+                  << "id = " << tox_printable_id;
     }
 
     core->save_state();
-    fflush(stdout);
 }
 } // namespace
 
-Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
+Core::Core(QString path) : tox(nullptr), db(new CoreDb(path)), current_channel_(nullptr) {
     tox::options opts;
     uptime.start();
     uptime_offset = 0;
     opts.set_start_port(33445);
     opts.set_end_port(33445 + 100);
     {
-        std::ifstream state_file{savedata_path, std::ios::binary};
-        if(state_file.is_open()) {
-            std::ostringstream ss;
-            ss << state_file.rdbuf();
-            std::string st = ss.str();
+        QByteArray new_savedata = db->get_data("savestate");
+        if (new_savedata.size() > 0) {
+            qDebug() << "loading new profile" << new_savedata.size();
             opts.set_savedata_type(tox::SaveDataType::tox_save);
-            opts.set_savedata_data(std::vector<uint8_t>(st.begin(), st.end()));
+            opts.set_savedata_data(new_savedata);
+        } else {
+            // qDebug() << "loading old profile";
+            // std::ifstream state_file{savedata_path, std::ios::binary};
+            // if(state_file.is_open()) {
+            //     std::ostringstream ss;
+            //     ss << state_file.rdbuf();
+            //     std::string st = ss.str();
+            //     opts.set_savedata_type(tox::SaveDataType::tox_save);
+            //     opts.set_savedata_data(std::vector<uint8_t>(st.begin(), st.end()));
+            // }
         }
     }
     TOX_ERR_NEW new_error;
@@ -239,6 +248,7 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
                           username.size(), nullptr);
 
         this->username = username.c_str();
+        qDebug() << "username is now" << this->username;
     }
 
     iterator.setSingleShot(true);
@@ -274,7 +284,12 @@ Core::Core(std::string path) : tox(nullptr), savedata_path(path) {
             new Friend{friends[i], make_qba(pubkey, TOX_PUBLIC_KEY_SIZE),
                        QString(make_qba(name, size)), newlink, this};
 
-        this->friends.insert(f->friend_number, f);
+        this->friends_.insert(f->friend_number, f);
+    }
+
+    auto channels_in = db->get_channels();
+    for (Channel *c : channels_in) {
+        this->channels_.append(c);
     }
 
     QTimer *syncer = new QTimer(this);
@@ -305,7 +320,7 @@ void Core::sync_clock() {
     int limit = 10;
     if (uptime_offset == 0) limit = 5;
 
-    for (Friend *fr : friends) {
+    for (Friend *fr : friends_) {
         if (fr->connection == tox::LinkType::none) continue;
         qDebug() << fr->get_username() << fr->offset.toString();
         if (fr->offset.stddev() > (1000000000l * 10)) continue; // stddev over 1 sec
@@ -335,14 +350,16 @@ void Core::sync_clock() {
 void Core::shift_clock(qint64 offset) {
     uptime_offset -= offset;
     qDebug() << "shifting" << Stats::shorten(offset);
-    for (Friend *fr : friends) {
+    for (Friend *fr : friends_) {
         if (fr->connection == tox::LinkType::none) continue;
         fr->offset.shift(offset);
     }
 }
+
 Core::~Core() {
     save_state();
     tox_kill(tox);
+    delete db;
 }
 
 void Core::feed_tox(int sock) {
@@ -350,6 +367,7 @@ void Core::feed_tox(int sock) {
     iterator.setInterval(tox_iteration_interval(tox));
     iterator.start();
 }
+
 void Core::check_tox() {
     tox_iterate(tox, this);
     iterator.setInterval(tox_iteration_interval(tox));
@@ -361,7 +379,7 @@ void Core::handle_message(uint32_t friend_number,
                           QByteArray message) {
     QString text(message);
     bool is_action = (type == tox::MessageType::action);
-    for(chat::Friend* f : friends) {
+    for(chat::Friend* f : friends_) {
         if(f->friend_number == friend_number) {
             emit on_message(f, is_action, text);
             f->new_message(is_action, message);
@@ -387,12 +405,12 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
 
     switch (typecode) {
     case Arcane::call_start: {
-        auto it = calls.find(fr);
-        if (it == calls.end()) {
+        auto it = calls_.find(fr);
+        if (it == calls_.end()) {
             CallControl *cc = new CallControl(this,fr);
             cc->show();
             cc->start();
-            calls.insert(fr,cc);
+            calls_.insert(fr,cc);
         } else {
             qDebug() << "call acked";
             (*it)->start();
@@ -402,14 +420,14 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
         Arcane::CallData data;
         data.ParseFromString(payload.toStdString());
         fr->on_other(data.sent());
-        auto it = calls.find(fr);
-        if (it != calls.end()) {
+        auto it = calls_.find(fr);
+        if (it != calls_.end()) {
             (*it)->packet(QByteArray::fromStdString(data.data()));
         }
         break; }
     case Arcane::call_stop: {
-        auto it = calls.find(fr);
-        if (it != calls.end()) {
+        auto it = calls_.find(fr);
+        if (it != calls_.end()) {
             (*it)->stop();
             //delete *it;
             //calls.remove(fr);
@@ -432,12 +450,12 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
 }
 
 void Core::open_call_control(Friend *fr) {
-    auto it = calls.find(fr);
-    if (it == calls.end()) {
+    auto it = calls_.find(fr);
+    if (it == calls_.end()) {
         CallControl *cc = new CallControl(this,fr);
         cc->show();
         //cc->start();
-        calls.insert(fr,cc);
+        calls_.insert(fr,cc);
     } else {
         qDebug() << "call acked";
     }
@@ -458,17 +476,18 @@ void Core::send_message(uint32_t friend_number, bool action, QString message) {
 
 void Core::save_state() {
     size_t size = tox_get_savedata_size(tox);
-    std::vector<uint8_t> savedata;
-    savedata.resize(size, 0);
-    tox_get_savedata(tox, savedata.data());
-    using std::ios;
-    std::ofstream file(savedata_path, ios::out | ios::binary | ios::trunc);
-    assert(file.is_open());
-    assert(file.good());
-    file.write(reinterpret_cast<const char*>(savedata.data()), size);
-    assert(file.good());
-    file.flush();
-    assert(file.good());
+    QByteArray savedata;
+    savedata.resize(size);
+    tox_get_savedata(tox, reinterpret_cast<uint8_t*>(savedata.data()));
+    // using std::ios;
+    // std::ofstream file(savedata_path, ios::out | ios::binary | ios::trunc);
+    // assert(file.is_open());
+    // assert(file.good());
+    // file.write(reinterpret_cast<const char*>(savedata.data()), size);
+    // assert(file.good());
+    // file.flush();
+    // assert(file.good());
+    db->set_data("savestate", savedata);
 }
 
 void Core::friend_add_norequest(const QByteArray public_key) {
@@ -481,7 +500,7 @@ void Core::friend_add_norequest(const QByteArray public_key) {
         f = new Friend{friend_number, public_key, QString(),
                        tox::LinkType::none, this};
 
-        friends.insert(f->friend_number, f);
+        friends_.insert(f->friend_number, f);
         emit on_new_friend(f);
 
         break;
@@ -510,7 +529,7 @@ void Core::friend_add(const QByteArray tox_id, std::string message) {
             this
         };
 
-        friends.insert(f->friend_number, f);
+        friends_.insert(f->friend_number, f);
         emit on_new_friend(f);
 
         break;
@@ -597,9 +616,23 @@ void Core::call_stop(Friend *fr) {
 qint64 Core::get_uptime() {
     return uptime.nsecsElapsed() + uptime_offset;
 }
+
 void Core::send_ping(Friend *fr, QByteArray payload) {
     Arcane::PingPayload p;
     p.set_sent(get_uptime());
     p.set_data(payload.toStdString());
     send_packet(fr, Arcane::ping, &p);
+}
+
+void Core::add_owned_channel(Channel *channel) {
+    channels_.append(channel);
+    db->save_channel(channel);
+}
+
+void Core::join_channel(Channel *channel) {
+    if (current_channel_) {
+        current_channel_->remove_member(this);
+    }
+    channel->add_member(this);
+    current_channel_ = channel;
 }

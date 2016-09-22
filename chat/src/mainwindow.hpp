@@ -25,10 +25,12 @@ public:
     explicit MainWindow(chat::Core* core);
     ~MainWindow();
 
-private Q_SLOTS:
+public Q_SLOTS:
     void on_doubleclick(QModelIndex index);
+    void on_actionCreateChannel_triggered();
 
 private:
+    chat::Core *core_;
     Ui::MainWindow* ui;
     ChatWidget* chatWidget;
     InfoWidget* infoWidget;

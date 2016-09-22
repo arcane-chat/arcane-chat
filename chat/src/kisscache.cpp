@@ -8,7 +8,7 @@ using namespace streaming;
 
 class streaming::KissCachePrivate {
 public:
-	sqlite3 *db;
+    sqlite3 *db;
     sqlite3_stmt *insert1;
 };
 
