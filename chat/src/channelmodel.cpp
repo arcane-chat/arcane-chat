@@ -3,6 +3,8 @@
 
 #include "channelmodel.hpp"
 
+using namespace gui;
+
 ChannelModel::ChannelModel(QMap<uint32_t, chat::Friend*> friends) {
     root = new Node(NodeType::Root, nullptr);
     Node* legacyFolder = new Node(NodeType::LegacyFolder, root);

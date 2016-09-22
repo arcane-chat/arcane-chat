@@ -5,6 +5,8 @@
 
 #include "friend.hpp"
 
+namespace gui {
+
 enum class NodeType { Root, LegacyFolder, LegacyFriend };
 
 class Node : public QObject {
@@ -51,3 +53,5 @@ private:
 private Q_SLOTS:
     void node_changed(Node*);
 };
+
+}

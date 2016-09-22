@@ -55,10 +55,18 @@ void Kiss::parse_series(QString seriesName, QByteArray data) {
         int offset = expr.indexIn(str.mid(index));
         if (offset == -1) break;
         index += offset;
-        qDebug() << expr.capturedTexts().mid(1,2);
+        QStringList parts = expr.capturedTexts().mid(1,2);
+        //qDebug() << parts;
+
+        QRegExp expr2("\\?id=([0-9]*)");
+        if (expr2.indexIn(parts.at(0))) {
+            int id = expr2.capturedTexts().at(1).toInt();
+            cache.add_episode(id, parts.at(0), parts.at(1), seriesName);
+        }
+
         index += expr.matchedLength();
     }
-    QCoreApplication::quit();
+    emit series_parsed(seriesName);
 }
 
 KissParseRequest::KissParseRequest(Kiss *kiss, QString seriesName) : reply_(0), kiss_(kiss), seriesName_(seriesName), done(false) {

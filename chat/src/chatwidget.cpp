@@ -13,6 +13,8 @@
 #include <Qt5GStreamer/QGlib/Connect>
 #include <Qt5GStreamer/QGst/Bus>
 
+using namespace gui;
+
 ChatWidget::ChatWidget(Core* core, QWidget* parent)
     : QWidget(parent), ui(new Ui::ChatWidget), core(core) {
     ui->setupUi(this);

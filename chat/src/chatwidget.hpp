@@ -1,19 +1,22 @@
-#ifndef CHATWIDGET_H
-#define CHATWIDGET_H
+#pragma once
+
+#include "utils.hpp"
 
 #include <QWidget>
 #include <QTextBrowser>
-#include "utils.hpp"
 
 namespace Ui {
     class ChatWidget;
 }
 
-class FriendNode;
 namespace chat {
     class Core;
     class Friend;
 }
+
+namespace gui {
+
+class FriendNode;
 
 using namespace chat;
 
@@ -47,4 +50,4 @@ private Q_SLOTS:
     void on_message(Friend* f, bool action, QString message);
 };
 
-#endif // CHATWIDGET_H
+}

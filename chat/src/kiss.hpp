@@ -1,5 +1,7 @@
 #pragma once
 
+#include "kisscache.hpp"
+
 #include <QObject>
 #include <QString>
 #include <QUrl>
@@ -18,6 +20,10 @@ friend class KissParseRequest;
 public:
 	explicit Kiss(QString name, QUrl root);
 	void parseSeries(QString seriesName);
+
+	KissCache cache;
+signals:
+	void series_parsed(QString seriesName);
 public slots:
 	//void replyFinished(QNetworkReply *reply);
 	void parse_series(QString seriesName, QByteArray data);
@@ -26,7 +32,6 @@ private:
 	QString name_;
 	QNetworkAccessManager *manager;
 };
-
 
 class KissParseRequest : public QObject {
 Q_OBJECT

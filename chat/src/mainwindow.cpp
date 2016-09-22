@@ -8,6 +8,8 @@
 
 #include "ui_mainwindow.h"
 
+using namespace gui;
+
 MainWindow::MainWindow(chat::Core* core) : ui(new Ui::MainWindow) {
     ui->setupUi(this);
 

@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
         }
 
         if(!parser.isSet(headlessOption)) {
-            MainWindow* mw = new MainWindow(&core);
+            gui::MainWindow* mw = new gui::MainWindow(&core);
             mw->show();
         }
 

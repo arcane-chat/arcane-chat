@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include <QModelIndex>
@@ -10,12 +9,14 @@ namespace Ui {
 class MainWindow;
 }
 
-class ChatWidget;
-class InfoWidget;
-class ChannelModel;
 namespace chat {
 class Core;
 }
+
+namespace gui {
+class ChatWidget;
+class InfoWidget;
+class ChannelModel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -33,5 +34,4 @@ private:
     InfoWidget* infoWidget;
     ChannelModel* model;
 };
-
-#endif // MAINWINDOW_H
+}

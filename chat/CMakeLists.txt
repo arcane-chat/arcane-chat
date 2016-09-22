@@ -166,8 +166,8 @@ target_link_libraries(state_test ${GENERAL_LIBRARIES})
 set_property(TARGET state_test PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 #cotire(state_test)
 
-add_executable(kiss_test src/kisstest.cpp src/kiss.cpp)
-target_link_libraries(kiss_test ${GENERAL_LIBRARIES})
+add_executable(kiss_test src/kisstest.cpp src/kiss.cpp src/kisscache.cpp)
+target_link_libraries(kiss_test sqlite3 ${GENERAL_LIBRARIES})
 
 find_program(iwyu_tool_path NAMES iwyu_tool.py)
 if(iwyu_tool_path)

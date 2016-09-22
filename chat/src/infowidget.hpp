@@ -1,11 +1,12 @@
-#ifndef INFOWIDGET_H
-#define INFOWIDGET_H
+#pragma once
 
 #include <QWidget>
 
 namespace Ui {
     class InfoWidget;
 }
+
+namespace gui {
 
 class InfoWidget : public QWidget {
     Q_OBJECT
@@ -18,4 +19,4 @@ private:
     Ui::InfoWidget* ui;
 };
 
-#endif // INFOWIDGET_H
+}
