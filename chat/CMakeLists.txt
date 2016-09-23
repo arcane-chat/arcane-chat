@@ -133,6 +133,7 @@ set(CHAT_LIB_SOURCES
   src/callcontrol.cpp
   src/channel.cpp
   src/core_db.cpp
+  src/db.cpp
   ${UI_HEADERS}
 )
 

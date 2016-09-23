@@ -4,86 +4,53 @@
 #include <sodium.h>
 
 using namespace chat;
+using namespace db;
 
 CoreDb::CoreDb(QString path) {
-    int ret;
-    char *error = nullptr;
-    ret = sqlite3_open(qPrintable(path + "arcane-chat.sqlite"), &db);
-    if (ret != SQLITE_OK) {
-        throw "unable to open db";
-    }
+    db_ = new Db(path + "arcane-chat.sqlite");
 
-    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS channels (name, pubkey PRIMARY KEY, privkey)", nullptr, nullptr, &error);
-    if (error) {
-        qDebug() << error;
-        sqlite3_free(error);
-        error = nullptr;
-    }
+    db_->exec("CREATE TABLE IF NOT EXISTS channels (name, pubkey PRIMARY KEY, privkey)");
+    db_->exec("CREATE TABLE IF NOT EXISTS data (name PRIMARY KEY, value)");
 
-    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS data (name PRIMARY KEY, value)", nullptr, nullptr, &error);
-    if (error) {
-        qDebug() << error;
-        sqlite3_free(error);
-        error = nullptr;
-    }
+    set_data_ = new PreparedQuery(db_, "INSERT OR REPLACE INTO data (name,value) VALUES (?,?)");
+    get_data_ = new PreparedQuery(db_, "SELECT value FROM data WHERE name = ?");
 
-    const char *sql = "INSERT OR REPLACE INTO channels (name, pubkey, privkey) VALUES (?,?,?)";
-    ret = sqlite3_prepare_v2(db, sql, strlen(sql), &update_channel, nullptr);
-    if (ret != SQLITE_OK) {
-        qDebug() << "prepare error" << ret;
-        throw "unable to prepare statement";
-    }
+    update_channel = new PreparedQuery(db_, "INSERT OR REPLACE INTO channels (name, pubkey, privkey) VALUES (?,?,?)");
+    get_all_channels = new PreparedQuery(db_, "SELECT name, pubkey, privkey name FROM channels");
+}
 
-    sql = "SELECT value FROM data WHERE name = ?";
-    ret = sqlite3_prepare_v2(db, sql, strlen(sql), &read_data, nullptr);
-    if (ret != SQLITE_OK) {
-        qDebug() << "prepare error" << ret;
-        throw "unable to prepare statement";
-    }
-
-    sql = "INSERT OR REPLACE INTO data (name,value) VALUES (?,?)";
-    ret = sqlite3_prepare_v2(db, sql, strlen(sql), &update_data, nullptr);
-    if (ret != SQLITE_OK) {
-        qDebug() << "prepare error" << ret;
-        throw "unable to prepare statement";
-    }
-
-    sql = "SELECT name, pubkey, privkey name FROM channels";
-    ret = sqlite3_prepare_v2(db, sql, strlen(sql), &get_all_channels, nullptr);
-    if (ret != SQLITE_OK) {
-        qDebug() << "prepare error" << ret;
-        throw "unable to prepare statement";
-    }
+CoreDb::~CoreDb() {
+    delete update_channel;
+    delete set_data_;
+    delete get_data_;
+    delete get_all_channels;
+    db_->close();
+    qDebug() << "db unloaded";
 }
 
 QList<Channel*> CoreDb::get_channels() {
-    const char *name, *pubkey, *privkey;
-    int name_size, pubkey_size, privkey_size;
+    QString name;
+    QByteArray pubkey, privkey;
     bool cont = true;
     QList<Channel*> out;
     Channel *c = nullptr;
     while (cont) {
-        int ret = sqlite3_step(get_all_channels);
+        int ret = get_all_channels->step();
         switch (ret) {
         case SQLITE_ROW:
-            name = reinterpret_cast<const char*>(sqlite3_column_text(get_all_channels, 0));
-            name_size = sqlite3_column_bytes(get_all_channels, 0);
+            name = get_all_channels->column_text(0);
+            pubkey = get_all_channels->column_blob(1);
+            privkey = get_all_channels->column_blob(2);
 
-            pubkey = reinterpret_cast<const char*>(sqlite3_column_blob(get_all_channels, 1));
-            pubkey_size = sqlite3_column_bytes(get_all_channels, 1);
-
-            privkey = reinterpret_cast<const char*>(sqlite3_column_blob(get_all_channels, 2));
-            privkey_size = sqlite3_column_bytes(get_all_channels, 2);
-
-            qDebug() << QByteArray(name,name_size);
+            qDebug() << name;
             c = new Channel;
-            c->set_name(QByteArray(name,name_size));
+            c->set_name(name);
 
-            if (pubkey_size == crypto_sign_PUBLICKEYBYTES) {
-                c->set_pubkey(QByteArray(pubkey, crypto_sign_PUBLICKEYBYTES));
+            if (pubkey.size() == crypto_sign_PUBLICKEYBYTES) {
+                c->set_pubkey(pubkey);
             }
-            if (privkey_size == crypto_sign_SECRETKEYBYTES) {
-                c->set_privkey(QByteArray(privkey, crypto_sign_SECRETKEYBYTES));
+            if (privkey.size() == crypto_sign_SECRETKEYBYTES) {
+                c->set_privkey(privkey);
             }
             out.append(c);
             break;
@@ -92,52 +59,37 @@ QList<Channel*> CoreDb::get_channels() {
             break;
         }
     }
-    sqlite3_reset(get_all_channels);
+    get_all_channels->reset();
     return out;
-}
-
-CoreDb::~CoreDb() {
-    int ret;
-    ret = sqlite3_finalize(update_channel);
-    ret = sqlite3_finalize(read_data);
-    ret = sqlite3_finalize(update_data);
-    ret = sqlite3_finalize(get_all_channels);
-    ret = sqlite3_close(db);
-    if (ret != SQLITE_OK) {
-        qDebug() << "close error";
-        throw "unable to open db";
-    }
-    qDebug() << "db unloaded";
 }
 
 void CoreDb::save_channel(Channel *channel) {
     int ret;
     QByteArray name_bytes = channel->name().toUtf8();
-    ret = sqlite3_bind_text(update_channel, 1, name_bytes.data(), name_bytes.size(), SQLITE_TRANSIENT);
-    ret = sqlite3_bind_blob(update_channel, 2, channel->pubkey().data(), channel->pubkey().size(), SQLITE_TRANSIENT);
-    ret = sqlite3_bind_blob(update_channel, 3, channel->privkey().data(), channel->privkey().size(), SQLITE_TRANSIENT);
-    ret = sqlite3_step(update_channel);
+    update_channel->bind(1, channel->name());
+    update_channel->bind(2, channel->pubkey());
+    update_channel->bind(3, channel->privkey());
+    ret = update_channel->step();
     if (ret != SQLITE_DONE) {
         qDebug() << "step" << ret;
         throw "unable to insert row";
     }
-    ret = sqlite3_reset(update_channel);
-    sqlite3_clear_bindings(update_channel);
+    update_channel->reset();
+    update_channel->clear_bindings();
 }
 
 void CoreDb::set_data(QString key, QByteArray value) {
     int ret;
     QByteArray key_bytes = key.toUtf8();
-    ret = sqlite3_bind_text(update_data, 1, key_bytes.data(), key_bytes.size(), SQLITE_TRANSIENT);
-    ret = sqlite3_bind_blob(update_data, 2, value.data(), value.size(), SQLITE_TRANSIENT);
-    ret = sqlite3_step(update_data);
-    qDebug() << "ret" << ret;
+    set_data_->bind(1, key);
+    set_data_->bind(2, value);
+    ret = set_data_->step();
     if (ret != SQLITE_DONE) {
         qDebug() << "step" << ret;
         throw "unable to insert row";
     }
-    ret = sqlite3_reset(update_data);
-    sqlite3_clear_bindings(update_data);
+    set_data_->reset();
+    set_data_->clear_bindings();
     qDebug() << "saved" << value.size() << "bytes" << key;
     //qDebug() << value;
 }
@@ -145,18 +97,16 @@ void CoreDb::set_data(QString key, QByteArray value) {
 QByteArray CoreDb::get_data(QString key) {
     int ret;
     QByteArray key_bytes = key.toUtf8();
-    ret = sqlite3_bind_text(read_data, 1, key_bytes.data(), key_bytes.size(), SQLITE_TRANSIENT);
-    ret = sqlite3_step(read_data);
+    get_data_->bind(1, key);
+    ret = get_data_->step();
     if (ret == SQLITE_ROW) {
-        const char *raw_blob = reinterpret_cast<const char*>(sqlite3_column_blob(read_data, 0));
-        int size = sqlite3_column_bytes(read_data, 0);
-        QByteArray blob(raw_blob, size);
-        sqlite3_reset(read_data);
-        sqlite3_clear_bindings(read_data);
+        QByteArray blob = get_data_->column_blob(0);
+        get_data_->reset();
+        get_data_->clear_bindings();
         return blob;
     } else if (ret == SQLITE_DONE) {
-        sqlite3_reset(read_data);
-        sqlite3_clear_bindings(read_data);
+        get_data_->reset();
+        get_data_->clear_bindings();
         return QByteArray();
     } else {
         qDebug() << "unexpected ret" << ret;

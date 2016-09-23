@@ -1,6 +1,7 @@
 #pragma once
 
 #include "channel.hpp"
+#include "db.hpp"
 
 #include <sqlite3.h>
 
@@ -14,7 +15,7 @@ public:
     void set_data(QString key, QByteArray value);
     QList<Channel*> get_channels();
 private:
-    sqlite3 *db;
-    sqlite3_stmt *update_channel, *read_data, *update_data, *get_all_channels;
+    db::PreparedQuery *set_data_, *get_data_, *update_channel, *get_all_channels;
+    db::Db *db_;
 };
 }
