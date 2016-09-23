@@ -8,7 +8,7 @@ Db::Db(QString path) {
     int ret;
     ret = sqlite3_open(qPrintable(path), &db_);
     if (ret != SQLITE_OK) {
-        throw "unable to open db";
+        throw new DbException("unable to open db");
     }
 }
 
