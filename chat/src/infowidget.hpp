@@ -8,6 +8,7 @@ namespace Ui {
 
 namespace gui {
 
+//! the info pane on the right side of the UI
 class InfoWidget : public QWidget {
     Q_OBJECT
 

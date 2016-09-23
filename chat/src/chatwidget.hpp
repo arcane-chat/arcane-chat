@@ -20,6 +20,7 @@ class FriendNode;
 
 using namespace chat;
 
+//! widget to manage the state of a single tab in the chat tabstrip
 class ChatSection : public QWidget {
     Q_OBJECT
 public:
@@ -32,6 +33,7 @@ private:
     QTextDocument* doc;
 };
 
+//! the entire chat pannel
 class ChatWidget : public QWidget {
     Q_OBJECT
 

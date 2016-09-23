@@ -10,6 +10,8 @@
 struct Tox_Options;
 
 namespace tox {
+
+    //! thin wrapper around Tox_Options*
     class options {
     private:
         Tox_Options* underlying_;

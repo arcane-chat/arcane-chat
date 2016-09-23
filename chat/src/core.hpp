@@ -18,6 +18,7 @@
 namespace chat {
 class CoreDb;
 
+//! the core of arcane-chat, for both servers and clients
 class Core : public QObject {
     Q_OBJECT
 

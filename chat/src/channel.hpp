@@ -7,6 +7,7 @@ namespace chat {
 class Core;
 class Friend;
 
+//! a single channel in arcane-chat
 class Channel : public QObject {
 Q_OBJECT
 public:

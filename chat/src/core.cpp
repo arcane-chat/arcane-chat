@@ -334,7 +334,7 @@ void Core::sync_clock() {
     }
     if (online == 0) return;
     qint64 average = total_offset / online;
-    qDebug() << "average offset" << ((double)average / 1000 / 1000 / 1000) << "sec" << Stats::shorten(average);
+    qDebug() << "average offset" << util::Stats::shorten(average);
     if (uptime_offset == 0) {
         shift_clock(average);
     } else {
@@ -349,7 +349,7 @@ void Core::sync_clock() {
 
 void Core::shift_clock(qint64 offset) {
     uptime_offset -= offset;
-    qDebug() << "shifting" << Stats::shorten(offset);
+    qDebug() << "shifting" << util::Stats::shorten(offset);
     for (Friend *fr : friends_) {
         if (fr->connection == tox::LinkType::none) continue;
         fr->offset.shift(offset);

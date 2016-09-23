@@ -11,6 +11,7 @@ namespace gui {
 enum class NodeType { Root, LegacyFolder, LegacyFriend, ChannelFolder, ChannelNode,
     MemberNode };
 
+//! a generic node in the tree
 class Node : public QObject {
     Q_OBJECT
 public:
@@ -66,6 +67,7 @@ private:
     chat::Friend *fr_;
 };
 
+//! datamodel to manage the treelist for channels/users
 class ChannelModel : public QAbstractItemModel {
     Q_OBJECT
 public:

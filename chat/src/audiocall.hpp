@@ -12,6 +12,7 @@ namespace chat {
     class Core;
     class Friend;
 
+//! ui class to manage an audio call
 class AudioCall : public QObject
 {
     Q_OBJECT

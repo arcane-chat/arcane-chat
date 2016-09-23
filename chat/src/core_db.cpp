@@ -9,14 +9,14 @@ using namespace db;
 CoreDb::CoreDb(QString path) {
     db_ = new Db(path + "arcane-chat.sqlite");
 
-    db_->exec("CREATE TABLE IF NOT EXISTS channels (name, pubkey PRIMARY KEY, privkey)");
-    db_->exec("CREATE TABLE IF NOT EXISTS data (name PRIMARY KEY, value)");
+    db_->exec(QStringLiteral("CREATE TABLE IF NOT EXISTS channels (name, pubkey PRIMARY KEY, privkey)"));
+    db_->exec(QStringLiteral("CREATE TABLE IF NOT EXISTS data (name PRIMARY KEY, value)"));
 
-    set_data_ = new PreparedQuery(db_, "INSERT OR REPLACE INTO data (name,value) VALUES (?,?)");
-    get_data_ = new PreparedQuery(db_, "SELECT value FROM data WHERE name = ?");
+    set_data_ = new PreparedQuery(db_, QStringLiteral("INSERT OR REPLACE INTO data (name,value) VALUES (?,?)"));
+    get_data_ = new PreparedQuery(db_, QStringLiteral("SELECT value FROM data WHERE name = ?"));
 
-    update_channel = new PreparedQuery(db_, "INSERT OR REPLACE INTO channels (name, pubkey, privkey) VALUES (?,?,?)");
-    get_all_channels = new PreparedQuery(db_, "SELECT name, pubkey, privkey name FROM channels");
+    update_channel = new PreparedQuery(db_, QStringLiteral("INSERT OR REPLACE INTO channels (name, pubkey, privkey) VALUES (?,?,?)"));
+    get_all_channels = new PreparedQuery(db_, QStringLiteral("SELECT name, pubkey, privkey name FROM channels"));
 }
 
 CoreDb::~CoreDb() {

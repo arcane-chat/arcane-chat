@@ -3,6 +3,8 @@
 #include <math.h>
 #include <QDebug>
 
+using namespace util;
+
 QString Stats::shorten(qint64 ns) {
     if ((ns > -1000) & (ns < 1000)) return QStringLiteral("%1ns").arg(ns);
     if ((ns > -1000000) & (ns < 1000000)) return QStringLiteral("%1μs").arg(ns/1000);

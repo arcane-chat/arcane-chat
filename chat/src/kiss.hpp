@@ -14,6 +14,7 @@ namespace streaming {
 
 class KissParseRequest;
 
+//! class for managing interfaces to kiss*.to sites
 class Kiss : public QObject {
 Q_OBJECT
 friend class KissParseRequest;
