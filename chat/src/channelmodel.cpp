@@ -102,21 +102,21 @@ QVariant FriendNode::data() {
     case tox::LinkType::udp: state = "udp"; break;
     }
     if (f->connection == tox::LinkType::none) {
-        return QString("%1 , %2").arg(state).arg(f->get_username());
+        return QStringLiteral("%1 , %2").arg(state).arg(f->get_username());
     } else {
-        return QString("%1 , %2 rtt: %3 offset: %4").arg(state).arg(f->get_username()).arg(f->rtt.toString()).arg(f->offset.toString());
+        return QStringLiteral("%1 , %2 rtt: %3 offset: %4").arg(state).arg(f->get_username()).arg(f->rtt.toString()).arg(f->offset.toString());
     }
 
 }
 
 FriendNode::FriendNode(Node* parent, chat::Friend* f)
     : Node(NodeType::LegacyFriend, parent), f(f) {
-    connect(f, SIGNAL(connection_changed(tox::LinkType, tox::LinkType)), this,
-            SLOT(connection_changed(tox::LinkType, tox::LinkType)));
-    connect(f, SIGNAL(message(bool, QByteArray)), this,
-            SLOT(message(bool, QByteArray)));
-    connect(f, SIGNAL(latency_update()), this, SLOT(simple_change()));
-    connect(f, SIGNAL(username_changed()), this, SLOT(simple_change()));
+    connect(f, &Friend::connection_changed,
+            this, &FriendNode::connection_changed);
+    connect(f, &Friend::message,
+            this, &FriendNode::message);
+    connect(f, &Friend::latency_update, this, &FriendNode::simple_change);
+    connect(f, &Friend::username_changed, this, &FriendNode::simple_change);
 }
 
 void FriendNode::connection_changed(tox::LinkType old_state,

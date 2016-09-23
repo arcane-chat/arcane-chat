@@ -41,7 +41,7 @@ Kiss::Kiss(QString name, QUrl root) : root_(root), name_(name) {
 
 void Kiss::parseSeries(QString seriesName) {
     KissParseRequest *parser = new KissParseRequest(this, seriesName);
-    connect(parser, SIGNAL(got_page(QString,QByteArray)), this, SLOT(parse_series(QString,QByteArray)));
+    connect(parser, &KissParseRequest::got_page, this, &Kiss::parse_series);
 }
 
 void Kiss::parse_series(QString seriesName, QByteArray data) {
@@ -73,7 +73,7 @@ KissParseRequest::KissParseRequest(Kiss *kiss, QString seriesName) : reply_(0), 
     delay.setSingleShot(true);
     connect(&delay, SIGNAL(timeout()), this, SLOT(send_answer()));
 
-    QUrl relative(QString("/Anime/") + seriesName);
+    QUrl relative(QStringLiteral("/Anime/") + seriesName);
     absolute = QUrl(kiss_->root_.resolved(relative));
     qDebug() << absolute;
     QNetworkRequest req(absolute);
@@ -140,7 +140,7 @@ void KissParseRequest::finished() {
         QString var1 = exp2.capturedTexts().at(1);
         QString var2 = exp3.capturedTexts().at(1);
 
-        final_answer = QUrl(QString("%1/cdn-cgi/l/chk_jschl?jschl_vc=%2&pass=%3&jschl_answer=%4").arg(kiss_->root_.toString()).arg(var1).arg(var2).arg(answer));
+        final_answer = QUrl(QStringLiteral("%1/cdn-cgi/l/chk_jschl?jschl_vc=%2&pass=%3&jschl_answer=%4").arg(kiss_->root_.toString()).arg(var1).arg(var2).arg(answer));
         reply_->deleteLater();
         reply_ = nullptr;
         delay.start(5000);

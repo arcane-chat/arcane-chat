@@ -8,7 +8,7 @@ using namespace chat;
 Friend::Friend(uint32_t friend_number, QByteArray pubkey, QString name, 
         tox::LinkType connection, Core *core) : friend_number(friend_number),
         publickey(pubkey), connection(connection), core(core), username(name) {
-    connect(&idle_timer, SIGNAL(timeout()), this, SLOT(too_idle()));
+    connect(&idle_timer, &QTimer::timeout, this, &Friend::too_idle);
 }
 
 void Friend::set_connection(tox::LinkType connection) {

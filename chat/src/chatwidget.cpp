@@ -18,10 +18,10 @@ using namespace gui;
 ChatWidget::ChatWidget(Core* core, QWidget* parent)
     : QWidget(parent), ui(new Ui::ChatWidget), core(core) {
     ui->setupUi(this);
-    connect(ui->lineEdit, SIGNAL(returnPressed()), this,
-            SLOT(return_pressed()));
-    connect(core, SIGNAL(on_message(Friend*, bool, QString)), this,
-            SLOT(on_message(Friend*, bool, QString)));
+    connect(ui->lineEdit, &QLineEdit::returnPressed,
+            this, &ChatWidget::return_pressed);
+    connect(core, &Core::on_message,
+            this, &ChatWidget::on_message);
 }
 
 ChatWidget::~ChatWidget() { delete ui; }
@@ -49,11 +49,11 @@ void ChatWidget::on_message(Friend* f, bool action, QString message) {
         ui->tabWidget->addTab(cs, f->get_username());
         chatSections.insert(f->friend_number, cs);
     }
-    cs->text->append(QString("&lt;%1&gt; %2").arg(f->get_username()).arg(message));
+    cs->text->append(QStringLiteral("&lt;%1&gt; %2").arg(f->get_username()).arg(message));
 }
 
 static void video_test() {
-  QString outbound_pipeline = QString("playbin uri=file:///tmp/foo.mkv");
+  QString outbound_pipeline = QStringLiteral("playbin uri=file:///tmp/foo.mkv");
   qDebug() << outbound_pipeline;
   auto outbound = QGst::Parse::launch(outbound_pipeline).dynamicCast<QGst::Pipeline>();
   //m_sink.setBlockSize(1000);
@@ -65,7 +65,7 @@ void ChatWidget::return_pressed() {
     qDebug() << msg;
     ChatSection* cs = reinterpret_cast<ChatSection*>(ui->tabWidget->currentWidget());
     if (cs) {
-        cs->text->append(QString("&lt;%1&gt; %2").arg(core->username).arg(msg));
+        cs->text->append(QStringLiteral("&lt;%1&gt; %2").arg(core->username).arg(msg));
         core->send_message(cs->f->friend_number, false, msg);
         if (msg == "!call") {
             qDebug() << "!call was triggered";
