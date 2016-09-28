@@ -1,8 +1,7 @@
 { nixpkgs ? { outPath = <nixpkgs>; } }:
 
 let
-  commonPackageOverrides = pkgs: {
-    #glib = pkgs.callPackage ./glib {};
+  commonPackageOverrides = pkgs: rec {
     libtoxcore-dev = pkgs.libtoxcore-dev.overrideDerivation (old: {
       src = pkgs.fetchFromGitHub {
         owner = "TokTok";
@@ -73,6 +72,13 @@ let
       '';
     });
 
+    gst_all_1 = pkgs.recurseIntoAttrs (pkgs.callPackage ./fixes/gstreamer {});
+  };
+
+  linuxPackageOverrides = pkgs: rec {
+  };
+
+  windowsPackageOverrides = pkgs: rec {
     cairo = pkgs.cairo.override {
       xcbSupport = false;
       glSupport = false;
@@ -83,21 +89,65 @@ let
       };
     };
 
-    gst_all_1 = pkgs.recurseIntoAttrs (pkgs.callPackage ./fixes/gstreamer {});
+    gettext = pkgs.gettext.overrideDerivation (old: {
+      buildInputs = [ pkgs.libiconv ]; # crossDrv?
+    });
+    
+    libmsgpack = pkgs.callPackage ./fixes/libmsgpack.nix {};
+    
+    nlohmann_json = pkgs.callPackage ./fixes/nlohmann_json.nix {};
+    
+    #protobuf3_0 = pkgs.callPackage ./fixes/protobuf.nix {};
+    protobuf3_0 = pkgs.protobuf3_0.overrideDerivation (old: with pkgs; {
+      doCheck = false;
+      nativeBuildInputs = [ autoreconfHook ];
+      buildInputs = [ zlib libtool.lib ]; # crossDrv?
+    });
+
+    libvpx = pkgs.libvpx.override {
+      stdenv = pkgs.stdenv // {
+        isCygwin = true;
+      };
+      unitTestsSupport = true;
+      webmIOSupport = true;
+      libyuvSupport = true;
+    };
+    
+    gst_all_1 = pkgs.gst_all_1.override {
+      fluidsynth = null;
+    };
+    
+    glib = (pkgs.glib.overrideDerivation (old: {
+      patches = old.patches ++ [
+        ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
+        #./fixes/glib/0003-g_abort.all.patch
+        ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
+        #./fixes/glib/0024-return-actually-written-data-in-printf.all.patch
+        ./fixes/glib/0027-no_sys_if_nametoindex.patch
+        ./fixes/glib/0028-inode_directory.patch
+        #./fixes/glib/revert-warn-glib-compile-schemas.patch
+        #./fixes/glib/use-pkgconfig-file-for-intl.patch
+      ];
+    })).override {
+      libintlOrEmpty = [ gettext ]; # crossDrv?
+    };
   };
-  linuxPackageOverrides = pkgs: {
+
+  makeConfig = localOverrides: {
+    packageOverrides = pkgs: let common = commonPackageOverrides pkgs;
+                                 local = localOverrides (pkgs // common);
+                             in common // local;
   };
-  windowsPackageOverrides = pkgs: {
-  };
-  makeConfig = linux: let
-    localOverrides = if linux then linuxPackageOverrides else windowsPackageOverrides;
-  in {
-    cairo.xcbSupport = false;
-    packageOverrides = pkgs: (commonPackageOverrides pkgs) // (localOverrides pkgs);
-  };
+
 in rec {
-  inherit makeConfig commonPackageOverrides linuxPackageOverrides windowsPackageOverrides;
-  linuxPkgs = import nixpkgs.outPath { config = makeConfig true; };
+  inherit makeConfig
+          commonPackageOverrides
+          linuxPackageOverrides
+          windowsPackageOverrides;
+          
+  linuxPkgs = import nixpkgs.outPath {
+    config = makeConfig linuxPackageOverrides;
+  };
   linuxCallPackage = linuxPkgs.qt56.newScope linux;
   linux = rec {
     # Boilerplate
@@ -115,53 +165,12 @@ in rec {
       #platform       = {};
       openssl.system = "mingw64";
     };
-    config = makeConfig false;
+    config = makeConfig windowsPackageOverrides;
   };
   windowsCallPackage = windowsPkgs.qt56.newScope windows;
   windows = rec {
     # Boilerplate
     super = windowsPkgs;
-
-    # Overrides
-    gettext = super.gettext.overrideDerivation (old: {
-      buildInputs = [ super.libiconv.crossDrv ];
-    });
-    libmsgpack = windowsCallPackage ./fixes/libmsgpack.nix {};
-    nlohmann_json = windowsCallPackage ./fixes/nlohmann_json.nix {};
-    #protobuf3_0 = windowsCallPackage ./fixes/protobuf.nix {};
-    libvpx = super.libvpx.override {
-      stdenv = super.stdenv // {
-        isCygwin = true;
-      };
-      unitTestsSupport = true;
-      webmIOSupport = true;
-      libyuvSupport = true;
-    };
-    protobuf3_0 = super.protobuf3_0.overrideDerivation (old: with super; {
-      doCheck = false;
-      nativeBuildInputs = [ autoreconfHook ];
-      buildInputs = [ zlib.crossDrv libtool.crossDrv.lib ];
-    });
-    gst_all_1 = super.gst_all_1.override {
-      fluidsynth = null;
-    };
-    glib = (super.glib.overrideDerivation (old: {
-      patches = old.patches ++ [
-        ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
-        #./fixes/glib/0003-g_abort.all.patch
-        ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
-        #./fixes/glib/0024-return-actually-written-data-in-printf.all.patch
-        ./fixes/glib/0027-no_sys_if_nametoindex.patch
-        ./fixes/glib/0028-inode_directory.patch
-        #./fixes/glib/revert-warn-glib-compile-schemas.patch
-        #./fixes/glib/use-pkgconfig-file-for-intl.patch        
-      ];
-    })).override {
-      libintlOrEmpty = [gettext.crossDrv];
-    };
-    # glib = super.glib.overrideDerivation (old: {
-    #   buildInputs = old.buildInputs ++ [ gettext ];
-    # });
 
     # Our packages
     arcane-chat = windowsCallPackage ./chat {
