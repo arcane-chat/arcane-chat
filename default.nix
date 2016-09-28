@@ -2,6 +2,8 @@
 
 let
   config = {
+    cairo.xcbSupport = false;
+  
     packageOverrides = pkgs: {
       #glib = pkgs.callPackage ./glib {};
       libtoxcore-dev = pkgs.libtoxcore-dev.overrideDerivation (old: {
@@ -12,6 +14,10 @@ let
           sha256 = "1wq0nbdcq125gcg7pqwqwa0pvh7zg78drd2f585b0a00m1rhzpdy";
         };
         patches = [ ./toxcore.patch ];
+        buildInputs = with pkgs; [ libsodium ];
+        nativeBuildInputs = with pkgs; [ autoreconfHook pkgconfig ];
+        propagatedBuildInputs = [];
+        propagatedNativeBuildInputs = [];
       });
 
       rtags = pkgs.stdenv.mkDerivation {
@@ -69,6 +75,17 @@ let
             wrapProgram $out/bin/include-what-you-use --add-flags "$FLAGS"
         '';
       });
+
+      cairo = pkgs.cairo.override {
+        xcbSupport = false;
+        glSupport = false;
+        xorg = {
+          libXext = null;
+          libXrender = null;
+          pixman = null;
+        };
+      };
+
       gst_all_1 = pkgs.recurseIntoAttrs (pkgs.callPackage ./fixes/gstreamer {});
     };
   };
@@ -104,6 +121,7 @@ in rec {
     });
     libmsgpack = windowsCallPackage ./fixes/libmsgpack.nix {};
     nlohmann_json = windowsCallPackage ./fixes/nlohmann_json.nix {};
+    #protobuf3_0 = windowsCallPackage ./fixes/protobuf.nix {};
     libvpx = super.libvpx.override {
       stdenv = super.stdenv // {
         isCygwin = true;
@@ -112,10 +130,36 @@ in rec {
       webmIOSupport = true;
       libyuvSupport = true;
     };
+    protobuf3_0 = super.protobuf3_0.overrideDerivation (old: with super; {
+      doCheck = false;
+      nativeBuildInputs = [ autoreconfHook ];
+      buildInputs = [ zlib.crossDrv libtool.crossDrv.lib ];
+    });
+    gst_all_1 = super.gst_all_1.override {
+      fluidsynth = null;
+    };
+    glib = (super.glib.overrideDerivation (old: {
+      patches = old.patches ++ [
+        ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
+        #./fixes/glib/0003-g_abort.all.patch
+        ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
+        #./fixes/glib/0024-return-actually-written-data-in-printf.all.patch
+        ./fixes/glib/0027-no_sys_if_nametoindex.patch
+        ./fixes/glib/0028-inode_directory.patch
+        #./fixes/glib/revert-warn-glib-compile-schemas.patch
+        #./fixes/glib/use-pkgconfig-file-for-intl.patch        
+      ];
+    })).override {
+      libintlOrEmpty = [gettext.crossDrv];
+    };
+    # glib = super.glib.overrideDerivation (old: {
+    #   buildInputs = old.buildInputs ++ [ gettext ];
+    # });
 
     # Our packages
     arcane-chat = windowsCallPackage ./chat {
       doxygen = null;
+      obs-studio = null;
       include-what-you-use = null;
     };
   };

@@ -1,4 +1,4 @@
-{ callPackage, qt56, libva-full, boost155 }:
+{ callPackage, qt56, libva-full, boost155, fluidsynth }:
 
 rec {
   gstreamer = callPackage ./core {};
@@ -9,7 +9,7 @@ rec {
 
   gst-plugins-good = callPackage ./good { inherit gst-plugins-base; };
 
-  gst-plugins-bad = callPackage ./bad { inherit gst-plugins-base; };
+  gst-plugins-bad = callPackage ./bad { inherit gst-plugins-base fluidsynth; };
 
   gst-plugins-ugly = callPackage ./ugly { inherit gst-plugins-base; };
 
