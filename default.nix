@@ -1,96 +1,103 @@
 { nixpkgs ? { outPath = <nixpkgs>; } }:
 
 let
-  config = {
-    cairo.xcbSupport = false;
-  
-    packageOverrides = pkgs: {
-      #glib = pkgs.callPackage ./glib {};
-      libtoxcore-dev = pkgs.libtoxcore-dev.overrideDerivation (old: {
-        src = pkgs.fetchFromGitHub {
-          owner = "TokTok";
-          repo = "toxcore";
-          rev = "05f474b4df8171412237f46c943822edd202b4a9";
-          sha256 = "1wq0nbdcq125gcg7pqwqwa0pvh7zg78drd2f585b0a00m1rhzpdy";
-        };
-        patches = [ ./toxcore.patch ];
-        buildInputs = with pkgs; [ libsodium ];
-        nativeBuildInputs = with pkgs; [ autoreconfHook pkgconfig ];
-        propagatedBuildInputs = [];
-        propagatedNativeBuildInputs = [];
-      });
-
-      rtags = pkgs.stdenv.mkDerivation {
-        name = pkgs.rtags.name;
-        src = pkgs.rtags.override { llvmPackages = pkgs.llvmPackages_39; };
-        buildInputs = [ pkgs.makeWrapper ];
-        buildPhase = "";
-        installPhase = ''
-            VERSION="${pkgs.gcc.cc.version}"
-            SYSTEM="$(basename $(dirname $(dirname $(${pkgs.gcc.cc}/bin/g++ -print-libgcc-file-name))))"
-            FLAGS=""
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.libc}/include"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION/$SYSTEM"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION/backward"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/lib/gcc/$SYSTEM/$VERSION/include"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/lib/gcc/$SYSTEM/$VERSION/include-fixed"
-            FLAGS="$FLAGS \$NIX_CFLAGS_COMPILE"
-            mkdir -p $out/bin
-            cp ./bin/rdm $out/bin/rdm
-            cp ./bin/rp $out/bin/rp
-            cp ./bin/rc $out/bin/rc
-            cp -R ./share $out/
-            wrapProgram $out/bin/rdm \
-                --add-flags "\$(echo $FLAGS | sed 's/-isystem/--isystem/g')"
-        '';
+  commonPackageOverrides = pkgs: {
+    #glib = pkgs.callPackage ./glib {};
+    libtoxcore-dev = pkgs.libtoxcore-dev.overrideDerivation (old: {
+      src = pkgs.fetchFromGitHub {
+        owner = "TokTok";
+        repo = "toxcore";
+        rev = "05f474b4df8171412237f46c943822edd202b4a9";
+        sha256 = "1wq0nbdcq125gcg7pqwqwa0pvh7zg78drd2f585b0a00m1rhzpdy";
       };
+      patches = [ ./toxcore.patch ];
+      buildInputs = with pkgs; [ libsodium ];
+      nativeBuildInputs = with pkgs; [ autoreconfHook pkgconfig ];
+      propagatedBuildInputs = [];
+      propagatedNativeBuildInputs = [];
+    });
 
-      include-what-you-use = pkgs.include-what-you-use.overrideDerivation (old: {
-        name = "include-what-you-use-3.8";
-
-        src = pkgs.fetchFromGitHub {
-          repo   = "include-what-you-use";
-          owner  = "include-what-you-use";
-          rev    = "f09b88aaa0b7bb88a7b36da2ba1cab233659df6e";
-          sha256 = "12ar5dgimyr4nqhn13kya0ijj6z73x8arf9gdnricx5i7fs83xxq";
-        };
-
-        buildInputs = old.buildInputs ++ [ pkgs.python pkgs.makeWrapper ];
-        postInstall = ''
-            patchShebangs $out/bin
-            ln -s ${pkgs.llvmPackages_38.clang-unwrapped}/lib $out/lib
-            VERSION="${pkgs.gcc.cc.version}"
-            SYSTEM="$(basename $(dirname $(dirname $(${pkgs.gcc.cc}/bin/g++ -print-libgcc-file-name))))"
-            FLAGS=""
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.libc}/include"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION/$SYSTEM"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION/backward"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/lib/gcc/$SYSTEM/$VERSION/include"
-            FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/lib/gcc/$SYSTEM/$VERSION/include-fixed"
-            FLAGS="$FLAGS \$NIX_CFLAGS_COMPILE"
-            wrapProgram $out/bin/include-what-you-use --add-flags "$FLAGS"
-        '';
-      });
-
-      cairo = pkgs.cairo.override {
-        xcbSupport = false;
-        glSupport = false;
-        xorg = {
-          libXext = null;
-          libXrender = null;
-          pixman = null;
-        };
-      };
-
-      gst_all_1 = pkgs.recurseIntoAttrs (pkgs.callPackage ./fixes/gstreamer {});
+    rtags = pkgs.stdenv.mkDerivation {
+      name = pkgs.rtags.name;
+      src = pkgs.rtags.override { llvmPackages = pkgs.llvmPackages_39; };
+      buildInputs = [ pkgs.makeWrapper ];
+      buildPhase = "";
+      installPhase = ''
+          VERSION="${pkgs.gcc.cc.version}"
+          SYSTEM="$(basename $(dirname $(dirname $(${pkgs.gcc.cc}/bin/g++ -print-libgcc-file-name))))"
+          FLAGS=""
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.libc}/include"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION/$SYSTEM"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION/backward"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/lib/gcc/$SYSTEM/$VERSION/include"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/lib/gcc/$SYSTEM/$VERSION/include-fixed"
+          FLAGS="$FLAGS \$NIX_CFLAGS_COMPILE"
+          mkdir -p $out/bin
+          cp ./bin/rdm $out/bin/rdm
+          cp ./bin/rp $out/bin/rp
+          cp ./bin/rc $out/bin/rc
+          cp -R ./share $out/
+          wrapProgram $out/bin/rdm \
+              --add-flags "\$(echo $FLAGS | sed 's/-isystem/--isystem/g')"
+      '';
     };
+
+    include-what-you-use = pkgs.include-what-you-use.overrideDerivation (old: {
+      name = "include-what-you-use-3.8";
+
+      src = pkgs.fetchFromGitHub {
+        repo   = "include-what-you-use";
+        owner  = "include-what-you-use";
+        rev    = "f09b88aaa0b7bb88a7b36da2ba1cab233659df6e";
+        sha256 = "12ar5dgimyr4nqhn13kya0ijj6z73x8arf9gdnricx5i7fs83xxq";
+      };
+
+      buildInputs = old.buildInputs ++ [ pkgs.python pkgs.makeWrapper ];
+      postInstall = ''
+          patchShebangs $out/bin
+          ln -s ${pkgs.llvmPackages_38.clang-unwrapped}/lib $out/lib
+          VERSION="${pkgs.gcc.cc.version}"
+          SYSTEM="$(basename $(dirname $(dirname $(${pkgs.gcc.cc}/bin/g++ -print-libgcc-file-name))))"
+          FLAGS=""
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.libc}/include"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION/$SYSTEM"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/include/c++/$VERSION/backward"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/lib/gcc/$SYSTEM/$VERSION/include"
+          FLAGS="$FLAGS -isystem ${pkgs.gcc.cc}/lib/gcc/$SYSTEM/$VERSION/include-fixed"
+          FLAGS="$FLAGS \$NIX_CFLAGS_COMPILE"
+          wrapProgram $out/bin/include-what-you-use --add-flags "$FLAGS"
+      '';
+    });
+
+    cairo = pkgs.cairo.override {
+      xcbSupport = false;
+      glSupport = false;
+      xorg = {
+        libXext = null;
+        libXrender = null;
+        pixman = null;
+      };
+    };
+
+    gst_all_1 = pkgs.recurseIntoAttrs (pkgs.callPackage ./fixes/gstreamer {});
+  };
+  linuxPackageOverrides = pkgs: {
+  };
+  windowsPackageOverrides = pkgs: {
+  };
+  makeConfig = linux: let
+    localOverrides = if linux then linuxPackageOverrides else windowsPackageOverrides;
+  in {
+    cairo.xcbSupport = false;
+    packageOverrides = pkgs: (commonPackageOverrides pkgs) // (localOverrides pkgs);
   };
 in rec {
-  linuxPkgs = import nixpkgs.outPath { inherit config; };
+  inherit makeConfig commonPackageOverrides linuxPackageOverrides windowsPackageOverrides;
+  linuxPkgs = import nixpkgs.outPath { config = makeConfig true; };
   linuxCallPackage = linuxPkgs.qt56.newScope linux;
   linux = rec {
     # Boilerplate
@@ -108,7 +115,7 @@ in rec {
       #platform       = {};
       openssl.system = "mingw64";
     };
-    inherit config;
+    config = makeConfig false;
   };
   windowsCallPackage = windowsPkgs.qt56.newScope windows;
   windows = rec {
