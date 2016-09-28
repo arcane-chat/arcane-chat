@@ -117,37 +117,88 @@ let
       fluidsynth = null;
     };
 
-    glib = pkgs.glib // {
-      crossDrv =
-         let inherit (pkgs.stdenv.lib) overrideDerivation;
-             overridenGlib = pkgs.glib.override {
-                               libintlOrEmpty = [ gettext.crossDrv ];
-                             };
-         in overrideDerivation overridenGlib.crossDrv (old: {
-        CPPFLAGS = " -DMINGW_HAS_SECURE_API=1 ";
+    glib =
+      let inherit (pkgs.stdenv.lib) overrideDerivation;
+          glibOverride = pkgs.glib.override {
+            libintlOrEmpty = [ gettext ];
+          };
+          glibOverrideCross = pkgs.glib.override {
+            libintlOrEmpty = [ gettext.crossDrv ];
+          };
+          glibFixed = overrideDerivation glibOverride (old: {
+            configureFlags = old.configureFlags ++ [ "--with-libiconv=gnu" ];
+          });
+      in glibFixed // {
+        crossDrv = overrideDerivation glibOverrideCross.crossDrv (old: {
+          CPPFLAGS = " -DMINGW_HAS_SECURE_API=1 ";
 
-        buildInputs = old.buildInputs ++ [
-          pkgs.windows.mingw_w64_pthreads.crossDrv
-        ];
+          buildInputs = old.buildInputs ++ [
+            pkgs.windows.mingw_w64_pthreads.crossDrv
+          ];
 
-        dontDisableStatic = true;
+          dontDisableStatic = true;
 
-        configureFlags = old.configureFlags ++ [
+          configureFlags = old.configureFlags ++ [
+            "--enable-static"
+            "--disable-shared"
+            "--disable-libelf"
+            "--with-threads=posix"
+            "--with-libiconv=gnu"
+            "--disable-installed-tests"
+          ];
+
+          # postBuild = ''
+          #     printf "\n\n\n\n\n\n"
+          #     echo "*** Rebuilding with shared library support ***"
+          #     export configureFlags="$configureFlags --disable-static --enable-shared"
+          #     configurePhase
+          #     buildPhase
+          # '';
+
+          patches = old.patches ++ [
+            ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
+            ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
+            ./fixes/glib/0027-no_sys_if_nametoindex.patch
+            ./fixes/glib/0028-inode_directory.patch
+          ];
+        });
+      };
+
+    glibmm = pkgs.glibmm // {
+      crossDrv = pkgs.stdenv.lib.overrideDerivation pkgs.glibmm.crossDrv (old: {
+        configureFlags = [
           "--enable-static"
           "--disable-shared"
-          "--disable-libelf"
-          "--with-threads=posix"
-          "--disable-installed-tests"
+          "--disable-documentation"
         ];
-
-        patches = old.patches ++ [
-          ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
-          ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
-          ./fixes/glib/0027-no_sys_if_nametoindex.patch
-          ./fixes/glib/0028-inode_directory.patch
+        nativeBuildInputs = old.nativeBuildInputs ++ [ glib.dev ];
+        buildInputs = old.buildInputs ++ [
+          mingw-std-threads.crossDrv
+          pkgs.windows.mingw_w64_pthreads.crossDrv
         ];
       });
     };
+
+    mingw-std-threads = pkgs.stdenv.mkDerivation rec {
+      name = "mingw-std-threads-20160912";
+
+      src = pkgs.fetchFromGitHub {
+        owner = "meganz";
+        repo = "mingw-std-threads";
+        rev = "d81ca0b7514a0ded6c329f84be9e5f07829d2418";
+        sha256 = "13qf3rb25d3c7z8jrclh9mxv6qs28kzymvag7nr9j25jq0j81r0d";
+      };
+
+      dontBuild = true;
+
+      installPhase = ''
+          mkdir -p $out/include
+          cp mingw.condition_variable.h $out/include/condition_variable
+          cp mingw.mutex.h              $out/include/mutex
+          cp mingw.thread.h             $out/include/thread
+      '';
+    };
+
   };
 
   makeConfig = localOverrides: {
