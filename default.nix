@@ -164,8 +164,20 @@ let
         });
       };
 
+    zeromq4 = let inherit (pkgs.stdenv.lib) overrideDerivation;
+                  zmq4 = pkgs.zeromq4.override { libuuid = null; };
+              in zmq4 // {
+                crossDrv = overrideDerivation zmq4.crossDrv (old: {
+                  patches = [
+                    ./fixes/zeromq/includes-consistent.patch
+                    ./fixes/zeromq/winxp-compatibility.patch
+                  ];
+                });
+              };
+
     glibmm = pkgs.glibmm // {
       crossDrv = pkgs.stdenv.lib.overrideDerivation pkgs.glibmm.crossDrv (old: {
+        CPPFLAGS = " -D_REENTRANT ";
         configureFlags = [
           "--enable-static"
           "--disable-shared"
@@ -173,7 +185,7 @@ let
         ];
         nativeBuildInputs = old.nativeBuildInputs ++ [ glib.dev ];
         buildInputs = old.buildInputs ++ [
-          mingw-std-threads.crossDrv
+          #mingw-std-threads.crossDrv
           pkgs.windows.mingw_w64_pthreads.crossDrv
         ];
       });

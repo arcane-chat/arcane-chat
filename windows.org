@@ -1,0 +1,22 @@
+- TODO for Windows cross-build
+  - [X] binutils-2.27-mingw
+  - [X] glib-2.48.2-mingw
+    - Shared library build doesn't work yet
+  - [ ] glibmm-2.48.1-mingw
+  - [ ] gst-libav-1.9.2-mingw
+  - [ ] gst-plugins-bad-1.9.2-mingw
+  - [ ] gst-plugins-base-1.9.2-mingw
+  - [ ] gst-plugins-good-1.9.2-mingw
+  - [ ] gst-plugins-ugly-1.9.2-mingw
+  - [ ] gstreamer-1.9.2-mingw
+  - [ ] gstreamermm-1.4.3-mingw
+  - [X] libmsgpack-2.0.0-mingw
+  - [X] libsigc++-2.8.0-mingw
+  - [X] libsodium-1.0.10-mingw
+  - [X] nlohmann_json-2.0.3-mingw
+  - [X] protobuf-3.0.0-mingw
+  - [ ] qtbase-5.6.1-1-mingw
+  - [ ] qt-gstreamer-1.2.0-mingw
+  - [ ] qtscript-5.6.1-1-mingw
+  - [ ] tox-core-dev-20160319-mingw
+  - [X] zeromq-4.1.4-mingw
