@@ -89,47 +89,64 @@ let
       };
     };
 
-    gettext = pkgs.gettext.overrideDerivation (old: {
-      buildInputs = [ pkgs.libiconv ]; # crossDrv?
-    });
-    
+    gettext = pkgs.gettext // {
+      crossDrv = pkgs.stdenv.lib.overrideDerivation pkgs.gettext.crossDrv (old: {
+        buildInputs = [ pkgs.libiconv.crossDrv ];
+      });
+    };
+
     libmsgpack = pkgs.callPackage ./fixes/libmsgpack.nix {};
-    
+
     nlohmann_json = pkgs.callPackage ./fixes/nlohmann_json.nix {};
-    
+
     #protobuf3_0 = pkgs.callPackage ./fixes/protobuf.nix {};
     protobuf3_0 = pkgs.protobuf3_0.overrideDerivation (old: with pkgs; {
       doCheck = false;
       nativeBuildInputs = [ autoreconfHook ];
-      buildInputs = [ zlib libtool.lib ]; # crossDrv?
+      buildInputs = [ zlib.crossDrv libtool.crossDrv.lib ];
     });
 
     libvpx = pkgs.libvpx.override {
-      stdenv = pkgs.stdenv // {
-        isCygwin = true;
-      };
+      stdenv = pkgs.stdenv // { isCygwin = true; };
       unitTestsSupport = true;
       webmIOSupport = true;
       libyuvSupport = true;
     };
-    
+
     gst_all_1 = pkgs.gst_all_1.override {
       fluidsynth = null;
     };
-    
-    glib = (pkgs.glib.overrideDerivation (old: {
-      patches = old.patches ++ [
-        ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
-        #./fixes/glib/0003-g_abort.all.patch
-        ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
-        #./fixes/glib/0024-return-actually-written-data-in-printf.all.patch
-        ./fixes/glib/0027-no_sys_if_nametoindex.patch
-        ./fixes/glib/0028-inode_directory.patch
-        #./fixes/glib/revert-warn-glib-compile-schemas.patch
-        #./fixes/glib/use-pkgconfig-file-for-intl.patch
-      ];
-    })).override {
-      libintlOrEmpty = [ gettext ]; # crossDrv?
+
+    glib = pkgs.glib // {
+      crossDrv =
+         let inherit (pkgs.stdenv.lib) overrideDerivation;
+             overridenGlib = pkgs.glib.override {
+                               libintlOrEmpty = [ gettext.crossDrv ];
+                             };
+         in overrideDerivation overridenGlib.crossDrv (old: {
+        CPPFLAGS = " -DMINGW_HAS_SECURE_API=1 ";
+
+        buildInputs = old.buildInputs ++ [
+          pkgs.windows.mingw_w64_pthreads.crossDrv
+        ];
+
+        dontDisableStatic = true;
+
+        configureFlags = old.configureFlags ++ [
+          "--enable-static"
+          "--disable-shared"
+          "--disable-libelf"
+          "--with-threads=posix"
+          "--disable-installed-tests"
+        ];
+
+        patches = old.patches ++ [
+          ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
+          ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
+          ./fixes/glib/0027-no_sys_if_nametoindex.patch
+          ./fixes/glib/0028-inode_directory.patch
+        ];
+      });
     };
   };
 
@@ -144,7 +161,7 @@ in rec {
           commonPackageOverrides
           linuxPackageOverrides
           windowsPackageOverrides;
-          
+
   linuxPkgs = import nixpkgs.outPath {
     config = makeConfig linuxPackageOverrides;
   };
