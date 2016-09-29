@@ -1,4 +1,5 @@
 { nixpkgs ? { outPath = <nixpkgs>; } }:
+#{ nixpkgs ? ({ outPath = ./nixpkgs; }) }:
 
 let
   commonPackageOverrides = pkgs: rec {
@@ -72,7 +73,86 @@ let
       '';
     });
 
+    windows = pkgs.windows // {
+      mingw_w64 = pkgs.callPackage ./fixes/mingw-w64.nix {
+        gccCross = pkgs.gccCrossStageStatic;
+        binutilsCross = pkgs.binutilsCross;
+      };
+
+      mingw_w64_headers = pkgs.callPackage ./fixes/mingw-w64.nix {
+        onlyHeaders = true;
+      };
+
+      mingw_w64_pthreads = pkgs.callPackage ./fixes/mingw-w64.nix {
+        onlyPthreads = true;
+      };
+    };
+
+    mingw-std-threads = pkgs.stdenv.mkDerivation rec {
+      name = "mingw-std-threads-20160912";
+
+      src = pkgs.fetchFromGitHub {
+        owner = "meganz";
+        repo = "mingw-std-threads";
+        rev = "d81ca0b7514a0ded6c329f84be9e5f07829d2418";
+        sha256 = "13qf3rb25d3c7z8jrclh9mxv6qs28kzymvag7nr9j25jq0j81r0d";
+      };
+
+      inherit (pkgs.stdenv.cc) cc;
+
+      buildPhase = ''
+          local INCLUDE
+          INCLUDE="${cc.out}/include/c++/${cc.version}"
+
+          function footer () {
+              printf "\n"
+              printf "#ifdef THREAD_PRIORITY_NORMAL\n"
+              printf "#undef THREAD_PRIORITY_NORMAL\n"
+              printf "#endif\n"
+          }
+
+          printf "#include \"%s\"\n" "$INCLUDE/mutex" > mutex
+
+          { cat "mingw.condition_variable.h"; footer; } >> condition_variable
+          { cat "mingw.thread.h";             footer; } >> thread
+          { cat "mingw.mutex.h";              footer; } >> mutex
+      '';
+
+      installPhase = ''
+          mkdir -p $out/include
+          cp condition_variable $out/include/
+          cp mutex              $out/include/
+          cp thread             $out/include/
+      '';
+    };
+
     gst_all_1 = pkgs.recurseIntoAttrs (pkgs.callPackage ./fixes/gstreamer {});
+
+    libsigcxx = pkgs.libsigcxx.overrideDerivation (old: rec {
+      name = "libsigc++-2.9.3";
+      src = pkgs.fetchurl {
+        url = "mirror://gnome/sources/libsigc++/2.9/${name}.tar.xz";
+        sha256 = "0zq963d0sss82q62fdfjs7l9iwbdch51albck18cb631ml0v7y8b";
+      };
+    });
+
+    glib = pkgs.glib.overrideDerivation (old: rec {
+      name = "glib-2.50.0";
+      src = pkgs.fetchurl {
+        url = "mirror://gnome/sources/glib/2.50/${name}.tar.xz";
+        sha256 = "0w3x3gq7hn4l93cn9kx84jwq43dvqnrhb4kj29pa1g96lqgma2w3";
+      };
+
+      configureFlags = old.configureFlags ++ [ "--disable-libmount" ];
+    });
+
+    glibmm = pkgs.glibmm.overrideDerivation (old: rec {
+      name = "glibmm-2.50.0";
+      src = pkgs.fetchurl {
+        url = "mirror://gnome/sources/glibmm/2.50/${name}.tar.xz";
+        sha256 = "152yz5w0lx0y5j9ml72az7pc83p4l92bc0sb8whpcazldqy6wwnz";
+      };
+    });
   };
 
   linuxPackageOverrides = pkgs: rec {
@@ -99,7 +179,6 @@ let
 
     nlohmann_json = pkgs.callPackage ./fixes/nlohmann_json.nix {};
 
-    #protobuf3_0 = pkgs.callPackage ./fixes/protobuf.nix {};
     protobuf3_0 = pkgs.protobuf3_0.overrideDerivation (old: with pkgs; {
       doCheck = false;
       nativeBuildInputs = [ autoreconfHook ];
@@ -130,8 +209,6 @@ let
           });
       in glibFixed // {
         crossDrv = overrideDerivation glibOverrideCross.crossDrv (old: {
-          CPPFLAGS = " -DMINGW_HAS_SECURE_API=1 ";
-
           buildInputs = old.buildInputs ++ [
             pkgs.windows.mingw_w64_pthreads.crossDrv
           ];
@@ -149,9 +226,11 @@ let
 
           # postBuild = ''
           #     printf "\n\n\n\n\n\n"
-          #     echo "*** Rebuilding with shared library support ***"
-          #     export configureFlags="$configureFlags --disable-static --enable-shared"
+          #     echo "\e[31mReconfiguring with shared library support\e[0m"
+          #     export configureFlags="$configureFlags --enable-shared"
           #     configurePhase
+          #     printf "\n\n\n\n\n\n"
+          #     echo "\e[31mRebuilding with shared library support\e[0m"
           #     buildPhase
           # '';
 
@@ -177,40 +256,20 @@ let
 
     glibmm = pkgs.glibmm // {
       crossDrv = pkgs.stdenv.lib.overrideDerivation pkgs.glibmm.crossDrv (old: {
-        CPPFLAGS = " -D_REENTRANT ";
         configureFlags = [
           "--enable-static"
           "--disable-shared"
           "--disable-documentation"
         ];
+
         nativeBuildInputs = old.nativeBuildInputs ++ [ glib.dev ];
+
         buildInputs = old.buildInputs ++ [
-          #mingw-std-threads.crossDrv
+          pkgs.mingw-std-threads
           pkgs.windows.mingw_w64_pthreads.crossDrv
         ];
       });
     };
-
-    mingw-std-threads = pkgs.stdenv.mkDerivation rec {
-      name = "mingw-std-threads-20160912";
-
-      src = pkgs.fetchFromGitHub {
-        owner = "meganz";
-        repo = "mingw-std-threads";
-        rev = "d81ca0b7514a0ded6c329f84be9e5f07829d2418";
-        sha256 = "13qf3rb25d3c7z8jrclh9mxv6qs28kzymvag7nr9j25jq0j81r0d";
-      };
-
-      dontBuild = true;
-
-      installPhase = ''
-          mkdir -p $out/include
-          cp mingw.condition_variable.h $out/include/condition_variable
-          cp mingw.mutex.h              $out/include/mutex
-          cp mingw.thread.h             $out/include/thread
-      '';
-    };
-
   };
 
   makeConfig = localOverrides: {

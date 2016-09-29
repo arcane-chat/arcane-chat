@@ -2,7 +2,7 @@
   - [X] binutils-2.27-mingw
   - [X] glib-2.48.2-mingw
     - Shared library build doesn't work yet
-  - [ ] glibmm-2.48.1-mingw
+  - [X] glibmm-2.48.1-mingw
   - [ ] gst-libav-1.9.2-mingw
   - [ ] gst-plugins-bad-1.9.2-mingw
   - [ ] gst-plugins-base-1.9.2-mingw
