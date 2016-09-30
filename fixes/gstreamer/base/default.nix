@@ -41,7 +41,7 @@ stdenv.mkDerivation rec {
     "--disable-libvisual"
     # Undefined symbols _cdda_identify and _cdda_identify_scsi in cdparanoia
     "--disable-cdparanoia"
-  ] else if stdenv.cross.libc == "msvcrt" then [
+  ] else if stdenv ? cross && stdenv.cross.libc == "msvcrt" then [
     "--disable-x"
   ] else null;
 
