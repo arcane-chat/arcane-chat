@@ -17,6 +17,8 @@ stdenv.mkDerivation rec {
 
   configureFlagsArray = ["--disable-unittests"];
 
+  patches = [ ./glibmm-2.50.patch ];
+
   meta = with stdenv.lib; {
     description = "C++ interface for GStreamer";
     homepage = http://gstreamer.freedesktop.org/bindings/cplusplus.html;

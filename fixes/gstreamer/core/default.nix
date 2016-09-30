@@ -1,8 +1,11 @@
 { stdenv, fetchurl, pkgconfig, perl, bison, flex, python, gobjectIntrospection
-, glib, makeWrapper
+, glib, makeWrapper, windows
 }:
 
-stdenv.mkDerivation rec {
+with stdenv.lib;
+
+let nativeLinux = stdenv.isLinux && !(stdenv ? cross);
+in stdenv.mkDerivation rec {
   name = "gstreamer-1.9.2";
 
   meta = {
@@ -25,9 +28,19 @@ stdenv.mkDerivation rec {
     pkgconfig perl bison flex python gobjectIntrospection makeWrapper
   ];
 
+  buildInputs = optionals (!nativeLinux) [
+    windows.mingw_w64_pthreads
+  ];
+
   propagatedBuildInputs = [ glib ];
 
   enableParallelBuilding = true;
+
+  configureFlags = optionals (!nativeLinux) [
+    "--disable-shared"
+    "--enable-static"
+    "--disable-fatal-warnings"
+  ];
 
   preConfigure = ''
     configureFlagsArray+=("--exec-prefix=$dev")

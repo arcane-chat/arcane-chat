@@ -25,25 +25,29 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
-    orc pango libtheora cdparanoia libopus
+    orc libtheora libopus
   ]
   ++ libintlOrEmpty
-  ++ stdenv.lib.optionals stdenv.isLinux [
+  ++ stdenv.lib.optionals (stdenv.isLinux && !(stdenv ? cross)) [
     alsaLib
+    cdparanoia
+    pango
     libvisual
     libXv
   ];
 
   propagatedBuildInputs = [ gstreamer ];
 
-  configureFlags = if stdenv.isDarwin then [
-    # Does not currently build on Darwin
-    "--disable-libvisual"
-    # Undefined symbols _cdda_identify and _cdda_identify_scsi in cdparanoia
+  configureFlags = if (!stdenv.isLinux || (stdenv ? cross)) then [
+    "--disable-shared"
+    "--enable-static"
     "--disable-cdparanoia"
-  ] else if stdenv ? cross && stdenv.cross.libc == "msvcrt" then [
+    "--disable-libvisual"
+    "--disable-pango"
     "--disable-x"
-  ] else null;
+    "--disable-fatal-warnings"
+  ] else [
+  ];
 
   NIX_LDFLAGS = if stdenv.isDarwin then "-lintl" else null;
 

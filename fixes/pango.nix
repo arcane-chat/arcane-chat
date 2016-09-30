@@ -4,11 +4,10 @@
 
 with stdenv.lib;
 
-let
-  ver_maj = "1.40";
-  ver_min = "2";
-in
-stdenv.mkDerivation rec {
+let ver_maj = "1.40";
+    ver_min = "2";
+    nativeLinux = stdenv.isLinux && !(stdenv ? cross);
+in stdenv.mkDerivation rec {
   name = "pango-${ver_maj}.${ver_min}";
 
   src = fetchurl {
@@ -18,10 +17,9 @@ stdenv.mkDerivation rec {
 
   outputs = [ "bin" "dev" "out" "devdoc" ];
 
-  buildInputs = [ gobjectIntrospection ];
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ pkgconfig gobjectIntrospection ];
   propagatedBuildInputs = [ cairo harfbuzz ]
-                          ++ optional stdenv.isLinux libXft
+                          ++ optional nativeLinux libXft
                           ++ libintlOrEmpty;
 
   enableParallelBuilding = true;
