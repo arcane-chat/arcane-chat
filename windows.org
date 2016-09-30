@@ -8,7 +8,7 @@
   - [ ] gst-plugins-base-1.9.2-mingw
   - [ ] gst-plugins-good-1.9.2-mingw
   - [ ] gst-plugins-ugly-1.9.2-mingw
-  - [ ] gstreamer-1.9.2-mingw
+  - [X] gstreamer-1.9.2-mingw
   - [ ] gstreamermm-1.4.3-mingw
   - [X] libmsgpack-2.0.0-mingw
   - [X] libsigc++-2.8.0-mingw

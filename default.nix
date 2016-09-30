@@ -128,6 +128,10 @@ let
 
     gst_all_1 = pkgs.recurseIntoAttrs (pkgs.callPackage ./fixes/gstreamer {});
 
+    # gobjectIntrospection = pkgs.callPackage ./fixes/gobject-introspection {};
+
+    # pango = pkgs.callPackage ./fixes/pango.nix {};
+
     libsigcxx = pkgs.libsigcxx.overrideDerivation (old: rec {
       name = "libsigc++-2.9.3";
       src = pkgs.fetchurl {
@@ -192,9 +196,37 @@ let
       libyuvSupport = true;
     };
 
-    gst_all_1 = pkgs.gst_all_1.override {
-      fluidsynth = null;
-    };
+    gst_all_1 =
+      let super = pkgs.gst_all_1.override { fluidsynth = null; };
+      in super // {
+        gstreamer = super.gstreamer.overrideDerivation (old: {
+          CFLAGS = " -Wno-error ";
+          CXXFLAGS = " -Wno-error ";
+
+          configureFlags = [
+            "--disable-shared"
+            "--enable-static"
+          ];
+
+          buildInputs = old.buildInputs ++ [
+            pkgs.windows.mingw_w64_pthreads.crossDrv
+          ];
+        });
+
+        gst-plugins-base = super.gst-plugins-base.overrideDerivation (old: {
+          #CFLAGS = " -Wno-error ";
+          #CXXFLAGS = " -Wno-error ";
+
+          configureFlags = [
+            "--disable-shared"
+            "--enable-static"
+          ];
+
+          #buildInputs = old.buildInputs ++ [
+          #  pkgs.windows.mingw_w64_pthreads.crossDrv
+          #];
+        });
+      };
 
     glib =
       let inherit (pkgs.stdenv.lib) overrideDerivation;
@@ -270,6 +302,134 @@ let
         ];
       });
     };
+
+    # python2 = pkgs.python2.overrideDerivation (old: {
+    #   prePatch = ''
+    #       rm -f Misc/config_mingw \
+    #             Misc/cross_mingw32 \
+    #             Misc/python-config.sh.in \
+    #             Misc/cross_mingw32 \
+    #             Misc/python-config-u.sh.in \
+    #             Python/fileblocks.c \
+    #             Lib/list2cmdline.py
+    #   '';
+    #  
+    #   postPatch = ''
+    #       #autoreconf -vfi
+    #  
+    #       sed -i "/SQLITE_OMIT_LOAD_EXTENSION/d" setup.py
+    #  
+    #       touch Include/graminit.h
+    #       touch Python/graminit.c
+    #       touch Parser/Python.asdl
+    #       touch Parser/asdl.py
+    #       touch Parser/asdl_c.py
+    #       touch Include/Python-ast.h
+    #       touch Python/Python-ast.c
+    #       echo \"\" > Parser/pgen.stamp
+    #  
+    #       rm -r Modules/expat
+    #       rm -r Modules/zlib
+    #       rm -r Modules/_ctypes/{darwin,libffi}*
+    #  
+    #       export CFLAGS+=" -fwrapv -D__USE_MINGW_ANSI_STDIO=1 "
+    #       export CXXFLAGS+=" -fwrapv -D__USE_MINGW_ANSI_STDIO=1 "
+    #       export CPPFLAGS+=" -I$PREFIX_WIN/include/ncursesw "
+    #  
+    #       export ac_cv_working_tzset=no
+    #   '';
+    #  
+    #   configureFlags = old.configureFlags ++ [
+    #     "--with-system-expat"
+    #     "--with-system-ffi"
+    #   ];
+    #  
+    #   patches = [
+    #     ./fixes/python2/0000-make-_sysconfigdata.py-relocatable.patch
+    #     ./fixes/python2/0001-fix-_nt_quote_args-using-subprocess-list2cmdline.patch
+    #     ./fixes/python2/0100-MINGW-BASE-use-NT-thread-model.patch
+    #     ./fixes/python2/0110-MINGW-translate-gcc-internal-defines-to-python-platf.patch
+    #     ./fixes/python2/0120-MINGW-use-header-in-lowercase.patch
+    #     ./fixes/python2/0130-MINGW-configure-MACHDEP-and-platform-for-build.patch
+    #     ./fixes/python2/0140-MINGW-preset-configure-defaults.patch
+    #     ./fixes/python2/0150-MINGW-configure-largefile-support-for-windows-builds.patch
+    #     ./fixes/python2/0160-MINGW-add-wincrypt.h-in-Python-random.c.patch
+    #     ./fixes/python2/0180-MINGW-init-system-calls.patch
+    #     ./fixes/python2/0190-MINGW-detect-REPARSE_DATA_BUFFER.patch
+    #     ./fixes/python2/0200-MINGW-build-in-windows-modules-winreg.patch
+    #     ./fixes/python2/0210-MINGW-determine-if-pwdmodule-should-be-used.patch
+    #     ./fixes/python2/0220-MINGW-default-sys.path-calculations-for-windows-plat.patch
+    #     ./fixes/python2/0230-MINGW-AC_LIBOBJ-replacement-of-fileblocks.patch
+    #     ./fixes/python2/0250-MINGW-compiler-customize-mingw-cygwin-compilers.patch
+    #     ./fixes/python2/0270-CYGWIN-issue13756-Python-make-fail-on-cygwin.patch
+    #     ./fixes/python2/0290-issue6672-v2-Add-Mingw-recognition-to-pyport.h-to-al.patch
+    #     ./fixes/python2/0300-MINGW-configure-for-shared-build.patch
+    #     ./fixes/python2/0310-MINGW-dynamic-loading-support.patch
+    #     ./fixes/python2/0320-MINGW-implement-exec-prefix.patch
+    #     ./fixes/python2/0330-MINGW-ignore-main-program-for-frozen-scripts.patch
+    #     ./fixes/python2/0340-MINGW-setup-exclude-termios-module.patch
+    #     ./fixes/python2/0350-MINGW-setup-_multiprocessing-module.patch
+    #     ./fixes/python2/0360-MINGW-setup-select-module.patch
+    #     ./fixes/python2/0370-MINGW-setup-_ctypes-module-with-system-libffi.patch
+    #     ./fixes/python2/0380-MINGW-defect-winsock2-and-setup-_socket-module.patch
+    #     ./fixes/python2/0390-MINGW-exclude-unix-only-modules.patch
+    #     ./fixes/python2/0400-MINGW-setup-msvcrt-module.patch
+    #     ./fixes/python2/0410-MINGW-build-extensions-with-GCC.patch
+    #     ./fixes/python2/0420-MINGW-use-Mingw32CCompiler-as-default-compiler-for-m.patch
+    #     ./fixes/python2/0430-MINGW-find-import-library.patch
+    #     ./fixes/python2/0440-MINGW-setup-_ssl-module.patch
+    #     ./fixes/python2/0460-MINGW-generalization-of-posix-build-in-sysconfig.py.patch
+    #     ./fixes/python2/0462-MINGW-support-stdcall-without-underscore.patch
+    #     ./fixes/python2/0480-MINGW-generalization-of-posix-build-in-distutils-sys.patch
+    #     ./fixes/python2/0490-MINGW-customize-site.patch
+    #     ./fixes/python2/0500-add-python-config-sh.patch
+    #     ./fixes/python2/0510-cross-darwin-feature.patch
+    #     ./fixes/python2/0520-py3k-mingw-ntthreads-vs-pthreads.patch
+    #     ./fixes/python2/0530-mingw-system-libffi.patch
+    #     ./fixes/python2/0540-mingw-semicolon-DELIM.patch
+    #     ./fixes/python2/0550-mingw-regen-use-stddef_h.patch
+    #     ./fixes/python2/0560-mingw-use-posix-getpath.patch
+    #     ./fixes/python2/0565-mingw-add-ModuleFileName-dir-to-PATH.patch
+    #     ./fixes/python2/0570-mingw-add-BUILDIN_WIN32_MODULEs-time-msvcrt.patch
+    #     ./fixes/python2/0580-mingw32-test-REPARSE_DATA_BUFFER.patch
+    #     ./fixes/python2/0590-mingw-INSTALL_SHARED-LDLIBRARY-LIBPL.patch
+    #     ./fixes/python2/0600-msys-mingw-prefer-unix-sep-if-MSYSTEM.patch
+    #     ./fixes/python2/0610-msys-cygwin-semi-native-build-sysconfig.patch
+    #     ./fixes/python2/0620-mingw-sysconfig-like-posix.patch
+    #     ./fixes/python2/0630-mingw-_winapi_as_builtin_for_Popen_in_cygwinccompiler.patch
+    #     ./fixes/python2/0640-mingw-x86_64-size_t-format-specifier-pid_t.patch
+    #     ./fixes/python2/0650-cross-dont-add-multiarch-paths-if-cross-compiling.patch
+    #     ./fixes/python2/0660-mingw-use-backslashes-in-compileall-py.patch
+    #     ./fixes/python2/0670-msys-convert_path-fix-and-root-hack.patch
+    #     ./fixes/python2/0690-allow-static-tcltk.patch
+    #     ./fixes/python2/0710-CROSS-properly-detect-WINDOW-_flags-for-different-nc.patch
+    #     ./fixes/python2/0720-mingw-pdcurses_ISPAD.patch
+    #     ./fixes/python2/0740-grammar-fixes.patch
+    #     ./fixes/python2/0750-Add-interp-Python-DESTSHARED-to-PYTHONPATH-b4-pybuilddir-txt-dir.patch
+    #     ./fixes/python2/0760-msys-monkeypatch-os-system-via-sh-exe.patch
+    #     ./fixes/python2/0770-msys-replace-slashes-used-in-io-redirection.patch
+    #     ./fixes/python2/0790-mingw-add-_exec_prefix-for-tcltk-dlls.patch
+    #     ./fixes/python2/0800-mingw-install-layout-as-posix.patch
+    #     ./fixes/python2/0820-mingw-reorder-bininstall-ln-symlink-creation.patch
+    #     ./fixes/python2/0830-add-build-sysroot-config-option.patch
+    #     ./fixes/python2/0840-add-builddir-to-library_dirs.patch
+    #     ./fixes/python2/0845-Remove-compiler-lib-dirs-from-extension-lib-dirs.patch
+    #     ./fixes/python2/0850-cross-PYTHON_FOR_BUILD-gteq-276-and-fullpath-it.patch
+    #     ./fixes/python2/0855-mingw-fix-ssl-dont-use-enum_certificates.patch
+    #     ./fixes/python2/0860-mingw-build-optimized-ext.patch
+    #     ./fixes/python2/0870-mingw-add-LIBPL-to-library-dirs.patch
+    #     ./fixes/python2/0910-fix-using-dllhandle-and-winver-mingw.patch
+    #     ./fixes/python2/0970-Add-AMD64-to-sys-config-so-msvccompiler-get_build_version-works.patch
+    #     ./fixes/python2/0980-mingw-readline-features-skip.patch
+    #     ./fixes/python2/1000-dont-link-with-gettext.patch
+    #     ./fixes/python2/1010-ctypes-python-dll.patch
+    #     ./fixes/python2/1020-gdbm-module-includes.patch
+    #     ./fixes/python2/1030-use-gnu_printf-in-format.patch
+    #     ./fixes/python2/1040-install-msilib.patch
+    #     ./fixes/python2/1050-skip-add-db-includes-for-win.patch
+    #     ./fixes/python2/2000-distutils-add-windmc-to-cygwinccompiler.patch
+    #   ];
+    # });
   };
 
   makeConfig = localOverrides: {
