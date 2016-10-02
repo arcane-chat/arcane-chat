@@ -197,6 +197,7 @@ let
     libiec61883 = null;
     xorg = pkgs.xorg // {
       libxcb = pkgs.forceNativeDrv pkgs.xorg.libxcb;
+      libXdmcp = pkgs.forceNativeDrv pkgs.xorg.libXdmcp;
     };
     python = pkgs.forceNativeDrv pkgs.python;
     cups = pkgs.forceNativeDrv pkgs.cups;
