@@ -203,6 +203,8 @@ let
     coreutils = pkgs.forceNativeDrv pkgs.coreutils;
     libpulseaudio = pkgs.forceNativeDrv pkgs.libpulseaudio;
     cmake = pkgs.forceNativeDrv pkgs.cmake;
+    v4l_utils = null;
+    libv4l = null;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
