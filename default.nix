@@ -176,7 +176,21 @@ let
       };
     };
 
+    libtasn1 = pkgs.libtasn1.override {
+      perl = pkgs.forceNativeDrv pkgs.perl;
+      texinfo = pkgs.forceNativeDrv pkgs.texinfo;
+    };
+
+    # the ugly fixes
     ruby = null;
+    mesaSupported = false;
+    libcdio = null;
+    lzip = null;
+    systemd = pkgs.forceNativeDrv pkgs.systemd;
+    help2man = pkgs.forceNativeDrv pkgs.help2man;
+    libgsf = pkgs.forceNativeDrv pkgs.libgsf;
+    intltool = pkgs.forceNativeDrv pkgs.intltool;
+    perl = pkgs.forceNativeDrv pkgs.perl;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
