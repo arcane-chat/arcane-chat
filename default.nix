@@ -205,6 +205,7 @@ let
     cmake = pkgs.forceNativeDrv pkgs.cmake;
     v4l_utils = null;
     libv4l = null;
+    postgresql = null;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
