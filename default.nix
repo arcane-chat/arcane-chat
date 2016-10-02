@@ -195,6 +195,10 @@ let
     taglib = null;
     libavc1394 = null;
     libiec61883 = null;
+    xorg = pkgs.xorg // {
+      libxcb = pkgs.forceNativeDrv pkgs.xorg.libxcb;
+    };
+    python = pkgs.forceNativeDrv pkgs.python;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
