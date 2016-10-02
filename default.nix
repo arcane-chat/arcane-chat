@@ -199,6 +199,10 @@ let
       libxcb = pkgs.forceNativeDrv pkgs.xorg.libxcb;
     };
     python = pkgs.forceNativeDrv pkgs.python;
+    cups = pkgs.forceNativeDrv pkgs.cups;
+    coreutils = pkgs.forceNativeDrv pkgs.coreutils;
+    libpulseaudio = pkgs.forceNativeDrv pkgs.libpulseaudio;
+    cmake = pkgs.forceNativeDrv pkgs.cmake;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
