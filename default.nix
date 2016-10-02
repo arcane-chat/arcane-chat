@@ -193,6 +193,7 @@ let
     perl = pkgs.forceNativeDrv pkgs.perl;
     mariadb = null;
     taglib = null;
+    libavc1394 = null;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
