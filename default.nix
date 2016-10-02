@@ -198,7 +198,17 @@ let
     xorg = pkgs.xorg // {
       libxcb = pkgs.forceNativeDrv pkgs.xorg.libxcb;
       libXdmcp = pkgs.forceNativeDrv pkgs.xorg.libXdmcp;
+      libX11 = pkgs.forceNativeDrv pkgs.xorg.libX11;
+      libXrender = null;
+      libXext = null;
+      libXi = null;
     };
+    xlibs = pkgs.xlibs // {
+      libXcomposite = null;
+      libXext = null;
+    };
+    libXext = null;
+    libxcb = pkgs.forceNativeDrv pkgs.libxcb;
     python = pkgs.forceNativeDrv pkgs.python;
     cups = pkgs.forceNativeDrv pkgs.cups;
     coreutils = pkgs.forceNativeDrv pkgs.coreutils;
