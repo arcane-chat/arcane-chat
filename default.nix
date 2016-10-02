@@ -184,6 +184,7 @@ let
     # the ugly fixes
     ruby = null;
     mesaSupported = false;
+    x11Support = false;
     libcdio = null;
     lzip = null;
     systemd = pkgs.forceNativeDrv pkgs.systemd;
@@ -195,20 +196,11 @@ let
     taglib = null;
     libavc1394 = null;
     libiec61883 = null;
-    xorg = pkgs.xorg // {
-      libxcb = pkgs.forceNativeDrv pkgs.xorg.libxcb;
-      libXdmcp = pkgs.forceNativeDrv pkgs.xorg.libXdmcp;
-      libX11 = pkgs.forceNativeDrv pkgs.xorg.libX11;
-      libXrender = null;
-      libXext = null;
-      libXi = null;
-    };
-    xlibs = pkgs.xlibs // {
-      libXcomposite = null;
-      libXext = null;
-    };
+    xorg = pkgs.lib.attrsets.mapAttrs (k: v: null) pkgs.xorg;
+    xlibs = pkgs.lib.attrsets.mapAttrs (k: v: null) pkgs.xlibs;
     libXext = null;
-    libxcb = pkgs.forceNativeDrv pkgs.libxcb;
+    libxcb = null;
+    libxkbcommon = null;
     python = pkgs.forceNativeDrv pkgs.python;
     cups = pkgs.forceNativeDrv pkgs.cups;
     coreutils = pkgs.forceNativeDrv pkgs.coreutils;
@@ -242,6 +234,26 @@ let
     libtheora = overrideCrossDerivation pkgs.libtheora (old: {
       configureFlags = [
         "--disable-examples"
+        "--disable-shared"
+        "--enable-static"
+      ];
+    });
+
+    freetype = overrideCrossDerivation pkgs.freetype (old: {
+      configureFlags = [
+        "--disable-shared"
+        "--enable-static"
+      ];
+
+      postInstall = ''
+          mkdir -p $dev/bin/
+          mv -v $out/bin/freetype-config $dev/bin/
+          rmdir --ignore-fail-on-non-empty $out/bin
+      '';
+    });
+
+    fontconfig = overrideCrossDerivation pkgs.fontconfig (old: {
+      configureFlags = [
         "--disable-shared"
         "--enable-static"
       ];
