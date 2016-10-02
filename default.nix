@@ -1,5 +1,5 @@
-{ nixpkgs ? { outPath = <nixpkgs>; } }:
-#{ nixpkgs ? ({ outPath = ./nixpkgs; }) }:
+#{ nixpkgs ? { outPath = <nixpkgs>; } }:
+{ nixpkgs ? ({ outPath = ./nixpkgs; }) }:
 
 let
   commonPackageOverrides = pkgs: rec {
@@ -166,15 +166,17 @@ let
     overrideCrossDerivation =
       drv: fun: drv // { crossDrv = overrideDerivation drv.crossDrv fun; };
 
-    cairo = pkgs.cairo.override {
-      xcbSupport = false;
-      glSupport = false;
-      xorg = {
-        libXext = null;
-        libXrender = null;
-        pixman = null;
-      };
-    };
+    # cairo = overrideCrossDerivation (pkgs.cairo.override {
+    #   xcbSupport = false;
+    #   glSupport = false;
+    #   xorg = {
+    #     libXext = null;
+    #     libXrender = null;
+    #     pixman = null;
+    #   };
+    # }) (old: {
+    #   patches = 
+    # });
 
     libtasn1 = pkgs.libtasn1.override {
       perl = pkgs.forceNativeDrv pkgs.perl;
@@ -182,9 +184,12 @@ let
     };
 
     # the ugly fixes
-    ruby = null;
     mesaSupported = false;
     x11Support = false;
+    xcbSupport = false;
+    glSupport = false;
+
+    ruby = null;
     libcdio = null;
     lzip = null;
     systemd = pkgs.forceNativeDrv pkgs.systemd;
@@ -196,8 +201,13 @@ let
     taglib = null;
     libavc1394 = null;
     libiec61883 = null;
-    xorg = pkgs.lib.attrsets.mapAttrs (k: v: null) pkgs.xorg;
-    xlibs = pkgs.lib.attrsets.mapAttrs (k: v: null) pkgs.xlibs;
+    xorg = pkgs.lib.attrsets.mapAttrs (k: v: null) pkgs.xorg // {
+      libXcursor = pkgs.buildEnv { name = "libXcursor-dummy"; paths = []; };
+      libX11 = pkgs.buildEnv { name = "libX11-dummy"; paths = []; };
+    };
+    xlibs = pkgs.lib.attrsets.mapAttrs (k: v: null) pkgs.xlibs // {
+      inherit (xorg) libXcursor libX11;
+    };
     libXext = null;
     libxcb = null;
     libxkbcommon = null;
@@ -208,7 +218,24 @@ let
     cmake = pkgs.forceNativeDrv pkgs.cmake;
     v4l_utils = null;
     libv4l = null;
+    libvdpau = null;
     postgresql = null;
+    vala = pkgs.forceNativeDrv pkgs.vala;
+    yasm = pkgs.forceNativeDrv pkgs.yasm;
+    guile = pkgs.forceNativeDrv pkgs.guile;
+    bison = pkgs.forceNativeDrv pkgs.bison;
+    speex = null;
+    pango = null;
+    cairo = null;    
+    mesa = null;    
+    freetype = null;
+    fontconfig = null;
+    libass = null;
+    libvpx = null;
+    alsaLib = null;
+    wayland = null;
+    include-what-you-use = null;
+    rtags = null;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
@@ -224,12 +251,12 @@ let
       buildInputs = [ pkgs.zlib.crossDrv pkgs.libtool.crossDrv.lib ];
     });
 
-    libvpx = pkgs.libvpx.override {
-      stdenv = pkgs.stdenv // { isCygwin = true; };
-      unitTestsSupport = true;
-      webmIOSupport = true;
-      libyuvSupport = true;
-    };
+    # libvpx = pkgs.libvpx.override {
+    #   stdenv = pkgs.stdenv // { isCygwin = true; };
+    #   unitTestsSupport = true;
+    #   webmIOSupport = true;
+    #   libyuvSupport = true;
+    # };
 
     libtheora = overrideCrossDerivation pkgs.libtheora (old: {
       configureFlags = [
@@ -239,25 +266,26 @@ let
       ];
     });
 
-    freetype = overrideCrossDerivation pkgs.freetype (old: {
-      configureFlags = [
-        "--disable-shared"
-        "--enable-static"
-      ];
+    # freetype = overrideCrossDerivation pkgs.freetype (old: {
+    #   configureFlags = [
+    #     "--disable-shared"
+    #     "--enable-static"
+    #   ];
+    #  
+    #   postInstall = ''
+    #       mkdir -p $dev/bin/
+    #       mv -v $out/bin/freetype-config $dev/bin/
+    #       rmdir --ignore-fail-on-non-empty $out/bin
+    #   '';
+    # });
 
-      postInstall = ''
-          mkdir -p $dev/bin/
-          mv -v $out/bin/freetype-config $dev/bin/
-          rmdir --ignore-fail-on-non-empty $out/bin
-      '';
-    });
+    # fontconfig = overrideCrossDerivation pkgs.fontconfig (old: {
+    #   configureFlags = [
+    #     "--disable-shared"
+    #     "--enable-static"
+    #   ];
+    # });
 
-    fontconfig = overrideCrossDerivation pkgs.fontconfig (old: {
-      configureFlags = [
-        "--disable-shared"
-        "--enable-static"
-      ];
-    });
 
     gst_all_1 = pkgs.gst_all_1.override { fluidsynth = null; };
 
