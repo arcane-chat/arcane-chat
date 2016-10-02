@@ -194,6 +194,7 @@ let
     mariadb = null;
     taglib = null;
     libavc1394 = null;
+    libiec61883 = null;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
