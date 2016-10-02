@@ -192,6 +192,7 @@ let
     intltool = pkgs.forceNativeDrv pkgs.intltool;
     perl = pkgs.forceNativeDrv pkgs.perl;
     mariadb = null;
+    taglib = null;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
