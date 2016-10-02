@@ -191,6 +191,7 @@ let
     libgsf = pkgs.forceNativeDrv pkgs.libgsf;
     intltool = pkgs.forceNativeDrv pkgs.intltool;
     perl = pkgs.forceNativeDrv pkgs.perl;
+    mariadb = null;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
