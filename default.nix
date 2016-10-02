@@ -175,9 +175,8 @@ let
         pixman = null;
       };
     };
-    qt56 = pkgs.qt56 // {
-      qtbase = pkgs.qt56.qtbase.override { ruby = null; };
-    };
+
+    ruby = null;
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
