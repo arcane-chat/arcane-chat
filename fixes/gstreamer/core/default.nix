@@ -43,6 +43,8 @@ in stdenv.mkDerivation rec {
     "--disable-fatal-warnings"
   ];
 
+  # CPPFLAGS = "-DHAVE_DECL_LOCALTIME_R=0";
+
   preConfigure = ''
     configureFlagsArray+=("--exec-prefix=$dev")
   '';

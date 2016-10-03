@@ -35,5 +35,12 @@ stdenv.mkDerivation rec {
     lame libmad libmpeg2 x264
   ] ++ libintlOrEmpty;
 
+  configureFlags = if (!stdenv.isLinux || (stdenv ? cross)) then [
+    "--disable-shared"
+    "--enable-static"
+    "--disable-fatal-warnings"
+  ] else [
+  ];
+
   NIX_LDFLAGS = if stdenv.isDarwin then "-lintl" else null;
 }

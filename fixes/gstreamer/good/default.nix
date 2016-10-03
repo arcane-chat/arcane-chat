@@ -42,6 +42,13 @@ stdenv.mkDerivation rec {
   ++ libintlOrEmpty
   ++ optionals stdenv.isLinux [ libv4l libpulseaudio libavc1394 libiec61883 ];
 
+  configureFlags = if (!stdenv.isLinux || (stdenv ? cross)) then [
+    "--disable-shared"
+    "--enable-static"
+    "--disable-fatal-warnings"
+  ] else [
+  ];
+
   preFixup = ''
     mkdir -p "$dev/lib/gstreamer-1.0"
     mv "$out/lib/gstreamer-1.0/"*.la "$dev/lib/gstreamer-1.0"

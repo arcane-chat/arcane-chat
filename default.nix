@@ -235,6 +235,8 @@ let
     pkgconfig = pkgs.forceNativeDrv pkgs.pkgconfig;
     m4 = pkgs.forceNativeDrv pkgs.m4;
     gobjectIntrospection = pkgs.forceNativeDrv pkgs.gobjectIntrospection;
+    libgnome_keyring = null;
+    libgnome_keyring3 = null;
     speex = null;
     pango = null;
     cairo = null;
@@ -253,8 +255,14 @@ let
     openjpeg = null;
     libdvdread = null;
     librsvg = null;
+    libmpeg2 = null;
+    mjpegtools = null;
+    mjpegtoolsFull = null;
+    libwebp = null;
+    wildmidi = null;
     libedit = null;
     libdv = null;
+    libsoup = null;
     gnutls = null;
     alsaLib = null;
     wayland = null;
@@ -272,9 +280,7 @@ let
     });
 
     giflib = pkgs.giflib // {
-      crossDrv = pkgs.giflib.override {
-        xmlto = pkgs.forceNativeDrv pkgs.xmlto;
-      };
+      crossDrv = (pkgs.giflib.override { xmlto = null; }).crossDrv;
     };
 
     qt56 = pkgs.qt56 // {

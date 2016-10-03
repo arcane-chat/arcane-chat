@@ -54,5 +54,12 @@ stdenv.mkDerivation rec {
     # TODO: package apple's OpenAL, fix wildmidi, include on Darwin
     ++ optional (!stdenv.isDarwin) wildmidi;
 
+  configureFlags = if (!stdenv.isLinux || (stdenv ? cross)) then [
+    "--disable-shared"
+    "--enable-static"
+    "--disable-fatal-warnings"
+  ] else [
+  ];
+
   LDFLAGS = optionalString stdenv.isDarwin "-lintl";
 }
