@@ -1,25 +1,14 @@
 # Build dependencies
 { stdenv, cmake, pkgconfig, doxygen, ghostscript, ninja, makeWrapper
 # Program dependencies
-, zeromq, libmsgpack, libtoxcore-dev, nlohmann_json, qtbase, obs-studio
-, gst_all_1, protobuf3_0, qtscript, libsodium
+, zeromq4, libmsgpack, libtoxcore-dev, nlohmann_json, obs-studio
+, gst_all_1, protobuf3_0, qtbase, qtscript, libsodium
 # Misc dependencies
 , guile, parallel, buildEnv, glib, glibmm, libsigcxx, enableDebugging
 , include-what-you-use, rtags, python
 }:
 
-let
-  deps = with gst_all_1; [ glib glibmm libsigcxx gstreamermm gstreamer gst-plugins-base ];
-  allHeaders = buildEnv {
-    name = "arcane-dep-headers";
-    paths = deps;
-    extraOutputsToInstall = [ "dev" "out" ];
-  };
-  qt-gstreamer' = gst_all_1.qt-gstreamer.overrideDerivation (oldAttrs: {
-    src = /home/clever/x/qt-gstreamer-1.2.0;
-    enableParallelBuilding = true;
-  });
-in stdenv.mkDerivation rec {
+stdenv.mkDerivation rec {
   name = "arcane-chat-0.0.1";
 
   src = ./.;
@@ -30,10 +19,11 @@ in stdenv.mkDerivation rec {
   ];
 
   buildInputs = with gst_all_1; [
-    zeromq libmsgpack qtbase nlohmann_json libtoxcore-dev obs-studio
+    zeromq4 libmsgpack nlohmann_json libtoxcore-dev obs-studio
+    glib glibmm libsigcxx gstreamermm gstreamer gst-plugins-base
     gst-libav gst-plugins-good gst-plugins-ugly gst-plugins-bad qt-gstreamer
-    protobuf3_0 qtscript libsodium
-  ] ++ deps;
+    protobuf3_0 qtbase qtscript libsodium
+  ];
 
   cmakeFlags = "-GNinja";
 
@@ -83,7 +73,6 @@ in stdenv.mkDerivation rec {
           unset OLD_CMAKE_FLAGS BUILD_LOG
           refresh-plugin-build "${toString src}"
       fi
-      echo "for qtcreator: ${allHeaders}"
       note "Entering nix-shell"
   '';
 }
