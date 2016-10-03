@@ -281,6 +281,10 @@ let
       ];
     });
 
+    nettle = overrideCrossDerivation pkgs.nettle (old: {
+      nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.m4 ];
+    });
+
     dbus = overrideCrossDerivation pkgs.dbus (old: {
       configureFlags = old.configureFlags ++ [
         "--disable-systemd"
