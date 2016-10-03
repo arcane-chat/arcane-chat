@@ -193,7 +193,6 @@ let
     lzip = null;
     systemd = pkgs.forceNativeDrv pkgs.systemd;
     help2man = pkgs.forceNativeDrv pkgs.help2man;
-    libgsf = pkgs.forceNativeDrv pkgs.libgsf;
     intltool = pkgs.forceNativeDrv pkgs.intltool;
     perl = pkgs.forceNativeDrv pkgs.perl;
     mariadb = null;
@@ -229,7 +228,9 @@ let
     flex_2_5_35 = pkgs.forceNativeDrv pkgs.flex_2_5_35;
     yacc = pkgs.forceNativeDrv pkgs.yacc;
     autogen = pkgs.forceNativeDrv pkgs.autogen;
+    pkgconfig = pkgs.forceNativeDrv pkgs.pkgconfig;
     m4 = pkgs.forceNativeDrv pkgs.m4;
+    gobjectIntrospection = pkgs.forceNativeDrv pkgs.gobjectIntrospection;
     speex = null;
     pango = null;
     cairo = null;
@@ -283,6 +284,32 @@ let
 
     nettle = overrideCrossDerivation pkgs.nettle (old: {
       nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.m4 ];
+    });
+
+    gdk_pixbuf = overrideCrossDerivation pkgs.gdk_pixbuf (old: {
+      configureFlags = [
+        "--disable-shared"
+        "--enable-static"
+        "--without-libjasper"
+        "--without-x11"
+      ];
+      propagatedBuildInputs = [
+        pkgs.pkgconfig
+        glib.crossDrv.dev
+        pkgs.libtiff.crossDrv.dev
+        pkgs.libjpeg.crossDrv.dev
+        pkgs.libpng.crossDrv.dev
+      ];
+    });
+
+    libgsf = overrideCrossDerivation pkgs.libgsf (old: {
+      configureFlags = [
+        "--disable-shared"
+        "--enable-static"
+        "--disable-introspection"
+      ];
+
+      patches = [ ./fixes/libgsf-dllmain.patch ];
     });
 
     dbus = overrideCrossDerivation pkgs.dbus (old: {
