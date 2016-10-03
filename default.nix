@@ -86,44 +86,44 @@ let
       mingw_w64_pthreads = pkgs.callPackage ./fixes/mingw-w64.nix {
         onlyPthreads = true;
       };
-    };
 
-    mingw-std-threads = pkgs.stdenv.mkDerivation rec {
-      name = "mingw-std-threads-20160912";
+      mingw-std-threads = pkgs.stdenv.mkDerivation rec {
+        name = "mingw-std-threads-20160912";
 
-      src = pkgs.fetchFromGitHub {
-        owner = "meganz";
-        repo = "mingw-std-threads";
-        rev = "d81ca0b7514a0ded6c329f84be9e5f07829d2418";
-        sha256 = "13qf3rb25d3c7z8jrclh9mxv6qs28kzymvag7nr9j25jq0j81r0d";
+        src = pkgs.fetchFromGitHub {
+          owner = "meganz";
+          repo = "mingw-std-threads";
+          rev = "d81ca0b7514a0ded6c329f84be9e5f07829d2418";
+          sha256 = "13qf3rb25d3c7z8jrclh9mxv6qs28kzymvag7nr9j25jq0j81r0d";
+        };
+
+        inherit (pkgs.stdenv.cc) cc;
+
+        buildPhase = ''
+            local INCLUDE
+            INCLUDE="${cc.out}/include/c++/${cc.version}"
+
+            function footer () {
+                printf "\n"
+                printf "#ifdef THREAD_PRIORITY_NORMAL\n"
+                printf "#undef THREAD_PRIORITY_NORMAL\n"
+                printf "#endif\n"
+            }
+
+            printf "#include \"%s\"\n" "$INCLUDE/mutex" > mutex
+
+            { cat "mingw.condition_variable.h"; footer; } >> condition_variable
+            { cat "mingw.thread.h";             footer; } >> thread
+            { cat "mingw.mutex.h";              footer; } >> mutex
+        '';
+
+        installPhase = ''
+            mkdir -p $out/include
+            cp condition_variable $out/include/
+            cp mutex              $out/include/
+            cp thread             $out/include/
+        '';
       };
-
-      inherit (pkgs.stdenv.cc) cc;
-
-      buildPhase = ''
-          local INCLUDE
-          INCLUDE="${cc.out}/include/c++/${cc.version}"
-
-          function footer () {
-              printf "\n"
-              printf "#ifdef THREAD_PRIORITY_NORMAL\n"
-              printf "#undef THREAD_PRIORITY_NORMAL\n"
-              printf "#endif\n"
-          }
-
-          printf "#include \"%s\"\n" "$INCLUDE/mutex" > mutex
-
-          { cat "mingw.condition_variable.h"; footer; } >> condition_variable
-          { cat "mingw.thread.h";             footer; } >> thread
-          { cat "mingw.mutex.h";              footer; } >> mutex
-      '';
-
-      installPhase = ''
-          mkdir -p $out/include
-          cp condition_variable $out/include/
-          cp mutex              $out/include/
-          cp thread             $out/include/
-      '';
     };
 
     gst_all_1 = pkgs.recurseIntoAttrs (pkgs.callPackage ./fixes/gstreamer {});
@@ -175,7 +175,7 @@ let
     #     pixman = null;
     #   };
     # }) (old: {
-    #   patches = 
+    #   patches =
     # });
 
     libtasn1 = pkgs.libtasn1.override {
@@ -224,14 +224,20 @@ let
     yasm = pkgs.forceNativeDrv pkgs.yasm;
     guile = pkgs.forceNativeDrv pkgs.guile;
     bison = pkgs.forceNativeDrv pkgs.bison;
+    bison2 = pkgs.forceNativeDrv pkgs.bison2;
+    bison3 = pkgs.forceNativeDrv pkgs.bison3;
     speex = null;
     pango = null;
-    cairo = null;    
-    mesa = null;    
+    cairo = null;
+    mesa = null;
     freetype = null;
     fontconfig = null;
+    icu = null;
+    harfbuzz = null;
+    harfbuzz-icu = null;
     libass = null;
     libvpx = null;
+    libdv = null;
     alsaLib = null;
     wayland = null;
     include-what-you-use = null;
@@ -271,7 +277,7 @@ let
     #     "--disable-shared"
     #     "--enable-static"
     #   ];
-    #  
+    #
     #   postInstall = ''
     #       mkdir -p $dev/bin/
     #       mv -v $out/bin/freetype-config $dev/bin/
@@ -302,7 +308,7 @@ let
           });
       in glibFixed // {
         crossDrv = overrideDerivation glibOverrideCross.crossDrv (old: {
-          buildInputs = old.buildInputs ++ [
+          propagatedBuildInputs = old.propagatedBuildInputs ++ [
             pkgs.windows.mingw_w64_pthreads.crossDrv
           ];
 
@@ -353,8 +359,8 @@ let
 
       nativeBuildInputs = old.nativeBuildInputs ++ [ glib.dev ];
 
-      buildInputs = old.buildInputs ++ [
-        pkgs.mingw-std-threads
+      propagatedBuildInputs = old.propagatedBuildInputs ++ [
+        pkgs.windows.mingw-std-threads
         pkgs.windows.mingw_w64_pthreads.crossDrv
       ];
     });

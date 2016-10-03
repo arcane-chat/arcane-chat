@@ -39,6 +39,7 @@ in stdenv.mkDerivation rec {
   configureFlags = optionals (!nativeLinux) [
     "--disable-shared"
     "--enable-static"
+    "--enable-check"
     "--disable-fatal-warnings"
   ];
 

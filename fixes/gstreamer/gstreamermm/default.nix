@@ -1,6 +1,9 @@
 { stdenv, fetchurl, pkgconfig, file, glibmm, gst-plugins-base }:
 
-stdenv.mkDerivation rec {
+with stdenv.lib;
+
+let nativeLinux = stdenv.isLinux && !(stdenv ? cross);
+in stdenv.mkDerivation rec {
   name = "gstreamermm-1.4.3";
   src = fetchurl {
     url    = "mirror://gnome/sources/gstreamermm/1.4/${name}.tar.xz";
@@ -15,9 +18,15 @@ stdenv.mkDerivation rec {
 
   enableParallelBuilding = true;
 
-  configureFlagsArray = ["--disable-unittests"];
+  configureFlags = optionals (!nativeLinux) [
+    "--disable-shared"
+    "--enable-static"
+    "--disable-unittests"
+  ];
 
-  patches = [ ./glibmm-2.50.patch ];
+  patches = [
+    ./glibmm-2.50.patch
+  ];
 
   meta = with stdenv.lib; {
     description = "C++ interface for GStreamer";
