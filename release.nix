@@ -13,4 +13,9 @@ let
 in {
   wineWow-linux = default.linux.super.wine.override { wineBuild = "wineWow"; };
   # darwin = default.darwin.arcane-chat;
-} // makeJobs [ "arcane-chat" "super.gst_all_1.gstreamermm" "super.gst_all_1.gst-plugins-good"]
+} // makeJobs [
+  "arcane-chat"
+  "super.gst_all_1.gstreamermm"
+  "super.gst_all_1.gst-plugins-good"
+  "super.qt56.qtbase"
+  ]
