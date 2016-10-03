@@ -277,6 +277,18 @@ let
       };
     };
 
+    qt56 = pkgs.qt56 // {
+      qtbase = overrideCrossDerivation pkgs.qt56.qtbase (old: {
+        configureFlags = old.configureFlags +
+          ''
+            -xplatform win32-g++
+            -device-option CROSS_COMPILE=x86_64-w64-mingw32-
+            -v
+          '';
+        dontSetConfigureCross=true;
+      });
+    };
+
     libmsgpack = pkgs.callPackage ./fixes/libmsgpack.nix {};
 
     nlohmann_json = pkgs.callPackage ./fixes/nlohmann_json.nix {};
