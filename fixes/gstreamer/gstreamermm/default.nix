@@ -26,6 +26,7 @@ in stdenv.mkDerivation rec {
 
   patches = [
     ./glibmm-2.50.patch
+    ./iface.patch
   ];
 
   meta = with stdenv.lib; {

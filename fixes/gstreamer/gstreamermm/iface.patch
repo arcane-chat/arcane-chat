@@ -1,0 +1,43 @@
+diff -ru gstreamermm-1.4.3-orig/gstreamer/gstreamermm/bin.cc gstreamermm-1.4.3/gstreamer/gstreamermm/bin.cc
+--- gstreamermm-1.4.3-orig/gstreamer/gstreamermm/bin.cc	2015-02-24 16:47:47.000000000 -0400
++++ gstreamermm-1.4.3/gstreamer/gstreamermm/bin.cc	2016-10-03 15:48:49.815644038 -0300
+@@ -648,14 +648,14 @@
+   return const_cast<Bin*>(this)->get_element_recurse_up(name);
+ }
+ 
+-Glib::RefPtr<Gst::Element> Bin::get_element(GType interface)
++Glib::RefPtr<Gst::Element> Bin::get_element(GType iface)
+ {
+-  return Glib::wrap(gst_bin_get_by_interface(gobj(), interface));
++  return Glib::wrap(gst_bin_get_by_interface(gobj(), iface));
+ }
+ 
+-Glib::RefPtr<const Gst::Element> Bin::get_element(GType interface) const
++Glib::RefPtr<const Gst::Element> Bin::get_element(GType iface) const
+ {
+-  return const_cast<Bin*>(this)->get_element(interface);
++  return const_cast<Bin*>(this)->get_element(iface);
+ }
+ 
+ Glib::RefPtr<Gst::Pad> Bin::find_unlinked_pad(PadDirection dir)
+diff -ru gstreamermm-1.4.3-orig/gstreamer/gstreamermm/bin.h gstreamermm-1.4.3/gstreamer/gstreamermm/bin.h
+--- gstreamermm-1.4.3-orig/gstreamer/gstreamermm/bin.h	2015-02-24 16:47:47.000000000 -0400
++++ gstreamermm-1.4.3/gstreamer/gstreamermm/bin.h	2016-10-03 15:48:48.847673038 -0300
+@@ -392,7 +392,7 @@
+    * @param iface The Type of an interface.
+    * @return A Gst::Element inside the bin implementing the interface.
+    */
+-  Glib::RefPtr<Gst::Element> get_element(GType interface);
++  Glib::RefPtr<Gst::Element> get_element(GType iface);
+   
+   /** Looks for an element inside the bin that implements the given
+    * interface. If such an element is found, it returns the element.
+@@ -405,7 +405,7 @@
+    * @param iface The Type of an interface.
+    * @return A Gst::Element inside the bin implementing the interface.
+    */
+-  Glib::RefPtr<const Gst::Element> get_element(GType interface) const;
++  Glib::RefPtr<const Gst::Element> get_element(GType iface) const;
+ 
+   /** Adds a ghost pad to the bin using an element's static pad as a target.
+    * @param element The element with the target static pad.
