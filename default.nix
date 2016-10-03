@@ -283,17 +283,22 @@ let
       crossDrv = (pkgs.giflib.override { xmlto = null; }).crossDrv;
     };
 
-    qt56 = pkgs.qt56 // {
-      qtbase = overrideCrossDerivation pkgs.qt56.qtbase (old: {
-        configureFlags = old.configureFlags +
-          ''
-            -xplatform win32-g++
-            -device-option CROSS_COMPILE=x86_64-w64-mingw32-
-            -v
-          '';
-        dontSetConfigureCross=true;
-      });
-    };
+    #qt56 = pkgs.qt56 // {
+    #  qtbase = overrideCrossDerivation pkgs.qt56.qtbase (old: {
+    #    configureFlags = old.configureFlags +
+    #      ''
+    #        -xplatform win32-g++
+    #        -device-option CROSS_COMPILE=x86_64-w64-mingw32-
+    #        -v
+    #        -continue
+    #        -qt-xcb
+    #      '';
+    #    dontSetConfigureCross=true;
+    #  });
+    #};
+    qt56 =
+      let imported = import ./fixes/5.6 { inherit pkgs; };
+      in pkgs.recurseIntoAttrs (imported.override (super: pkgs.qt5LibsFun));
 
     libmsgpack = pkgs.callPackage ./fixes/libmsgpack.nix {};
 
