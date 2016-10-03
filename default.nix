@@ -249,6 +249,7 @@ let
     libcaca = null;
     aalib = null;
     libshout = null;
+    openjpeg = null;
     libdvdread = null;
     librsvg = null;
     libedit = null;
@@ -282,6 +283,10 @@ let
     #   webmIOSupport = true;
     #   libyuvSupport = true;
     # };
+
+    lame = overrideCrossDerivation pkgs.lame (old: {
+      patches = old.patches ++ [ ./fixes/lame-dbl-epsilon.patch ];
+    });
 
     libtheora = overrideCrossDerivation pkgs.libtheora (old: {
       configureFlags = [

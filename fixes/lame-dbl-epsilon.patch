@@ -1,0 +1,18 @@
+diff --git a/libmp3lame/quantize_pvt.c b/libmp3lame/quantize_pvt.c
+index 26b4d26..ce5d435 100644
+--- a/libmp3lame/quantize_pvt.c
++++ b/libmp3lame/quantize_pvt.c
+@@ -606,6 +606,13 @@ calc_xmin(lame_internal_flags const *gfc,
+ 
+         width = cod_info->width[gsfb];
+         rh1 = xmin / width;
++
++#ifndef DBL_EPSILON
++#ifdef __DBL_EPSILON__
++#define DBL_EPSILON __DBL_EPSILON__
++#endif
++#endif
++
+ #ifdef DBL_EPSILON
+         rh2 = DBL_EPSILON;
+ #else
