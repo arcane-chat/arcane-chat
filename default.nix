@@ -229,6 +229,8 @@ let
     flex = pkgs.forceNativeDrv pkgs.flex;
     flex_2_5_35 = pkgs.forceNativeDrv pkgs.flex_2_5_35;
     yacc = pkgs.forceNativeDrv pkgs.yacc;
+    autogen = pkgs.forceNativeDrv pkgs.autogen;
+    m4 = pkgs.forceNativeDrv pkgs.m4;
     speex = null;
     pango = null;
     cairo = null;
@@ -240,6 +242,7 @@ let
     harfbuzz-icu = null;
     libass = null;
     libvpx = null;
+    libcaca = null;
     libdv = null;
     alsaLib = null;
     wayland = null;
@@ -274,6 +277,17 @@ let
         "--enable-static"
       ];
     });
+
+    dbus = overrideCrossDerivation pkgs.dbus (old: {
+      configureFlags = old.configureFlags ++ [
+        "--disable-systemd"
+        "--disable-shared"
+        "--enable-static"
+      ];
+    });
+
+    dbus_libs = dbus;
+    dbus_tools = dbus;
 
     # freetype = overrideCrossDerivation pkgs.freetype (old: {
     #   configureFlags = [
