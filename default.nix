@@ -264,7 +264,9 @@ let
     });
 
     x264 = overrideCrossDerivation pkgs.x264 (old: {
-      configureFlags = old.configureFlags ++ [ "--cross-prefix=x86_64-w64-mingw32-" ];
+      configureFlags = old.configureFlags ++ [
+        "--cross-prefix=x86_64-w64-mingw32-"
+      ];
     });
 
     libmsgpack = pkgs.callPackage ./fixes/libmsgpack.nix {};
@@ -283,6 +285,10 @@ let
     #   webmIOSupport = true;
     #   libyuvSupport = true;
     # };
+
+    faad2 = overrideCrossDerivation pkgs.faad2 (old: {
+      patches = [ ./fixes/faad2-frontend-off_t.patch ];
+    });
 
     lame = overrideCrossDerivation pkgs.lame (old: {
       patches = old.patches ++ [ ./fixes/lame-dbl-epsilon.patch ];
