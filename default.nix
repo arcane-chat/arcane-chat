@@ -226,6 +226,9 @@ let
     bison = pkgs.forceNativeDrv pkgs.bison;
     bison2 = pkgs.forceNativeDrv pkgs.bison2;
     bison3 = pkgs.forceNativeDrv pkgs.bison3;
+    flex = pkgs.forceNativeDrv pkgs.flex;
+    flex_2_5_35 = pkgs.forceNativeDrv pkgs.flex_2_5_35;
+    yacc = pkgs.forceNativeDrv pkgs.yacc;
     speex = null;
     pango = null;
     cairo = null;
