@@ -246,6 +246,7 @@ let
     harfbuzz-icu = null;
     libass = null;
     libvpx = null;
+    a52dec = null;
     libcaca = null;
     aalib = null;
     libshout = null;
@@ -254,6 +255,7 @@ let
     librsvg = null;
     libedit = null;
     libdv = null;
+    gnutls = null;
     alsaLib = null;
     wayland = null;
     include-what-you-use = null;
@@ -268,6 +270,12 @@ let
         "--cross-prefix=x86_64-w64-mingw32-"
       ];
     });
+
+    giflib = pkgs.giflib // {
+      crossDrv = pkgs.giflib.override {
+        xmlto = pkgs.forceNativeDrv pkgs.xmlto;
+      };
+    };
 
     libmsgpack = pkgs.callPackage ./fixes/libmsgpack.nix {};
 
