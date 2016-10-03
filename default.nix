@@ -185,13 +185,14 @@ let
     # the ugly fixes
     mesaSupported = false;
     x11Support = false;
+    cupsSupport = false;
     xcbSupport = false;
     glSupport = false;
 
     ruby = null;
     libcdio = null;
     lzip = null;
-    systemd = pkgs.forceNativeDrv pkgs.systemd;
+    systemd = null;
     help2man = pkgs.forceNativeDrv pkgs.help2man;
     intltool = pkgs.forceNativeDrv pkgs.intltool;
     perl = pkgs.forceNativeDrv pkgs.perl;
@@ -210,9 +211,11 @@ let
     libxcb = null;
     libxkbcommon = null;
     python = pkgs.forceNativeDrv pkgs.python;
-    cups = pkgs.forceNativeDrv pkgs.cups;
+    cups = null;
+    libusb1 = null;
+    ghostscript = null;
     coreutils = pkgs.forceNativeDrv pkgs.coreutils;
-    libpulseaudio = pkgs.forceNativeDrv pkgs.libpulseaudio;
+    libpulseaudio = null;
     cmake = pkgs.forceNativeDrv pkgs.cmake;
     v4l_utils = null;
     libv4l = null;
@@ -220,6 +223,7 @@ let
     postgresql = null;
     vala = pkgs.forceNativeDrv pkgs.vala;
     yasm = pkgs.forceNativeDrv pkgs.yasm;
+    ncurses = pkgs.forceNativeDrv pkgs.ncurses;
     guile = pkgs.forceNativeDrv pkgs.guile;
     bison = pkgs.forceNativeDrv pkgs.bison;
     bison2 = pkgs.forceNativeDrv pkgs.bison2;
@@ -243,6 +247,11 @@ let
     libass = null;
     libvpx = null;
     libcaca = null;
+    aalib = null;
+    libshout = null;
+    libdvdread = null;
+    librsvg = null;
+    libedit = null;
     libdv = null;
     alsaLib = null;
     wayland = null;
@@ -293,6 +302,7 @@ let
         "--without-libjasper"
         "--without-x11"
       ];
+
       propagatedBuildInputs = [
         pkgs.pkgconfig
         glib.crossDrv.dev
