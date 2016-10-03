@@ -18,4 +18,5 @@ in {
   "super.gst_all_1.gstreamermm"
   "super.gst_all_1.gst-plugins-good"
   "super.qt56.qtbase"
+  "super.x264"
   ]
