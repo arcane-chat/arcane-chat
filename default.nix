@@ -1,5 +1,4 @@
-#{ nixpkgs ? { outPath = <nixpkgs>; } }:
-{ nixpkgs ? ({ outPath = ./nixpkgs; }) }:
+{ nixpkgs ? { outPath = <nixpkgs>; } }:
 
 let
   commonPackageOverrides = pkgs: rec {
@@ -251,6 +250,10 @@ let
 
     gettext = overrideCrossDerivation pkgs.gettext (old: {
       buildInputs = [ pkgs.libiconv.crossDrv ];
+    });
+
+    x264 = overrideCrossDerivation pkgs.x264 (old: {
+      configureFlags = old.configureFlags ++ [ "--cross-prefix=x86_64-w64-mingw32-" ];
     });
 
     libmsgpack = pkgs.callPackage ./fixes/libmsgpack.nix {};
