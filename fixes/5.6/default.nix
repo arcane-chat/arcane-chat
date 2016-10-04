@@ -39,6 +39,7 @@ let
     in mkDerivation (args // {
       name = "${name}-${version}";
       inherit src;
+      qtInputs = null;
 
       propagatedBuildInputs = args.qtInputs ++ (args.propagatedBuildInputs or []);
       nativeBuildInputs =
