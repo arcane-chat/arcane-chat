@@ -34,6 +34,8 @@ in stdenv.mkDerivation rec {
 
   propagatedBuildInputs = [ glib ];
 
+  patches = optionals (!nativeLinux) [ ./gstreamer-localtime_r.patch ];
+
   enableParallelBuilding = true;
 
   configureFlags = optionals (!nativeLinux) [
@@ -42,8 +44,6 @@ in stdenv.mkDerivation rec {
     "--enable-check"
     "--disable-fatal-warnings"
   ];
-
-  # CPPFLAGS = "-DHAVE_DECL_LOCALTIME_R=0";
 
   preConfigure = ''
     configureFlagsArray+=("--exec-prefix=$dev")

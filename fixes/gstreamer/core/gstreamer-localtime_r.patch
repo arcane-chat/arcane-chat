@@ -1,0 +1,15 @@
+diff --git a/libs/gst/check/libcheck/check_log.c b/libs/gst/check/libcheck/check_log.c
+index ad5bb79..61033eb 100644
+--- a/libs/gst/check/libcheck/check_log.c
++++ b/libs/gst/check/libcheck/check_log.c
+@@ -287,7 +287,9 @@ xml_lfun (SRunner * sr CK_ATTRIBUTE_UNUSED, FILE * file,
+ 
+     gettimeofday (&inittv, NULL);
+     clock_gettime (check_get_clockid (), &ts_start);
+-    if (localtime_r ((const time_t *) &(inittv.tv_sec), &now) != NULL) {
++    struct tm* temp = localtime((const time_t *) &(inittv.tv_sec));
++    if (temp != NULL) {
++      memcpy(&now, temp, sizeof(struct tm));
+       strftime (t, sizeof ("yyyy-mm-dd hh:mm:ss"), "%Y-%m-%d %H:%M:%S", &now);
+     }
+   }
