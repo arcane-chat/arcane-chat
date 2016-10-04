@@ -141,7 +141,7 @@ stdenv.mkDerivation rec {
     -system-xkbcommon
     -system-pcre
     -openssl-linked
-    -dbus-linked
+    -no-dbus
 
     -system-sqlite
     -${if mysql != null then "plugin" else "no"}-sql-mysql
@@ -225,7 +225,7 @@ stdenv.mkDerivation rec {
   inherit lndir;
   setupHook = ./setup-hook.sh;
 
-  enableParallelBuilding = false;
+  enableParallelBuilding = true;
 
   crossAttrs = {
     configureFlags = [ configureFlags ] ++ [''
@@ -235,16 +235,16 @@ stdenv.mkDerivation rec {
     ''];
     preConfigure = ''
       crossPrefix=$(type -p $CXX | sed s/g++//)
-      export configureFlags="$configureFlags -device-option CROSS_COMPILE=x86_64-w64-mingw32- -device-option QMAKE_CC=$CC -device-option QMAKE_CXX=$CXX"
+      export configureFlags="$configureFlags -device-option CROSS_COMPILE=''${crossConfig}-"
 
-      sed -i "s/\\\''$\\\''$[{]CROSS_COMPILE[}]gcc/$CC/" mkspecs/win32-g++/qmake.conf
-      sed -i "s/\\\''$\\\''$[{]CROSS_COMPILE[}]g++/$CXX/" mkspecs/win32-g++/qmake.conf
+      #sed -i "s/\\\''$\\\''$[{]CROSS_COMPILE[}]gcc/$CC/" mkspecs/win32-g++/qmake.conf
+      #sed -i "s/\\\''$\\\''$[{]CROSS_COMPILE[}]g++/$CXX/" mkspecs/win32-g++/qmake.conf
       export NIX_CROSS_LDFLAGS="-lws2_32 -lwinmm -lole32 $NIX_CROSS_LDFLAGS";
-      export CXX=g++
-      export CC=gcc
+      unset CXX
+      unset CC
       ed -s src/corelib/corelib.pro << EOF
 0a
-message("corelib.pro \''$\''$QMAKE_CC ")
+message("corelib.pro \''$\''$QMAKE_CC \''$\''$QMAKE_CXX")
 .
 w
 EOF
