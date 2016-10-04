@@ -5,7 +5,7 @@
 , xcbutil, xcbutilimage, xcbutilkeysyms, xcbutilwm, libxkbcommon
 , fontconfig, freetype, harfbuzz
 , openssl, dbus, glib, udev, libxml2, libxslt, pcre16
-, zlib, libjpeg, libpng, libtiff, sqlite, icu
+, zlib, libjpeg, libpng, libtiff, sqlite, icu, ed
 
 , coreutils, bison, flex, gdb, gperf, lndir, ruby
 , patchelf, perl, pkgconfig, python
@@ -26,7 +26,7 @@ let
   system-x86_64 = lib.elem stdenv.system lib.platforms.x86_64;
 in
 
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
 
   name = "qtbase-${srcs.qtbase.version}";
   inherit (srcs.qtbase) src version;
@@ -115,13 +115,10 @@ stdenv.mkDerivation {
     -widgets
     -opengl desktop
     -qml-debug
-    -nis
     -iconv
     -icu
     -pch
     -glib
-    -xcb
-    -qpa xcb
     -${lib.optionalString (cups == null) "no-"}cups
 
     -no-eglfs
@@ -139,11 +136,8 @@ stdenv.mkDerivation {
     -no-mips_dsp
     -no-mips_dspr2
 
-    -system-zlib
     -system-libpng
     -system-libjpeg
-    -system-harfbuzz
-    -system-xcb
     -system-xkbcommon
     -system-pcre
     -openssl-linked
@@ -186,7 +180,7 @@ stdenv.mkDerivation {
     ++ lib.optional (mysql != null) mysql.lib
     ++ lib.optional (postgresql != null) postgresql;
 
-  nativeBuildInputs = [ lndir patchelf perl pkgconfig python ];
+  nativeBuildInputs = [ lndir patchelf perl pkgconfig python ed ];
 
   # freetype-2.5.4 changed signedness of some struct fields
   NIX_CFLAGS_COMPILE = "-Wno-error=sign-compare";
@@ -231,7 +225,39 @@ stdenv.mkDerivation {
   inherit lndir;
   setupHook = ./setup-hook.sh;
 
-  enableParallelBuilding = true;
+  enableParallelBuilding = false;
+
+  crossAttrs = {
+    configureFlags = [ configureFlags ] ++ [''
+      -xplatform win32-g++
+      -qpa windows
+      -qt-zlib
+    ''];
+    preConfigure = ''
+      crossPrefix=$(type -p $CXX | sed s/g++//)
+      export configureFlags="$configureFlags -device-option CROSS_COMPILE=x86_64-w64-mingw32- -device-option QMAKE_CC=$CC -device-option QMAKE_CXX=$CXX"
+
+      sed -i "s/\\\''$\\\''$[{]CROSS_COMPILE[}]gcc/$CC/" mkspecs/win32-g++/qmake.conf
+      sed -i "s/\\\''$\\\''$[{]CROSS_COMPILE[}]g++/$CXX/" mkspecs/win32-g++/qmake.conf
+      export NIX_CROSS_LDFLAGS="-lws2_32 -lwinmm -lole32 $NIX_CROSS_LDFLAGS";
+      export CXX=g++
+      export CC=gcc
+      ed -s src/corelib/corelib.pro << EOF
+0a
+message("corelib.pro \''$\''$QMAKE_CC ")
+.
+w
+EOF
+      head -n1 src/corelib/corelib.pro
+      #mv -vi mkspecs/win32-g++/qmake.conf qmake.temp
+      #cat qmake.temp | egrep -v "QMAKE_CC |QMAKE_CXX " > mkspecs/win32-g++/qmake.conf
+      #rm qmake.temp
+      #cat mkspecs/win32-g++/qmake.conf
+      #exit 1
+    '';
+    #NIX_DEBUG = true;
+    dontSetConfigureCross=true;
+  };
 
   meta = with lib; {
     homepage = http://www.qt.io;
