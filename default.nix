@@ -298,7 +298,6 @@ let
       #  });
       #};
 
-      # uses the wrong pkgs
       qt56 =
         let imported = import ./fixes/5.6 { pkgs = pkgs // self; };
         in pkgs.recurseIntoAttrs (imported.override (super: pkgs.qt5LibsFun));
