@@ -204,6 +204,7 @@ let
       xorg = pkgs.lib.attrsets.mapAttrs (k: v: null) pkgs.xorg // {
         libXcursor = pkgs.buildEnv { name = "libXcursor-dummy"; paths = []; };
         libX11 = pkgs.buildEnv { name = "libX11-dummy"; paths = []; };
+        lndir = pkgs.xorg.lndir;
       };
       xlibs = pkgs.lib.attrsets.mapAttrs (k: v: null) pkgs.xlibs // {
         inherit (xorg) libXcursor libX11;
