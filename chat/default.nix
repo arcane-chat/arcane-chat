@@ -21,7 +21,7 @@ stdenv.mkDerivation rec {
   buildInputs = with gst_all_1; [
     zeromq4 libmsgpack nlohmann_json libtoxcore-dev obs-studio
     glib glibmm libsigcxx gstreamermm gstreamer gst-plugins-base
-    gst-libav gst-plugins-good gst-plugins-ugly gst-plugins-bad qt-gstreamer
+    gst-plugins-good gst-plugins-ugly gst-plugins-bad qt-gstreamer
     protobuf3_0 qtbase qtscript libsodium
   ];
 
