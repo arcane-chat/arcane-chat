@@ -1,0 +1,12 @@
+diff -ru qtsvg-opensource-src-5.6.1-orig/src/svg/qsvghandler.cpp qtsvg-opensource-src-5.6.1/src/svg/qsvghandler.cpp
+--- qtsvg-opensource-src-5.6.1-orig/src/svg/qsvghandler.cpp	2016-10-04 21:40:24.812414816 -0300
++++ qtsvg-opensource-src-5.6.1/src/svg/qsvghandler.cpp	2016-10-04 21:42:45.656193028 -0300
+@@ -57,6 +57,8 @@
+ 
+ #include "float.h"
+ 
++#define FLT_EPSILON __FLT_EPSILON__
++
+ QT_BEGIN_NAMESPACE
+ 
+ static const char *qt_inherit_text = "inherit";
