@@ -23,7 +23,11 @@ stdenv.mkDerivation rec {
   propagatedBuildInputs = [ boost ];
   nativeBuildInputs = [ cmake flex bison pkgconfig ];
 
-  cmakeFlags = "-DQT_VERSION=5 -DUSE_QT_PLUGIN_DIR=OFF -DUSE_GST_PLUGIN_DIR=OFF";
+  cmakeFlags = [ "-DQT_VERSION=5 -DUSE_QT_PLUGIN_DIR=OFF -DUSE_GST_PLUGIN_DIR=OFF" ];
+
+  crossAttrs = {
+    cmakeFlags = cmakeFlags ++ [ "-DCMAKE_SYSTEM_NAME=Windows" ];
+  };
 
   meta = {
     platforms = stdenv.lib.platforms.linux;
