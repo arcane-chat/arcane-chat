@@ -17,7 +17,7 @@ find_package(Protobuf  REQUIRED)
 pkg_check_modules(ZMQ REQUIRED libzmq)
 pkg_check_modules(MSG REQUIRED msgpack)
 pkg_check_modules(TOX REQUIRED libtoxcore)
-pkg_check_modules(X11 REQUIRED x11 x11-xcb)
+# pkg_check_modules(X11 REQUIRED x11 x11-xcb)
 pkg_check_modules(GST REQUIRED
   gstreamer-1.0
   gstreamermm-1.0
@@ -44,7 +44,7 @@ find_package(Qt5Network   REQUIRED)
 find_package(Qt5Widgets   REQUIRED)
 find_package(Qt5Script    REQUIRED)
 find_package(Qt5GStreamer REQUIRED)
-find_package(LibObs       REQUIRED)
+# find_package(LibObs       REQUIRED)
 
 set(COMMON_FLAGS
   "-g -Wall -Dforeach=foreach -DARCANE_CHAT_VERSION=\"\\\"${PROJECT_VERSION}\\\"\""

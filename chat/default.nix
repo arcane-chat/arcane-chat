@@ -5,7 +5,7 @@
 , gst_all_1, protobuf3_0, qtbase, qtscript, libsodium
 # Misc dependencies
 , guile, parallel, buildEnv, glib, glibmm, libsigcxx, enableDebugging
-, include-what-you-use, rtags, python
+, include-what-you-use, rtags, python, writeText
 }:
 
 stdenv.mkDerivation rec {
@@ -28,7 +28,8 @@ stdenv.mkDerivation rec {
     unset autoreconfPhase
     function autoreconfPhase() {
       echo not reconf
-      env | grep --color=always boost
+      #env | grep qt-gstreamer --color=always
+      #exit 1
     }
   '';
   NIX_DEBUG = false;
@@ -49,7 +50,15 @@ stdenv.mkDerivation rec {
       done
   '';
   crossAttrs = {
-    cmakeFlags = cmakeFlags ++ [ "-DCMAKE_SYSTEM_NAME=Windows" ];
+    cmakeFlags = cmakeFlags ++ [
+      "-DCMAKE_SYSTEM_NAME=Windows"
+      "-DProtobuf_INCLUDE_DIRS=${protobuf3_0.crossDrv}/include"
+      "-DProtobuf_LIBRARIES=${protobuf3_0.crossDrv}/lib"
+      "-DProtobuf_LITE_LIBRARY=-lprotobuf-lite"
+      "-DProtobuf_PROTOC_LIBRARY=-lprotoc"
+      "-DQt5GStreamer_DIR=${gst_all_1.qt-gstreamer.crossDrv.dev}/lib/cmake"
+      "-DQTGSTREAMER_INCLUDE_DIR=${gst_all_1.qt-gstreamer.crossDrv.dev}/include"
+    ];
   };
 
   shellHook = ''

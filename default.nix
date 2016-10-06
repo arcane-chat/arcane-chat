@@ -2,6 +2,8 @@
 
 let
   commonPackageOverrides = pkgs: rec {
+    chat-shaker = pkgs.callPackage ./chat-shaker {};
+    arcane-chat = pkgs.qt56.callPackage ./redo.nix {};
     libtoxcore-dev = pkgs.libtoxcore-dev.overrideDerivation (old: {
       src = pkgs.fetchFromGitHub {
         owner = "TokTok";
@@ -310,6 +312,9 @@ let
       protobuf3_0 = pkgs.protobuf3_0.overrideDerivation (old: {
         doCheck = false;
         nativeBuildInputs = [ pkgs.autoreconfHook ];
+        #postUnpack = ''
+        #  source ${pkgs.autoreconfHook.crossDrv}/nix-support/setup-hook
+        #'';
         buildInputs = [ pkgs.zlib.crossDrv pkgs.libtool.crossDrv.lib ];
       });
 
@@ -494,7 +499,7 @@ in rec {
     super = linuxPkgs;
 
     # Our packages
-    arcane-chat = linuxCallPackage ./chat {};
+    #arcane-chat = linuxCallPackage ./chat {};
   };
 
   windowsPkgs = import nixpkgs.outPath {
