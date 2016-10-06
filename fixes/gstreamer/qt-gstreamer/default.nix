@@ -23,10 +23,19 @@ stdenv.mkDerivation rec {
   propagatedBuildInputs = [ boost ];
   nativeBuildInputs = [ cmake flex bison pkgconfig ];
 
+
   cmakeFlags = [ "-DQT_VERSION=5 -DUSE_QT_PLUGIN_DIR=OFF -DUSE_GST_PLUGIN_DIR=OFF" ];
 
   crossAttrs = {
     cmakeFlags = cmakeFlags ++ [ "-DCMAKE_SYSTEM_NAME=Windows" ];
+    preConfigure = ''
+      pwd
+      ls
+      cp -v ${./CMakeLists.txt} CMakeLists.txt
+    '';
+    postConfigure = ''
+      moc -i ../src/QGlib/connect.cpp -o ../src/connect.moc
+    '';
   };
 
   meta = {

@@ -137,7 +137,7 @@ let
       };
     });
 
-    glib = pkgs.glib.overrideDerivation (old: rec {
+    glibX = pkgs.glib.overrideDerivation (old: rec {
       name = "glib-2.50.0";
       src = pkgs.fetchurl {
         url = "mirror://gnome/sources/glib/2.50/${name}.tar.xz";
@@ -147,7 +147,7 @@ let
       configureFlags = old.configureFlags ++ [ "--disable-libmount" ];
     });
 
-    glibmm = pkgs.glibmm.overrideDerivation (old: rec {
+    glibmmX = pkgs.glibmm.overrideDerivation (old: rec {
       name = "glibmm-2.50.0";
       src = pkgs.fetchurl {
         url = "mirror://gnome/sources/glibmm/2.50/${name}.tar.xz";

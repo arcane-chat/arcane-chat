@@ -1,0 +1,55 @@
+project(QtGStreamer)
+cmake_minimum_required(VERSION 2.8.9)
+set(QTGSTREAMER_VERSION 1.2.0)
+set(QTGLIB_API_VERSION 2.0)
+set(QTGLIB_SOVERSION 0)
+
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_NO_KEYWORDS")
+FIND_PACKAGE(PkgConfig REQUIRED)
+find_package(GLIB2)
+find_package(GObject)
+
+pkg_search_module(GLIB glib-2.0)
+
+
+
+set(QtGLib_SRCS
+    src/QGlib/quark.cpp
+    src/QGlib/type.cpp
+    src/QGlib/paramspec.cpp
+    src/QGlib/object.cpp
+    src/QGlib/value.cpp
+    src/QGlib/signal.cpp
+    src/QGlib/error.cpp
+    src/QGlib/connect.cpp
+    src/QGlib/wrap.cpp
+    src/QGlib/init.cpp
+)
+set(QTGLIB_LIBRARY Qt5GLib)
+set(QTGSTREAMER_PACKAGE_NAME Qt5GStreamer)
+set(EXPORT_TARGET_SET ${QTGSTREAMER_PACKAGE_NAME}Targets)
+set(QTGSTREAMER_INSTALL_TARGET_DEFAULT_ARGS
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+# Macro to install headers from the subdirs
+macro(install_headers _dir_name)
+    foreach(header ${ARGN})
+        get_filename_component(header_path ${header} PATH)
+        install(FILES ${header} DESTINATION ${QTGSTREAMER_INCLUDES_INSTALL_DIR}/${_dir_name}/${header_path})
+    endforeach()
+endmacro()
+
+
+include_directories(
+    ${GOBJECT_INCLUDE_DIR} ${GLIB_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+add_library(${QTGLIB_LIBRARY} ${SHARED_OR_STATIC} ${QtGLib_SRCS})
+set_target_properties(${QTGLIB_LIBRARY} PROPERTIES OUTPUT_NAME ${QTGLIB_LIBRARY}-${QTGLIB_API_VERSION}
+                                          SOVERSION ${QTGLIB_SOVERSION}
+                                            VERSION ${QTGSTREAMER_VERSION})
+install(TARGETS ${QTGLIB_LIBRARY} EXPORT ${EXPORT_TARGET_SET} ${QTGSTREAMER_INSTALL_TARGET_DEFAULT_ARGS})
+install_headers("QGlib" ${QtGLib_INSTALLED_HEADERS})

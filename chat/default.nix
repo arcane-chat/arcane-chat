@@ -24,8 +24,16 @@ stdenv.mkDerivation rec {
     gst-plugins-good gst-plugins-ugly gst-plugins-bad qt-gstreamer
     protobuf3_0 qtbase qtscript libsodium
   ];
+  postUnpack = ''
+    unset autoreconfPhase
+    function autoreconfPhase() {
+      echo not reconf
+      env | grep --color=always boost
+    }
+  '';
+  NIX_DEBUG = false;
 
-  cmakeFlags = "-GNinja";
+  cmakeFlags = [ "-GNinja" ];
 
   buildPhase = "ninja";
 
@@ -40,6 +48,9 @@ stdenv.mkDerivation rec {
               --prefix GST_PLUGIN_PATH : "$GST_PLUGIN_SYSTEM_PATH_1_0"
       done
   '';
+  crossAttrs = {
+    cmakeFlags = cmakeFlags ++ [ "-DCMAKE_SYSTEM_NAME=Windows" ];
+  };
 
   shellHook = ''
       cd ${toString src}

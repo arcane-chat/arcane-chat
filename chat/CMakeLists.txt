@@ -11,7 +11,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 #include(cotire)
 
 find_package(PkgConfig REQUIRED)
-find_package(Boost     REQUIRED program_options thread filesystem)
+# find_package(Boost     REQUIRED program_options thread filesystem)
 find_package(Protobuf  REQUIRED)
 
 pkg_check_modules(ZMQ REQUIRED libzmq)
