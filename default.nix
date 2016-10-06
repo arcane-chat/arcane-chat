@@ -1,9 +1,9 @@
 { nixpkgs ? { outPath = <nixpkgs>; } }:
 
 let
-  commonPackageOverrides = pkgs: rec {
+  commonPackageOverrides = pkgs: self: rec {
     chat-shaker = pkgs.callPackage ./chat-shaker {};
-    arcane-chat = pkgs.qt56.callPackage ./redo.nix {};
+    arcane-chat = self.qt56.callPackage ./redo.nix {};
     libtoxcore-dev = pkgs.libtoxcore-dev.overrideDerivation (old: {
       src = pkgs.fetchFromGitHub {
         owner = "TokTok";
@@ -479,9 +479,10 @@ let
   in self;
 
   makeConfig = localOverrides: {
-    packageOverrides = pkgs: let common = commonPackageOverrides pkgs;
-                                 local = localOverrides (pkgs // common);
-                             in common // local;
+    packageOverrides = pkgs: let
+      common = commonPackageOverrides pkgs (common // local);
+      local = localOverrides (pkgs // common);
+      in common // local;
   };
 
 in rec {

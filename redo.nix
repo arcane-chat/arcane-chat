@@ -1,14 +1,17 @@
-{ stdenv, chat-shaker, qtbase, pkgconfig }:
+{ stdenv, chat-shaker, qtbase, pkgconfig, protobuf3_0, strace, libtoxcore-dev,
+  glib, glibmm, gst_all_1 }:
 
 stdenv.mkDerivation {
   name = "arcane-chat";
   src = ./chat;
-  nativeBuildInputs = [ chat-shaker pkgconfig ];
-  buildInputs = [ qtbase ];
+  nativeBuildInputs = [
+    chat-shaker pkgconfig protobuf3_0 strace
+  ];
+  buildInputs = with gst_all_1; [ qtbase gstreamer libtoxcore-dev glib qt-gstreamer glibmm ];
   buildPhase = ''
     pwd
     env | grep -i --color=always buildInputs
-    chat-shaker
+    chat-shaker --timings -w -V
     ls -ltrh
   '';
 }

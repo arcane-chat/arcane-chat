@@ -11,7 +11,11 @@ import Development.Shake.Language.C.PkgConfig
 import Development.Shake.Language.C.ToolChain
 import Development.Shake.Language.C.Host
 import Development.Shake.Language.C
--- import 
+
+import Debug.Trace
+
+composeBAMutators :: [Action (BuildFlags -> BuildFlags)] -> Action (BuildFlags -> BuildFlags)
+composeBAMutators = fmap (foldl (>>>) id) . sequence
 
 main :: IO ()
 main = shakeArgs shakeOptions{shakeFiles="_build"} $ do
@@ -19,22 +23,34 @@ main = shakeArgs shakeOptions{shakeFiles="_build"} $ do
         (_, toolchain) = Development.Shake.Language.C.Host.defaultToolChain
         qtCore = pkgConfig defaultOptions "Qt5Core"
         qtWidgets = pkgConfig defaultOptions "Qt5Widgets"
-        cs = getDirectoryFiles "" ["src//*.cpp"]
+        gst = pkgConfig defaultOptions "gstreamer-1.0"
+        toxcore = pkgConfig defaultOptions "libtoxcore"
+        cxx14 = return $ append compilerFlags [(Nothing, [ "-std=c++14" ])]
+        includeDirs = return $ append userIncludes ["_build"]
+        glib = pkgConfig defaultOptions "glib-2.0"
+        glibmm = pkgConfig defaultOptions "glibmm-2.4"
+        cs = do dirFiles <- getDirectoryFiles "" ["src//*.cpp"]
+                need ["_build/network.pb.h"]
+                return dirFiles
 
     phony "clean" $ do
         putNormal "Cleaning files in _build"
         removeFilesAfter "_build" ["//*"]
 
-    protostuff <- do
-        -- fuck off want ["network.proto"]
-        cmd "protoc"
+    "_build/network.pb.h" %> \out -> do
+        need ["network.proto"]
+        cmd "protoc --cpp_out=_build network.proto"
 
-    arcaneChat <- do
-        want [ protostuff ]
-        executable toolchain "_build/arcane-chat"
-            (qtCore >> qtWidgets)
-            cs
-
+    --"_build/arcane-chat" <.> exe %> \out -> do
+    arcaneChat <- executable toolchain "_build/arcane-chat"
+        (composeBAMutators [
+            fmap (>>> traceShowId) glibmm, qtCore, qtWidgets,
+            glib,
+            gst,
+            toxcore,
+            includeDirs, cxx14
+        ])
+        cs
     want [ arcaneChat ]
     --let os = ["_build/src" </> c -<.> "o" | c <- cs]
     --need os
