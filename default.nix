@@ -480,7 +480,7 @@ let
 
   makeConfig = localOverrides: {
     packageOverrides = pkgs: let
-      common = commonPackageOverrides pkgs (common // local);
+      common = commonPackageOverrides pkgs (pkgs // common // local);
       local = localOverrides (pkgs // common);
       in common // local;
   };
