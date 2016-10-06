@@ -500,7 +500,7 @@ in rec {
     super = linuxPkgs;
 
     # Our packages
-    #arcane-chat = linuxCallPackage ./chat {};
+    arcane-chat = linuxCallPackage ./chat {};
   };
 
   windowsPkgs = import nixpkgs.outPath {
