@@ -2,7 +2,7 @@
   glib, glibmm, gst_all_1 }:
 
 stdenv.mkDerivation {
-  name = "arcane-chat";
+  name = "arcane-chat-not-stired";
   src = ./chat;
   nativeBuildInputs = [
     chat-shaker pkgconfig protobuf3_0 strace
