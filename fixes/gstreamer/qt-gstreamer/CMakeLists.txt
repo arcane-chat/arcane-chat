@@ -10,6 +10,7 @@ FIND_PACKAGE(PkgConfig REQUIRED)
 find_package(GLIB2)
 find_package(GObject)
 
+set(QTGSTREAMER_PACKAGE_NAME Qt5GStreamer)
 pkg_search_module(GLIB glib-2.0)
 
 set(QTGSTREAMER_CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${QTGSTREAMER_PACKAGE_NAME})
@@ -29,20 +30,20 @@ set(QtGLib_SRCS
     src/QGlib/init.cpp
 )
 set(QtGLib_INSTALLED_HEADERS
-    src/QGlib/global.h      src/QGlib/Global
-    src/QGlib/init.h        src/QGlib/Init
-    src/QGlib/quark.h       src/QGlib/Quark
-    src/QGlib/type.h        src/QGlib/Type
-    src/QGlib/refpointer.h  src/QGlib/RefPointer
-    src/QGlib/wrap.h
-    src/QGlib/paramspec.h   src/QGlib/ParamSpec
-    src/QGlib/object.h      src/QGlib/Object
-    src/QGlib/value.h       src/QGlib/Value
-    src/QGlib/qglib_signal.h src/QGlib/Signal
-    src/QGlib/emitimpl.h
-    src/QGlib/connect.h     src/QGlib/Connect
-    src/QGlib/connectimpl.h
-    src/QGlib/error.h       src/QGlib/Error
+    global.h      Global
+    init.h        Init
+    quark.h       Quark
+    type.h        Type
+    refpointer.h  RefPointer
+    wrap.h
+    paramspec.h   ParamSpec
+    object.h      Object
+    value.h       Value
+    qglib_signal.h Signal
+    emitimpl.h
+    connect.h     Connect
+    connectimpl.h
+    error.h       Error
 )
 set(QTGLIB_LIBRARY Qt5GLib)
 set(QTGSTREAMER_UTILS_LIBRARY Qt5GStreamerUtils)
@@ -57,10 +58,10 @@ set(QTGSTREAMER_INSTALL_TARGET_DEFAULT_ARGS
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # Macro to install headers from the subdirs
-macro(install_headers _dir_name)
+macro(install_headers _dir_name prefix)
     foreach(header ${ARGN})
         get_filename_component(header_path ${header} PATH)
-        install(FILES ${header} DESTINATION ${QTGSTREAMER_INCLUDES_INSTALL_DIR}/${_dir_name}/${header_path})
+        install(FILES ${prefix}${header} DESTINATION ${QTGSTREAMER_INCLUDES_INSTALL_DIR}/${_dir_name}/${header_path})
     endforeach()
 endmacro()
 
@@ -74,7 +75,7 @@ set_target_properties(${QTGLIB_LIBRARY} PROPERTIES OUTPUT_NAME ${QTGLIB_LIBRARY}
                                           SOVERSION ${QTGLIB_SOVERSION}
                                             VERSION ${QTGSTREAMER_VERSION})
 install(TARGETS ${QTGLIB_LIBRARY} EXPORT ${EXPORT_TARGET_SET} ${QTGSTREAMER_INSTALL_TARGET_DEFAULT_ARGS})
-install_headers("QGlib" ${QtGLib_INSTALLED_HEADERS})
+install_headers("QGlib" "src/QGlib/" ${QtGLib_INSTALLED_HEADERS})
 
 # Install pkgconfig files
 file(GLOB_RECURSE PC_IN_FILES "*.pc.in")

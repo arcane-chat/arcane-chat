@@ -19,7 +19,11 @@ composeBAMutators :: [Action (BuildFlags -> BuildFlags)] -> Action (BuildFlags -
 composeBAMutators = fmap (foldl (>>>) id) . sequence
 
 main :: IO ()
-main = shakeArgs shakeOptions{shakeFiles="_build"} $ do
+main = shakeArgs shakeOptions{
+        shakeFiles="_build",
+        shakeReport = [ "shakeReport" ],
+        shakeProgress = progressSimple
+    } $ do
     let
         (_, toolchain) = Development.Shake.Language.C.Host.defaultToolChain
         qtCore = pkgConfig defaultOptions "Qt5Core"
@@ -47,9 +51,10 @@ main = shakeArgs shakeOptions{shakeFiles="_build"} $ do
         extraIncludeDirs = do
             dir2 <- glibmmDir
             composeBAMutators [
-                    return $ append systemIncludes [ dir2 </> "lib/glibmm-2.4/include"],
-                    customInclude "libsigcxx" "include/sigc++-2.0",
-                    customInclude "libsigcxx" "lib/sigc++-2.0/include"
+                    return $ append systemIncludes [ dir2 </> "lib/glibmm-2.4/include"]
+                    , return $ append defines [("QT_NO_DEBUG",Nothing)]
+                    ,customInclude "libsigcxx" "include/sigc++-2.0"
+                    ,customInclude "libsigcxx" "lib/sigc++-2.0/include"
                     ,customInclude "glibmmdev" "include/giomm-2.4"
                     ,customInclude "glibmmdev" "include/glibmm-2.4"
                     ,customInclude "glibmm" "lib/giomm-2.4/include"
@@ -60,21 +65,16 @@ main = shakeArgs shakeOptions{shakeFiles="_build"} $ do
         client_cs = do-- dirFiles <- getDirectoryFiles "" ["src//*.cpp"]
                 let
                     cs = [
-                            "src/client.cpp", "src/db.cpp"
-                            ,"src/mainwindow.cpp"
-                            ,"src/chatwidget.cpp", "src/callcontrol.cpp"
-                            ,"src/infowidget.cpp", "src/stats.cpp"
+                            "src/client.cpp", "src/db.cpp" ,"src/stats.cpp"
                             ,"src/core_db.cpp", "src/options.cpp"
-                            ,"_build/moc_infowidget.cpp"
-                            ,"_build/moc_callcontrol.cpp"
-                            ,"_build/moc_chatwidget.cpp"
-                            ,"_build/moc_mainwindow.cpp"
                             ,"_build/network.pb.cc"
                         ] ++ qObject "audiocall" ++ qObject "core"
                             ++ qObject "friend" ++ qObject "utils"
                             ++ qObject "channel" ++ qObject "kisscache"
                             ++ qObject "kiss" ++ qObject "toxsink"
-                            ++ qObject "channelmodel"
+                            ++ qObject "channelmodel" ++ qObject "mainwindow"
+                            ++ qObject "chatwidget" ++ qObject "infowidget"
+                            ++ qObject "callcontrol"
                 need $ [
                     "_build/network.pb.h",
                     "_build/server.moc", "_build/kisstest.moc",
@@ -92,8 +92,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build"} $ do
 
     "_build//ui_*.h" %> \out -> do
         let
-            c = (dropDirectory1 out) -<.> "ui"
-            (_ : _ : _ : name) = c
+            name = drop 3 (dropDirectory1 out) -<.> "ui"
             src = "src" </> name
         need [ src ]
         cmd "uic -o" out src
@@ -106,6 +105,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build"} $ do
         maybeDest <- getEnv "out"
         let dest = fromMaybe "/ERR" maybeDest
         copyFile' ("_build/arcane-chat" <.> exe) (dest </> "bin/arcane-chat" <.> exe)
+        copyFile' "shakeReport" $ dest </> "shake-report.html"
 
     ["_build/network.pb.h", "_build/network.pb.cc"] |%> \out -> do
         need ["network.proto"]
@@ -120,7 +120,7 @@ main = shakeArgs shakeOptions{shakeFiles="_build"} $ do
 
     "_build//moc_*.cpp" %> \out -> do
         let
-            (_:_:_:_:name) = dropDirectory1 $ out -<.> "hpp"
+            name = drop 4 $ dropDirectory1 $ out -<.> "hpp"
             src = "src" </> name
         need [ src ]
         cmd "moc " src "-o" out

@@ -36,7 +36,9 @@ stdenv.mkDerivation {
     chat-shaker --timings -w -j7 -k
   '';
   installPhase = ''
-    mkdir -pv $out/bin
+    mkdir -pv $out/bin $out/nix-support
     chat-shaker install
+    echo "doc buildReport $out/shake-report.html shake-report.html" \
+    >> $out/nix-support/hydra-build-products
   '';
 }
