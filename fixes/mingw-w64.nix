@@ -21,8 +21,6 @@ let src = fetchurl {
     pthreadsBuild = {
       name = "mingw-w64-pthreads-${version}";
 
-      nativeBuildInputs = [ (stdenv.mkDerivation (common // headersBuild)) ];
-
       preConfigure = ''
         cd mingw-w64-libraries/winpthreads
       '';
