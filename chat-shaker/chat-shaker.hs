@@ -105,7 +105,7 @@ main = shakeArgs shakeOptions{
         maybeDest <- getEnv "out"
         let dest = fromMaybe "/ERR" maybeDest
         copyFile' ("_build/arcane-chat" <.> exe) (dest </> "bin/arcane-chat" <.> exe)
-        copyFile' "shakeReport" $ dest </> "shake-report.html"
+        copyFile' "shakeReport" $ dest </> "shake/report.html"
 
     ["_build/network.pb.h", "_build/network.pb.cc"] |%> \out -> do
         need ["network.proto"]
