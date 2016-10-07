@@ -2,8 +2,62 @@
 
 let
   origPkgs = import nixpkgs {};
+  oldOverrides = pkgs: {
+    windows = pkgs.windows // {
+      mingw_w64 = pkgs.callPackage ./fixes/mingw-w64.nix {
+        gccCross = pkgs.gccCrossStageStatic;
+        binutilsCross = pkgs.binutilsCross;
+      };
+
+      mingw_w64_headers = pkgs.callPackage ./fixes/mingw-w64.nix {
+        onlyHeaders = true;
+      };
+
+      mingw_w64_pthreads = pkgs.callPackage ./fixes/mingw-w64.nix {
+        onlyPthreads = true;
+      };
+
+      mingw-std-threads = pkgs.stdenv.mkDerivation rec {
+        name = "mingw-std-threads-20160912";
+
+        src = pkgs.fetchFromGitHub {
+          owner = "meganz";
+          repo = "mingw-std-threads";
+          rev = "d81ca0b7514a0ded6c329f84be9e5f07829d2418";
+          sha256 = "13qf3rb25d3c7z8jrclh9mxv6qs28kzymvag7nr9j25jq0j81r0d";
+        };
+
+        inherit (pkgs.stdenv.cc) cc;
+
+        buildPhase = ''
+            local INCLUDE
+            INCLUDE="${cc.out}/include/c++/${cc.version}"
+
+            function footer () {
+                printf "\n"
+                printf "#ifdef THREAD_PRIORITY_NORMAL\n"
+                printf "#undef THREAD_PRIORITY_NORMAL\n"
+                printf "#endif\n"
+            }
+
+            printf "#include \"%s\"\n" "$INCLUDE/mutex" > mutex
+
+            { cat "mingw.condition_variable.h"; footer; } >> condition_variable
+            { cat "mingw.thread.h";             footer; } >> thread
+            { cat "mingw.mutex.h";              footer; } >> mutex
+        '';
+
+        installPhase = ''
+            mkdir -p $out/include
+            cp condition_variable $out/include/
+            cp mutex              $out/include/
+            cp thread             $out/include/
+        '';
+      };
+    };
+  };
   commonPackageOverrides = self: super: {
-    chat-shaker = self.callPackage ./chat-shaker {};
+    chat-shaker = super.callPackage ./chat-shaker {};
     arcane-chat = self.qt56.callPackage ./redo.nix {};
     libtoxcore-dev = super.libtoxcore-dev.overrideDerivation (old: {
       src = self.fetchFromGitHub {
@@ -74,59 +128,6 @@ let
           wrapProgram $out/bin/include-what-you-use --add-flags "$FLAGS"
       '';
     });
-
-    windows = super.windows // {
-      mingw_w64 = self.callPackage ./fixes/mingw-w64.nix {
-        gccCross = self.gccCrossStageStatic;
-        binutilsCross = self.binutilsCross;
-      };
-
-      mingw_w64_headers = self.callPackage ./fixes/mingw-w64.nix {
-        onlyHeaders = true;
-      };
-
-      mingw_w64_pthreads = self.callPackage ./fixes/mingw-w64.nix {
-        onlyPthreads = true;
-      };
-
-      mingw-std-threads = self.stdenv.mkDerivation rec {
-        name = "mingw-std-threads-20160912";
-
-        src = self.fetchFromGitHub {
-          owner = "meganz";
-          repo = "mingw-std-threads";
-          rev = "d81ca0b7514a0ded6c329f84be9e5f07829d2418";
-          sha256 = "13qf3rb25d3c7z8jrclh9mxv6qs28kzymvag7nr9j25jq0j81r0d";
-        };
-
-        inherit (self.stdenv.cc) cc;
-
-        buildPhase = ''
-            local INCLUDE
-            INCLUDE="${cc.out}/include/c++/${cc.version}"
-
-            function footer () {
-                printf "\n"
-                printf "#ifdef THREAD_PRIORITY_NORMAL\n"
-                printf "#undef THREAD_PRIORITY_NORMAL\n"
-                printf "#endif\n"
-            }
-
-            printf "#include \"%s\"\n" "$INCLUDE/mutex" > mutex
-
-            { cat "mingw.condition_variable.h"; footer; } >> condition_variable
-            { cat "mingw.thread.h";             footer; } >> thread
-            { cat "mingw.mutex.h";              footer; } >> mutex
-        '';
-
-        installPhase = ''
-            mkdir -p $out/include
-            cp condition_variable $out/include/
-            cp mutex              $out/include/
-            cp thread             $out/include/
-        '';
-      };
-    };
 
     gst_all_1 = self.recurseIntoAttrs (self.callPackage ./fixes/gstreamer {});
 
@@ -510,6 +511,7 @@ in rec {
         #platform       = {};
         openssl.system = "mingw64";
       };
+      config.packageOverrides = oldOverrides;
     })
     windowsPackageOverrides;
   windowsCallPackage = windowsPkgs.qt56.newScope windows;
