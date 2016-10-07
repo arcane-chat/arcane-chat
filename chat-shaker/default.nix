@@ -5,5 +5,6 @@ let
   ghc = haskell.packages.ghc7103.ghcWithPackages paths;
 in runCommand "chat-shaker" { buildInputs = [ ghc ]; } ''
   mkdir -pv $out/bin
-  ghc ${./chat-shaker.hs} -o $out/bin/chat-shaker
+  cp -vi ${./chat-shaker.hs} chat-shaker.hs
+  ghc chat-shaker.hs -o $out/bin/chat-shaker
 ''

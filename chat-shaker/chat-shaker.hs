@@ -77,7 +77,6 @@ main = shakeArgs shakeOptions{
                             ++ qObject "callcontrol"
                 need $ [
                     "_build/network.pb.h",
-                    "_build/server.moc", "_build/kisstest.moc",
                     "_build/ui_mainwindow.h", "_build/ui_infowidget.h"
                     ,"_build/ui_chatwidget.h"
                     ] ++ cs
