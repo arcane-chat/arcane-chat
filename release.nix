@@ -12,6 +12,7 @@ let
   makeJobs = lib.foldl (total: next: total // (makeJob next)) {};
 in {
   wineWow-linux = default.linux.super.wine.override { wineBuild = "wineWow"; };
+  chat-shaker = default.linux.super.chat-shaker;
   # darwin = default.darwin.arcane-chat;
 } // makeJobs [
   "arcane-chat"
