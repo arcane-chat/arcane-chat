@@ -15,27 +15,33 @@ import Development.Shake.Language.C
 import Debug.Trace
 import Data.Maybe
 
+import System.Console.GetOpt
+
 composeBAMutators :: [Action (BuildFlags -> BuildFlags)] -> Action (BuildFlags -> BuildFlags)
 composeBAMutators = fmap (foldl (>>>) id) . sequence
 
+data Flag = Debug | Windows deriving (Show, Eq)
+
+options :: [ OptDescr (Either String Flag) ]
+options = [
+        Option [] ["debug-build"] (NoArg $ Right Debug) "do a debug build"
+        , Option [] ["windows"] (NoArg $ Right Main.Windows) "do a windows build"
+    ]
+
 main :: IO ()
-main = shakeArgs shakeOptions{
+main = shakeArgsWith shakeOptions{
         shakeFiles="_build",
         shakeReport = [ "shakeReport" ],
         shakeProgress = progressSimple
-    } $ do
+    } options $ \flags targets -> return $ Just $ do
     let
         (_, toolchain) = Development.Shake.Language.C.Host.defaultToolChain
-        qtCore = pkgConfig defaultOptions "Qt5Core"
-        qtWidgets = pkgConfig defaultOptions "Qt5Widgets"
-        qtNetwork = pkgConfig defaultOptions "Qt5Network"
-        qtScript = pkgConfig defaultOptions "Qt5Script"
-        gst = pkgConfig defaultOptions "gstreamer-1.0"
-        toxcore = pkgConfig defaultOptions "libtoxcore"
         cxx14 = return $ append compilerFlags [(Nothing, [ "-std=c++14" ])]
         includeDirs = return $ append userIncludes ["_build"]
-        glib = pkgConfig defaultOptions "glib-2.0"
-        glibmm = pkgConfig defaultOptions "glibmm-2.4"
+        debugOption = if Debug `elem` flags then
+                []
+            else
+                [ return $ append defines [("QT_NO_DEBUG",Nothing)] ]
         glibmmDir = do
             storePath <- getEnv "glibmm"
             return $ fromMaybe "/usr/include" storePath
@@ -50,9 +56,8 @@ main = shakeArgs shakeOptions{
             return $ append systemIncludes [ dir </> postfix ]
         extraIncludeDirs = do
             dir2 <- glibmmDir
-            composeBAMutators [
+            composeBAMutators $ [
                     return $ append systemIncludes [ dir2 </> "lib/glibmm-2.4/include"]
-                    , return $ append defines [("QT_NO_DEBUG",Nothing)]
                     ,customInclude "libsigcxx" "include/sigc++-2.0"
                     ,customInclude "libsigcxx" "lib/sigc++-2.0/include"
                     ,customInclude "glibmmdev" "include/giomm-2.4"
@@ -60,7 +65,7 @@ main = shakeArgs shakeOptions{
                     ,customInclude "glibmm" "lib/giomm-2.4/include"
                     ,customInclude "gstreamermmdev" "include/gstreamermm-1.0"
                     ,customInclude "gstreamermm" "lib/gstreamermm-1.0/include"
-                ]
+                ] ++ debugOption
         qObject name = [ "src" </> name <.> "cpp", "_build/moc_" ++ name <.> "cpp" ]
         client_cs = do-- dirFiles <- getDirectoryFiles "" ["src//*.cpp"]
                 let
@@ -127,18 +132,21 @@ main = shakeArgs shakeOptions{
     --"_build/arcane-chat" <.> exe %> \out -> do
     arcaneChat <- executable toolchain ("_build/arcane-chat" <.> exe)
         (composeBAMutators [
-            fmap (>>> traceShowId) glibmm
-            ,qtCore, qtWidgets, qtNetwork, qtScript
-            ,glib
-            ,gst
-            ,toxcore
+            fmap (>>> traceShowId) $ loadPkgConfig "Qt5GStreamer-1.0"
+            ,fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"
+            ,loadPkgConfig "Qt5Core"
+            ,loadPkgConfig "Qt5Widgets"
+            ,loadPkgConfig "Qt5Network"
+            ,loadPkgConfig "Qt5Script"
+            ,loadPkgConfig "glib-2.0"
+            ,loadPkgConfig "gstreamer-1.0"
+            ,loadPkgConfig "libtoxcore"
             ,includeDirs, cxx14
             ,loadPkgConfig "gstreamermm-1.0"
             ,loadPkgConfig "gstreamer-audio-1.0"
             ,loadPkgConfig "sqlite3"
             ,loadPkgConfig "protobuf"
             ,loadPkgConfig "Qt5GLib-2.0"
-            ,loadPkgConfig "Qt5GStreamer-1.0"
             ,loadPkgConfig "Qt5GStreamerUtils-1.0"
             ,loadPkgConfig "libsodium"
             ,extraIncludeDirs

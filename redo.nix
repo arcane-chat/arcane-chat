@@ -33,11 +33,13 @@ stdenv.mkDerivation {
   '';
 
   buildPhase = ''
-    chat-shaker --timings -w -j7 -k
+    mkdir $out
+    chat-shaker --timings -j7 --debug-build
   '';
+  
   installPhase = ''
     mkdir -pv $out/bin $out/nix-support $out/shake
-    chat-shaker install
+    chat-shaker install --debug-build
     echo "doc buildReport $out/shake report.html" \
     >> $out/nix-support/hydra-build-products
   '';
