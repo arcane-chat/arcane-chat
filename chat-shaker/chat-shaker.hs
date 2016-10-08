@@ -1,33 +1,34 @@
 module Main where
 
-import Control.Applicative
-import Control.Arrow
+import           Control.Applicative
+import           Control.Arrow
 
-import Development.Shake
-import Development.Shake.Command
-import Development.Shake.FilePath
-import Development.Shake.Util
-import Development.Shake.Language.C.PkgConfig
-import Development.Shake.Language.C.ToolChain
-import Development.Shake.Language.C.Host
-import Development.Shake.Language.C
+import           Development.Shake
+import           Development.Shake.Command
+import           Development.Shake.FilePath
+import           Development.Shake.Language.C
+import           Development.Shake.Language.C.Host
+import           Development.Shake.Language.C.PkgConfig
+import           Development.Shake.Language.C.ToolChain
+import           Development.Shake.Util
 
-import Debug.Trace
-import Data.Maybe
-import Data.Label (get, set)
+import           Data.Label                             (get, set)
+import           Data.Maybe
+import           Debug.Trace
 
-import System.Console.GetOpt
+import           System.Console.GetOpt
 
-composeBAMutators :: [Action (BuildFlags -> BuildFlags)] -> Action (BuildFlags -> BuildFlags)
-composeBAMutators = fmap (foldl (>>>) id) . sequence
+type BFMutator = BuildFlags -> BuildFlags;
+
+composeBFMutators :: [Action BFMutator] -> Action BFMutator
+composeBFMutators = fmap (foldl (>>>) id) . sequence
 
 data Flag = Debug | Windows deriving (Show, Eq)
 
 options :: [ OptDescr (Either String Flag) ]
-options = [
-        Option [] ["debug-build"] (NoArg $ Right Debug) "do a debug build"
-        , Option [] ["windows"] (NoArg $ Right Main.Windows) "do a windows build"
-    ]
+options = [ Option [] ["debug-build"] (NoArg $ Right Debug) "do a debug build"
+          , Option [] ["windows"] (NoArg $ Right Main.Windows) "do a windows build"
+          ]
 
 main :: IO ()
 main = shakeArgsWith shakeOptions{
@@ -63,7 +64,7 @@ main = shakeArgsWith shakeOptions{
             return $ append systemIncludes [ dir </> postfix ]
         extraIncludeDirs = do
             dir2 <- glibmmDir
-            composeBAMutators $ [
+            composeBFMutators $ [
                     return $ append systemIncludes [ dir2 </> "lib/glibmm-2.4/include"]
                     ,customInclude "libsigcxx" "include/sigc++-2.0"
                     ,customInclude "libsigcxx" "lib/sigc++-2.0/include"
@@ -138,7 +139,7 @@ main = shakeArgsWith shakeOptions{
 
     --"_build/arcane-chat" <.> exe %> \out -> do
     arcaneChat <- executable toolchain ("_build/arcane-chat" <.> exe)
-        (composeBAMutators [
+        (composeBFMutators [
             fmap (>>> traceShowId) $ loadPkgConfig "Qt5GStreamer-1.0"
             ,fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"
             ,loadPkgConfig "Qt5Core"

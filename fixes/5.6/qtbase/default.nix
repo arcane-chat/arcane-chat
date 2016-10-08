@@ -98,7 +98,6 @@ stdenv.mkDerivation rec {
     -confirm-license
     -opensource
 
-    -release
     -shared
     -c++11
     ${lib.optionalString developerBuild "-developer-build"}
@@ -243,11 +242,11 @@ stdenv.mkDerivation rec {
       unset CXX
       unset CC
       ed -s src/corelib/corelib.pro << EOF
-0a
-message("corelib.pro \''$\''$QMAKE_CC \''$\''$QMAKE_CXX")
-.
-w
-EOF
+      0a
+      message("corelib.pro \''$\''$QMAKE_CC \''$\''$QMAKE_CXX")
+      .
+      w
+      EOF
       head -n1 src/corelib/corelib.pro
       #mv -vi mkspecs/win32-g++/qmake.conf qmake.temp
       #cat qmake.temp | egrep -v "QMAKE_CC |QMAKE_CXX " > mkspecs/win32-g++/qmake.conf
