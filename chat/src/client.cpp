@@ -86,12 +86,14 @@ int main(int argc, char** argv) {
             mw->show();
         }
 
+#ifndef Q_OS_WIN
         // Set up a signal handler for SIGINT/SIGTERM
         struct sigaction interrupt;
         memset(&interrupt, 0, sizeof(interrupt));
         interrupt.sa_handler = &handler;
         sigaction(SIGINT, &interrupt, nullptr);
         sigaction(SIGTERM, &interrupt, nullptr);
+#endif
 
         ret = app.exec();
     }

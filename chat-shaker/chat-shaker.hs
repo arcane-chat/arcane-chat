@@ -14,6 +14,7 @@ import Development.Shake.Language.C
 
 import Debug.Trace
 import Data.Maybe
+import Data.Label (get, set)
 
 import System.Console.GetOpt
 
@@ -35,7 +36,13 @@ main = shakeArgsWith shakeOptions{
         shakeProgress = progressSimple
     } options $ \flags targets -> return $ Just $ do
     let
-        (_, toolchain) = Development.Shake.Language.C.Host.defaultToolChain
+        (_, nativeToolchain) = Development.Shake.Language.C.Host.defaultToolChain
+        crossToolchain = do
+            Just cc <- getEnv "CC"
+            Just cxx <- getEnv "CXX"
+            set compilerCommand cc  . set linkerCommand cxx <$> nativeToolchain
+        toolchain = if Main.Windows `elem` flags then crossToolchain else nativeToolchain
+        exe = if Main.Windows `elem` flags then "exe" else ""
         cxx14 = return $ append compilerFlags [(Nothing, [ "-std=c++14" ])]
         includeDirs = return $ append userIncludes ["_build"]
         debugOption = if Debug `elem` flags then

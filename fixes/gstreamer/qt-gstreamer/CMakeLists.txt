@@ -45,6 +45,60 @@ set(QtGLib_INSTALLED_HEADERS
     connectimpl.h
     error.h       Error
 )
+
+set(QtGStreamer_INSTALLED_HEADERS
+    global.h            Global
+    init.h              Init
+    enums.h
+    structs.h           Fourcc
+                        Fraction
+                        IntRange
+                        Int64Range
+                        DoubleRange
+                        FractionRange
+    structure.h         Structure
+    caps.h              Caps
+    miniobject.h        MiniObject
+    object.h            Object
+    pad.h               Pad
+    ghostpad.h          GhostPad
+    element.h           Element
+    pluginfeature.h     PluginFeature
+    elementfactory.h    ElementFactory
+    bin.h               Bin
+    childproxy.h        ChildProxy
+    pipeline.h          Pipeline
+    message.h           Message
+    bus.h               Bus
+    parse.h             Parse
+    urihandler.h        UriHandler
+    videoorientation.h  VideoOrientation
+    videooverlay.h      VideoOverlay
+    streamvolume.h      StreamVolume
+    colorbalance.h      ColorBalance
+    query.h             Query
+    clock.h             Clock
+    buffer.h            Buffer
+    sample.h            Sample
+    allocator.h         Allocator
+    memory.h            Memory
+    event.h             Event
+    clocktime.h         ClockTime
+    taglist.h           TagList
+    bufferlist.h        BufferList
+    discoverer.h        Discoverer
+    segment.h           Segment
+
+    Ui/global.h
+    Ui/videowidget.h            Ui/VideoWidget
+    Ui/graphicsvideosurface.h   Ui/GraphicsVideoSurface
+    Ui/graphicsvideowidget.h    Ui/GraphicsVideoWidget
+
+    Utils/global.h
+    Utils/applicationsink.h     Utils/ApplicationSink
+    Utils/applicationsource.h   Utils/ApplicationSource
+)
+
 set(QTGLIB_LIBRARY Qt5GLib)
 set(QTGSTREAMER_UTILS_LIBRARY Qt5GStreamerUtils)
 set(QTGSTREAMER_LIBRARY Qt5GStreamer)
@@ -76,6 +130,7 @@ set_target_properties(${QTGLIB_LIBRARY} PROPERTIES OUTPUT_NAME ${QTGLIB_LIBRARY}
                                             VERSION ${QTGSTREAMER_VERSION})
 install(TARGETS ${QTGLIB_LIBRARY} EXPORT ${EXPORT_TARGET_SET} ${QTGSTREAMER_INSTALL_TARGET_DEFAULT_ARGS})
 install_headers("QGlib" "src/QGlib/" ${QtGLib_INSTALLED_HEADERS})
+install_headers("QGst" "src/QGst/" ${QtGStreamer_INSTALLED_HEADERS})
 
 # Install pkgconfig files
 file(GLOB_RECURSE PC_IN_FILES "*.pc.in")
