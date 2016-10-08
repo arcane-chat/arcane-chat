@@ -19,22 +19,28 @@ stdenv.mkDerivation rec {
 
   outputs = [ "dev" "out" ];
 
-  buildInputs = [ gstreamer gst-plugins-base glib qt56.qtbase qt56.qtdeclarative ];
+  buildInputs = [
+    gstreamer gst-plugins-base glib qt56.qtbase qt56.qtdeclarative
+  ];
+  
   propagatedBuildInputs = [ boost ];
   nativeBuildInputs = [ cmake flex bison pkgconfig ];
 
-
-  cmakeFlags = [ "-DQT_VERSION=5 -DUSE_QT_PLUGIN_DIR=OFF -DUSE_GST_PLUGIN_DIR=OFF" ];
+  cmakeFlags = [
+    "-DQT_VERSION=5"
+    "-DUSE_QT_PLUGIN_DIR=OFF"
+    "-DUSE_GST_PLUGIN_DIR=OFF"
+  ];
 
   crossAttrs = {
     cmakeFlags = cmakeFlags ++ [ "-DCMAKE_SYSTEM_NAME=Windows" ];
+
     preConfigure = ''
-      pwd
-      ls
-      cp -v ${./CMakeLists.txt} CMakeLists.txt
+        cp -v ${./CMakeLists.txt} CMakeLists.txt
     '';
+
     postConfigure = ''
-      moc -i ../src/QGlib/connect.cpp -o ../src/connect.moc
+        moc -i ../src/QGlib/connect.cpp -o ../src/connect.moc
     '';
   };
 
