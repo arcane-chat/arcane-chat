@@ -1,4 +1,0 @@
-to fix:
-  taktoa: libvpx
-  taktoa: obs-studio fails to find sys/ioctl.h
-  clever: obs-studio fails due to alsalib
