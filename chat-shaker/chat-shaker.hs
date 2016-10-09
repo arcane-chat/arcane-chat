@@ -18,6 +18,10 @@ import           Debug.Trace
 
 import           System.Console.GetOpt
 
+(|>) :: a -> (a -> b) -> b
+(|>) = flip ($)
+infixl 0 |>
+
 type BFMutator = BuildFlags -> BuildFlags
 
 composeBFMutators :: [Action BFMutator] -> Action BFMutator
@@ -36,18 +40,14 @@ soptions = shakeOptions { shakeFiles = "_build"
                         , shakeProgress = progressSimple
                         }
 
-(|>) :: a -> (a -> b) -> b
-(|>) = flip ($)
-infixl 0 |>
-
-cxx14 :: Action (BFMutator)
+cxx14 :: Action BFMutator
 cxx14 = return $ append compilerFlags [(Nothing, [ "-std=c++14" ])]
 
-customInclude :: String -> String -> Action (BFMutator)
+customInclude :: String -> String -> Action BFMutator
 customInclude envvar postfix = do
-    storePath <- getEnv envvar
-    let dir = fromMaybe "ERR" storePath
-    return $ append systemIncludes [ dir </> postfix ]
+  storePath <- getEnv envvar
+  let dir = fromMaybe "ERR" storePath
+  return $ append systemIncludes [ dir </> postfix ]
 
 main :: IO ()
 main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
@@ -74,18 +74,19 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
 
   let loadPkgConfig = pkgConfig defaultOptions
 
-  let extraIncludeDirs = do
-        composeBFMutators $
-          (uncurry customInclude <$>
-          ([ ("libsigcxx", "include/sigc++-2.0")
-          , ("libsigcxx", "lib/sigc++-2.0/include")
-          , ("glibmmdev", "include/giomm-2.4")
-          , ("glibmmdev", "include/glibmm-2.4")
-          , ("glibmm", "lib/giomm-2.4/include")
-          , ("glibmmdev", "lib/glibmm-2.4/include")
-          , ("gstreamermmdev", "include/gstreamermm-1.0")
-          , ("gstreamermm", "lib/gstreamermm-1.0/include")
-          ])) ++ [ return $ append userIncludes ["_build"] ]++ debugOption
+  let extraIncludeDirs = composeBFMutators $
+                         (uncurry customInclude <$>
+                          ([ ("libsigcxx", "include/sigc++-2.0")
+                           , ("libsigcxx", "lib/sigc++-2.0/include")
+                           , ("glibmmdev", "include/giomm-2.4")
+                           , ("glibmmdev", "include/glibmm-2.4")
+                           , ("glibmm", "lib/giomm-2.4/include")
+                           , ("glibmmdev", "lib/glibmm-2.4/include")
+                           , ("gstreamermmdev", "include/gstreamermm-1.0")
+                           , ("gstreamermm", "lib/gstreamermm-1.0/include")
+                           ]))
+                         ++ [ return $ append userIncludes ["_build"] ]
+                         ++ debugOption
 
   let qObject name = [ "src" </> name <.> "cpp"
                      , "_build/moc_" ++ name <.> "cpp" ]
@@ -144,12 +145,13 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
     need [ src ]
     cmd "moc " src "-o" out
 
-  let pkgConfigSet = loadPkgConfig <$> [ "Qt5GStreamer-1.0"
-                    , "Qt5Core", "Qt5Widgets", "Qt5Network", "Qt5Script"
-                    , "glib-2.0", "gstreamer-1.0", "gstreamermm-1.0"
-                    , "gstreamer-audio-1.0", "sqlite3", "protobuf"
-                    , "Qt5GLib-2.0", "Qt5GStreamerUtils-1.0"
-                    , "libtoxcore", "libsodium" ]
+  let pkgConfigSet = loadPkgConfig <$>
+                     [ "Qt5GStreamer-1.0"
+                     , "Qt5Core", "Qt5Widgets", "Qt5Network", "Qt5Script"
+                     , "glib-2.0", "gstreamer-1.0", "gstreamermm-1.0"
+                     , "gstreamer-audio-1.0", "sqlite3", "protobuf"
+                     , "Qt5GLib-2.0", "Qt5GStreamerUtils-1.0"
+                     , "libtoxcore", "libsodium" ]
 
   arcaneChat <- (executable toolchain ("_build/arcane-chat" <.> exe)
                  (composeBFMutators $
