@@ -161,4 +161,4 @@ main = shakeArgsWith shakeOptions{
             ,return $ append defines [("ARCANE_CHAT_VERSION",Just "0")]
         ])
         client_cs
-    want [ arcaneChat ]
+    if null targets then want [ arcaneChat ] else want targets
