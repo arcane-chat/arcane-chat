@@ -40,6 +40,15 @@ soptions = shakeOptions { shakeFiles = "_build"
 (|>) = flip ($)
 infixl 0 |>
 
+cxx14 :: Action (BFMutator)
+cxx14 = return $ append compilerFlags [(Nothing, [ "-std=c++14" ])]
+
+customInclude :: String -> String -> Action (BFMutator)
+customInclude envvar postfix = do
+    storePath <- getEnv envvar
+    let dir = fromMaybe "ERR" storePath
+    return $ append systemIncludes [ dir </> postfix ]
+
 main :: IO ()
 main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
   let inFlags x = x `elem` flags
@@ -59,41 +68,24 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
 
   let exe = if inFlags Main.Windows then "exe" else ""
 
-  let cxx14 = return $ append compilerFlags [(Nothing, [ "-std=c++14" ])]
-
-  let includeDirs = return $ append userIncludes ["_build"]
-
-  let debugOption = if Debug `elem` flags
+  let debugOption = if inFlags Debug
                     then []
                     else [ return $ append defines [("QT_NO_DEBUG", Nothing)] ]
 
-  let glibmmDir = do storePath <- getEnv "glibmm"
-                     return $ fromMaybe "/usr/include" storePath
-
-  let glibmmdev = pkgConfig defaultOptions "glibmm-2.4"
-
-  let glibmmdevDir = do storePath <- getEnv "glibmmdev"
-                        return $ fromMaybe "/usr/lib" storePath
-
   let loadPkgConfig = pkgConfig defaultOptions
 
-  let customInclude envvar postfix = do
-        storePath <- getEnv envvar
-        let dir = fromMaybe "ERR" storePath
-        return $ append systemIncludes [ dir </> postfix ]
-
   let extraIncludeDirs = do
-        dir2 <- glibmmDir
         composeBFMutators $
-          [ return $ append systemIncludes [ dir2 </> "lib/glibmm-2.4/include"]
-          , customInclude "libsigcxx" "include/sigc++-2.0"
-          , customInclude "libsigcxx" "lib/sigc++-2.0/include"
-          , customInclude "glibmmdev" "include/giomm-2.4"
-          , customInclude "glibmmdev" "include/glibmm-2.4"
-          , customInclude "glibmm" "lib/giomm-2.4/include"
-          , customInclude "gstreamermmdev" "include/gstreamermm-1.0"
-          , customInclude "gstreamermm" "lib/gstreamermm-1.0/include"
-          ] ++ debugOption
+          (uncurry customInclude <$>
+          ([ ("libsigcxx", "include/sigc++-2.0")
+          , ("libsigcxx", "lib/sigc++-2.0/include")
+          , ("glibmmdev", "include/giomm-2.4")
+          , ("glibmmdev", "include/glibmm-2.4")
+          , ("glibmm", "lib/giomm-2.4/include")
+          , ("glibmmdev", "lib/glibmm-2.4/include")
+          , ("gstreamermmdev", "include/gstreamermm-1.0")
+          , ("gstreamermm", "lib/gstreamermm-1.0/include")
+          ])) ++ [ return $ append userIncludes ["_build"] ]++ debugOption
 
   let qObject name = [ "src" </> name <.> "cpp"
                      , "_build/moc_" ++ name <.> "cpp" ]
@@ -119,12 +111,6 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
                             ] ++ cs
 
                      return $ cs
-
-  -- let generateUiFile name = do let src = "src" </> name <.> "ui"
-  --                              let out = "_build" </> "ui_" ++ name <.> "h"
-  --                              need [ src ]
-  --                              unit $ cmd "uic -o" out src
-  --                              return $ action out
 
   "_build//ui_*.h" %> \out -> do
     let name = drop 3 (dropDirectory1 out) -<.> "ui"
@@ -158,29 +144,19 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
     need [ src ]
     cmd "moc " src "-o" out
 
+  let pkgConfigSet = loadPkgConfig <$> [ "Qt5GStreamer-1.0"
+                    , "Qt5Core", "Qt5Widgets", "Qt5Network", "Qt5Script"
+                    , "glib-2.0", "gstreamer-1.0", "gstreamermm-1.0"
+                    , "gstreamer-audio-1.0", "sqlite3", "protobuf"
+                    , "Qt5GLib-2.0", "Qt5GStreamerUtils-1.0"
+                    , "libtoxcore", "libsodium" ]
+
   arcaneChat <- (executable toolchain ("_build/arcane-chat" <.> exe)
-                 (composeBFMutators
-                  [ fmap (>>> traceShowId) $ loadPkgConfig "Qt5GStreamer-1.0"
-                  , fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"
-                  , loadPkgConfig "Qt5Core"
-                  , loadPkgConfig "Qt5Widgets"
-                  , loadPkgConfig "Qt5Network"
-                  , loadPkgConfig "Qt5Script"
-                  , loadPkgConfig "glib-2.0"
-                  , loadPkgConfig "gstreamer-1.0"
-                  , loadPkgConfig "libtoxcore"
-                  , includeDirs
-                  , cxx14
-                  , loadPkgConfig "gstreamermm-1.0"
-                  , loadPkgConfig "gstreamer-audio-1.0"
-                  , loadPkgConfig "sqlite3"
-                  , loadPkgConfig "protobuf"
-                  , loadPkgConfig "Qt5GLib-2.0"
-                  , loadPkgConfig "Qt5GStreamerUtils-1.0"
-                  , loadPkgConfig "libsodium"
-                  , extraIncludeDirs
+                 (composeBFMutators $
+                  [ fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"
+                  , cxx14, extraIncludeDirs
                   , return $ append defines [("ARCANE_CHAT_VERSION", Just "0")]
-                  ])
+                  ] ++ pkgConfigSet)
                  client_cs)
 
   want $ if null targets then [ arcaneChat ] else targets
