@@ -2,7 +2,7 @@
   glib, glibmm, gst_all_1, libsigcxx, qtscript, libsodium, sqlite } @ args:
 
 stdenv.mkDerivation rec {
-  name = "arcane-chat-not-stired";
+  name = "arcane-chat-not-stirred";
   src = ./chat;
   nativeBuildInputs = [
     chat-shaker pkgconfig protobuf3_0 strace
