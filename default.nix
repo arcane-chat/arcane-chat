@@ -66,7 +66,7 @@ let
         rev = "05f474b4df8171412237f46c943822edd202b4a9";
         sha256 = "1wq0nbdcq125gcg7pqwqwa0pvh7zg78drd2f585b0a00m1rhzpdy";
       };
-      patches = [ ./toxcore.patch ];
+      patches = [ ./fixes/toxcore-expose-udp.patch ];
       buildInputs = with self; [ libsodium ];
       nativeBuildInputs = with self; [ autoreconfHook pkgconfig ];
       propagatedBuildInputs = [];
