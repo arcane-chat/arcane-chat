@@ -158,7 +158,14 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
                   [ fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"
                   , cxx14, extraIncludeDirs
                   , return $ append defines [("ARCANE_CHAT_VERSION", Just "0")]
-                  ] ++ pkgConfigSet)
+                  ] ++ pkgConfigSet ++ [
+                    return $ append libraries [
+                      "ws2_32", "z", "pcre", "gstapp-1.0", "gstreamer-1.0"
+                      , "gmodule-2.0", "glib-2.0", "gstbase-1.0", "gstcheck-1.0"
+                      , "ole32", "iphlpapi", "dnsapi", "ffi", "winmm", "pthread"
+                      , "orc-0.4"
+                    ]
+                  ])
                  client_cs)
 
   want $ if null targets then [ arcaneChat ] else targets

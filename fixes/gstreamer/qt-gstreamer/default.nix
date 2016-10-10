@@ -1,7 +1,7 @@
 { stdenv, fetchurl, fetchpatch, cmake, flex, bison, pkgconfig
 , gstreamer, gst-plugins-base, boost, glib, qt56 }:
 
-stdenv.mkDerivation rec {
+let self = stdenv.mkDerivation rec {
   name = "${pname}-1.2.0";
   pname = "qt-gstreamer";
 
@@ -42,9 +42,12 @@ stdenv.mkDerivation rec {
     postConfigure = ''
         moc -i ../src/QGlib/connect.cpp -o ../src/connect.moc
     '';
+    patches = patches ++ [ ./exports.patch ];
+    outputs = [ "dev" "out" ];
   };
 
   meta = {
     platforms = stdenv.lib.platforms.linux;
   };
-}
+};
+in self

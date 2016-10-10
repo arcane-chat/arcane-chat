@@ -33,7 +33,10 @@ stdenv.mkDerivation rec {
     unset autoreconfPhase
     function autoreconfPhase() {
       echo not reconf
+      set -x
     }
+    unset _linkDLLs
+    source ${./fixes/win-dll-link.sh}
   '';
 
   buildPhase = ''

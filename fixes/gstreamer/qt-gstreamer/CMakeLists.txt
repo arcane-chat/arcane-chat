@@ -3,14 +3,21 @@ cmake_minimum_required(VERSION 2.8.9)
 set(QTGSTREAMER_VERSION 1.2.0)
 set(QTGLIB_API_VERSION 2.0)
 set(QTGLIB_SOVERSION 0)
+set(QTGSTREAMER_API_VERSION 1.0)
+set(QTGSTREAMER_UI_SOVERSION 0)
+set(QTGSTREAMER_UTILS_SOVERSION 0)
+set(QTGSTREAMER_SOVERSION 0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_NO_KEYWORDS")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_NO_EMIT -DDO_STATIC")
 FIND_PACKAGE(PkgConfig REQUIRED)
 find_package(GLIB2)
 find_package(GObject)
+find_package(FLEX)
+find_package(BISON)
 
 set(QTGSTREAMER_PACKAGE_NAME Qt5GStreamer)
+pkg_search_module(GST_APP gstreamer-app-1.0)
 pkg_search_module(GLIB glib-2.0)
 
 set(QTGSTREAMER_CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${QTGSTREAMER_PACKAGE_NAME})
@@ -28,7 +35,52 @@ set(QtGLib_SRCS
     src/QGlib/connect.cpp
     src/QGlib/wrap.cpp
     src/QGlib/init.cpp
+    src/QGlib/gen.cpp
 )
+set(QtGStreamerUtils_SRCS
+    src/QGst/Utils/applicationsink.cpp
+    src/QGst/Utils/applicationsource.cpp
+)
+set(QtGStreamer_SRCS
+    src/QGst/init.cpp
+    src/QGst/objectstore.cpp
+    src/QGst/value.cpp
+    src/QGst/structure.cpp
+    src/QGst/caps.cpp
+    src/QGst/miniobject.cpp
+    src/QGst/object.cpp
+    src/QGst/pad.cpp
+    src/QGst/ghostpad.cpp
+    src/QGst/element.cpp
+    src/QGst/pluginfeature.cpp
+    src/QGst/elementfactory.cpp
+    src/QGst/bin.cpp
+    src/QGst/childproxy.cpp
+    src/QGst/pipeline.cpp
+    src/QGst/message.cpp
+    src/QGst/bus.cpp
+    src/QGst/parse.cpp
+    src/QGst/urihandler.cpp
+    src/QGst/videoorientation.cpp
+    src/QGst/videooverlay.cpp
+    src/QGst/streamvolume.cpp
+    src/QGst/colorbalance.cpp
+    src/QGst/query.cpp
+    src/QGst/clock.cpp
+    src/QGst/allocator.cpp
+    src/QGst/memory.cpp
+    src/QGst/buffer.cpp
+    src/QGst/event.cpp
+    src/QGst/clocktime.cpp
+    src/QGst/taglist.cpp
+    src/QGst/sample.cpp
+    src/QGst/bufferlist.cpp
+    src/QGst/discoverer.cpp
+    src/QGst/segment.cpp
+    src/QGst/gen.cpp
+)
+
+
 set(QtGLib_INSTALLED_HEADERS
     global.h      Global
     init.h        Init
@@ -121,14 +173,26 @@ endmacro()
 
 
 include_directories(
-    ${GOBJECT_INCLUDE_DIR} ${GLIB_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${GOBJECT_INCLUDE_DIR} ${GLIB_INCLUDE_DIRS} ${GST_APP_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src 
 )
 add_library(${QTGLIB_LIBRARY} ${SHARED_OR_STATIC} ${QtGLib_SRCS})
+add_library(${QTGSTREAMER_UTILS_LIBRARY} ${SHARED_OR_STATIC} ${QtGStreamerUtils_SRCS})
+add_library(${QTGSTREAMER_LIBRARY} ${SHARED_OR_STATIC} ${QtGStreamer_SRCS})
 set_target_properties(${QTGLIB_LIBRARY} PROPERTIES OUTPUT_NAME ${QTGLIB_LIBRARY}-${QTGLIB_API_VERSION}
                                           SOVERSION ${QTGLIB_SOVERSION}
                                             VERSION ${QTGSTREAMER_VERSION})
+set_target_properties(${QTGSTREAMER_UTILS_LIBRARY} PROPERTIES OUTPUT_NAME ${QTGSTREAMER_UTILS_LIBRARY}-${QTGSTREAMER_API_VERSION}
+                                          SOVERSION ${QTGSTREAMER_UTILS_SOVERSION}
+                                            VERSION ${QTGSTREAMER_VERSION})
+set_target_properties(${QTGSTREAMER_LIBRARY} PROPERTIES OUTPUT_NAME ${QTGSTREAMER_LIBRARY}-${QTGSTREAMER_API_VERSION}
+                                          SOVERSION ${QTGSTREAMER_SOVERSION}
+                                            VERSION ${QTGSTREAMER_VERSION})
+
+
 install(TARGETS ${QTGLIB_LIBRARY} EXPORT ${EXPORT_TARGET_SET} ${QTGSTREAMER_INSTALL_TARGET_DEFAULT_ARGS})
+install(TARGETS ${QTGSTREAMER_UTILS_LIBRARY} EXPORT ${EXPORT_TARGET_SET} ${QTGSTREAMER_INSTALL_TARGET_DEFAULT_ARGS})
+install(TARGETS ${QTGSTREAMER_LIBRARY} EXPORT ${EXPORT_TARGET_SET} ${QTGSTREAMER_INSTALL_TARGET_DEFAULT_ARGS})
 install_headers("QGlib" "src/QGlib/" ${QtGLib_INSTALLED_HEADERS})
 install_headers("QGst" "src/QGst/" ${QtGStreamer_INSTALLED_HEADERS})
 

@@ -1,0 +1,75 @@
+diff -ru qt-gstreamer-1.2.0-orig/codegen/CMakeLists.txt qt-gstreamer-1.2.0/codegen/CMakeLists.txt
+--- qt-gstreamer-1.2.0-orig/codegen/CMakeLists.txt	2016-10-10 12:21:52.359757652 -0300
++++ qt-gstreamer-1.2.0/codegen/CMakeLists.txt	2016-10-10 14:39:36.375258060 -0300
+@@ -9,5 +9,6 @@
+     endif()
+ endif()
+ 
++include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
++
+ add_executable(codegen ${FLEX_analyzer_OUTPUTS} ${BISON_parser_OUTPUTS} generator.cpp)
+-qt4or5_use_modules(codegen Core)
+diff -ru qt-gstreamer-1.2.0-orig/src/QGlib/global.h qt-gstreamer-1.2.0/src/QGlib/global.h
+--- qt-gstreamer-1.2.0-orig/src/QGlib/global.h	2016-10-10 12:21:52.372757266 -0300
++++ qt-gstreamer-1.2.0/src/QGlib/global.h	2016-10-10 13:09:25.021908923 -0300
+@@ -25,12 +25,7 @@
+ #include <QtCore/QtGlobal>
+ #include <boost/config.hpp>
+ 
+-/* defined by cmake when building this library */
+-#if defined(QtGLib_EXPORTS) || defined(Qt5GLib_EXPORTS)
+-# define QTGLIB_EXPORT Q_DECL_EXPORT
+-#else
+-# define QTGLIB_EXPORT Q_DECL_IMPORT
+-#endif
++#define QTGLIB_EXPORT 
+ 
+ #if !defined(Q_OS_WIN) && !defined(Q_CC_NOKIAX86) && \
+     !defined(Q_CC_RVCT) && defined(QT_VISIBILITY_AVAILABLE)
+diff -ru qt-gstreamer-1.2.0-orig/src/QGst/global.h qt-gstreamer-1.2.0/src/QGst/global.h
+--- qt-gstreamer-1.2.0-orig/src/QGst/global.h	2016-10-10 12:21:52.385756880 -0300
++++ qt-gstreamer-1.2.0/src/QGst/global.h	2016-10-10 13:25:21.290414215 -0300
+@@ -27,12 +27,7 @@
+ #include <QtCore/QDate>
+ #include <QtCore/QSharedPointer>
+ 
+-/* defined by cmake when building this library */
+-#if defined(QtGStreamer_EXPORTS) || defined(Qt5GStreamer_EXPORTS)
+-# define QTGSTREAMER_EXPORT Q_DECL_EXPORT
+-#else
+-# define QTGSTREAMER_EXPORT Q_DECL_IMPORT
+-#endif
++#define QTGSTREAMER_EXPORT
+ 
+ #if !defined(Q_OS_WIN) && !defined(Q_CC_NOKIAX86) && \
+     !defined(Q_CC_RVCT) && defined(QT_VISIBILITY_AVAILABLE)
+diff -ru qt-gstreamer-1.2.0-orig/src/QGst/Utils/applicationsink.cpp qt-gstreamer-1.2.0/src/QGst/Utils/applicationsink.cpp
+--- qt-gstreamer-1.2.0-orig/src/QGst/Utils/applicationsink.cpp	2016-10-10 12:21:52.381756999 -0300
++++ qt-gstreamer-1.2.0/src/QGst/Utils/applicationsink.cpp	2016-10-10 12:22:37.120428848 -0300
+@@ -175,7 +175,7 @@
+     return buf;
+ }
+ 
+-SamplePtr ApplicationSink::pullSample()
++SamplePtr QTGSTREAMERUTILS_EXPORT ApplicationSink::pullSample()
+ {
+     SamplePtr buf;
+     if (d->appSink()) {
+diff -ru qt-gstreamer-1.2.0-orig/src/QGst/Utils/global.h qt-gstreamer-1.2.0/src/QGst/Utils/global.h
+--- qt-gstreamer-1.2.0-orig/src/QGst/Utils/global.h	2016-10-10 12:21:52.381756999 -0300
++++ qt-gstreamer-1.2.0/src/QGst/Utils/global.h	2016-10-10 13:04:22.469923183 -0300
+@@ -25,12 +25,8 @@
+ 
+ #include <QtCore/QtGlobal>
+ 
+-/* defined by cmake when building this library */
+-#if defined(QtGStreamerUtils_EXPORTS) || defined(Qt5GStreamerUtils_EXPORTS)
+-# define QTGSTREAMERUTILS_EXPORT Q_DECL_EXPORT
+-#else
+-# define QTGSTREAMERUTILS_EXPORT Q_DECL_IMPORT
+-#endif
++#define QTGSTREAMERUTILS_EXPORT
++
+ 
+ #if !defined(Q_OS_WIN) && !defined(Q_CC_NOKIAX86) && \
+     !defined(Q_CC_RVCT) && defined(QT_VISIBILITY_AVAILABLE)
