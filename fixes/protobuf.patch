@@ -1,0 +1,28 @@
+diff -ur protobuf-v3.0.0-src-orig/src/google/protobuf/stubs/mathlimits.h protobuf-v3.0.0-src/src/google/protobuf/stubs/mathlimits.h
+--- protobuf-v3.0.0-src-orig/src/google/protobuf/stubs/mathlimits.h	2016-10-09 20:30:15.289802823 -0300
++++ protobuf-v3.0.0-src/src/google/protobuf/stubs/mathlimits.h	2016-10-09 20:40:03.527205482 -0300
+@@ -43,6 +43,10 @@
+ #ifndef UTIL_MATH_MATHLIMITS_H__
+ #define UTIL_MATH_MATHLIMITS_H__
+ 
++#define DBL_EPSILON __DBL_EPSILON__
++#define LDBL_EPSILON __LDBL_EPSILON__
++#define FLT_EPSILON __FLT_EPSILON__
++
+ // <math.h> lacks a lot of prototypes. However, this file needs <math.h> to
+ // access old-fashioned isinf et al. Even worse more: this file must not
+ // include <cmath> because that breaks the definition of isinf with gcc 4.9.
+diff -ur protobuf-v3.0.0-src-orig/src/google/protobuf/stubs/mathutil.h protobuf-v3.0.0-src/src/google/protobuf/stubs/mathutil.h
+--- protobuf-v3.0.0-src-orig/src/google/protobuf/stubs/mathutil.h	2016-10-09 20:30:15.289802823 -0300
++++ protobuf-v3.0.0-src/src/google/protobuf/stubs/mathutil.h	2016-10-09 20:42:49.734232990 -0300
+@@ -30,6 +30,10 @@
+ #ifndef GOOGLE_PROTOBUF_STUBS_MATHUTIL_H_
+ #define GOOGLE_PROTOBUF_STUBS_MATHUTIL_H_
+ 
++#define DBL_EPSILON __DBL_EPSILON__
++#define LDBL_EPSILON __LDBL_EPSILON__
++#define FLT_EPSILON __FLT_EPSILON__
++
+ #include <float.h>
+ #include <math.h>
+ 

@@ -59,19 +59,7 @@ let
   commonPackageOverrides = self: super: {
     chat-shaker = super.callPackage ./chat-shaker {};
     arcane-chat = self.qt56.callPackage ./redo.nix {};
-    libtoxcore-dev = super.libtoxcore-dev.overrideDerivation (old: {
-      src = self.fetchFromGitHub {
-        owner = "TokTok";
-        repo = "toxcore";
-        rev = "05f474b4df8171412237f46c943822edd202b4a9";
-        sha256 = "1wq0nbdcq125gcg7pqwqwa0pvh7zg78drd2f585b0a00m1rhzpdy";
-      };
-      patches = [ ./fixes/toxcore-expose-udp.patch ];
-      buildInputs = with self; [ libsodium ];
-      nativeBuildInputs = with self; [ autoreconfHook pkgconfig ];
-      propagatedBuildInputs = [];
-      propagatedNativeBuildInputs = [];
-    });
+    libtoxcore-dev = super.callPackage ./fixes/libtoxcore/new-api {};
 
     rtags = self.stdenv.mkDerivation {
       name = super.rtags.name;
@@ -308,14 +296,7 @@ let
 
       nlohmann_json = self.callPackage ./fixes/nlohmann_json.nix {};
 
-      protobuf3_0 = super.protobuf3_0.overrideDerivation (old: {
-        doCheck = false;
-        nativeBuildInputs = [ self.autoreconfHook ];
-        #postUnpack = ''
-        #  source ${pkgs.autoreconfHook.crossDrv}/nix-support/setup-hook
-        #'';
-        buildInputs = [ self.zlib.crossDrv self.libtool.crossDrv.lib ];
-      });
+      protobuf3_0 = super.callPackage ./fixes/protobuf3.nix {};
 
       # libvpx = pkgs.libvpx.override {
       #   stdenv = pkgs.stdenv // { isCygwin = true; };
