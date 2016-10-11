@@ -1,5 +1,5 @@
 { stdenv, chat-shaker, qtbase, pkgconfig, protobuf3_0, strace, libtoxcore-dev,
-  glib, glibmm, gst_all_1, libsigcxx, qtscript, libsodium, sqlite } @ args:
+  glib, glibmm, gst_all_1, libsigcxx, qtscript, libsodium, sqlite, openssl } @ args:
 
 stdenv.mkDerivation rec {
   name = "arcane-chat-not-stirred";
@@ -27,6 +27,15 @@ stdenv.mkDerivation rec {
     shakeArgs = shakeArgs ++ [ "--windows" ];
     # todo: store more log details to $out that a user could download
     succeedOnFailure = true;
+    postInstall = ''
+      ln -sv ${qtbase.crossDrv.dev}/bin/Qt5Gui.dll $out/bin
+      ln -sv ${qtbase.crossDrv.dev}/bin/Qt5Core.dll $out/bin
+      ln -sv ${qtbase.crossDrv.dev}/bin/Qt5Network.dll $out/bin
+      ln -sv ${qtbase.crossDrv.dev}/bin/Qt5Widgets.dll $out/bin
+      ln -sv ${qtscript.crossDrv.dev}/bin/Qt5Script.dll $out/bin
+      ln -sv ${openssl.crossDrv.bin}/bin/libeay32.dll $out/bin/LIBEAY32.dll
+      ln -sv ${openssl.crossDrv.bin}/bin/ssleay32.dll $out/bin/SSLEAY32.dll
+    '';
   };
 
   postUnpack = ''
@@ -47,9 +56,11 @@ stdenv.mkDerivation rec {
   enableParallelBuilding = true;
 
   installPhase = ''
+    runHook preInstall
     mkdir -pv $out/bin $out/nix-support $out/shake
     chat-shaker install $shakeArgs
     echo "doc buildReport $out/shake report.html" \
     >> $out/nix-support/hydra-build-products
+    runHook postInstall
   '';
 }
