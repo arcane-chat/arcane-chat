@@ -5,5 +5,5 @@ let paths = p: with p; [ shake shake-language-c ];
 in runCommand "chat-shaker" { buildInputs = [ ghc ]; } ''
     mkdir -pv $out/bin
     cp -vi ${./chat-shaker.hs} chat-shaker.hs
-    ghc chat-shaker.hs -o $out/bin/chat-shaker
+    ghc -O2 chat-shaker.hs -o $out/bin/chat-shaker
 ''
