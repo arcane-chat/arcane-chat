@@ -4,10 +4,10 @@ with stdenv.lib;
 
 let nativeLinux = stdenv.isLinux && !(stdenv ? cross);
 in stdenv.mkDerivation rec {
-  name = "gstreamermm-1.4.3";
+  name = "gstreamermm-1.8.0";
   src = fetchurl {
-    url    = "mirror://gnome/sources/gstreamermm/1.4/${name}.tar.xz";
-    sha256 = "0bj6and9b26d32bq90l8nx5wqh2ikkh8dm7qwxyxfdvmrzhixhgi";
+    url    = "mirror://gnome/sources/gstreamermm/1.8/${name}.tar.xz";
+    sha256 = "0i4sk6ns4dyi4szk45bkm4kvl57l52lgm15p2wg2rhx2gr2w3qry";
   };
 
   outputs = [ "dev" "out" ];
@@ -24,10 +24,7 @@ in stdenv.mkDerivation rec {
     "--disable-unittests"
   ];
 
-  patches = [
-    ./glibmm-2.50.patch
-    ./iface.patch
-  ];
+  patches = [ ./iface.patch ];
 
   meta = with stdenv.lib; {
     description = "C++ interface for GStreamer";
