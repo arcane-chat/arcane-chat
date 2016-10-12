@@ -2,6 +2,7 @@ module Main where
 
 import           Control.Applicative
 import           Control.Arrow
+import           Control.Monad                          (when)
 
 import           Development.Shake
 import           Development.Shake.Command
@@ -27,6 +28,10 @@ type BFMutator = BuildFlags -> BuildFlags
 composeBFMutators :: [Action BFMutator] -> Action BFMutator
 composeBFMutators = fmap (foldl (>>>) id) . sequence
 
+whenBFM :: Bool -> Action BFMutator -> Action BFMutator
+whenBFM True  m = m
+whenBFM False _ = pure id
+
 data Flag = Debug | Windows deriving (Show, Eq)
 
 options :: [ OptDescr (Either String Flag) ]
@@ -41,16 +46,16 @@ soptions = shakeOptions { shakeFiles = "_build"
                         }
 
 cxx14 :: Action BFMutator
-cxx14 = return $ append compilerFlags [(Nothing, [ "-std=c++14" ])]
+cxx14 = pure $ append compilerFlags [(Nothing, [ "-std=c++14" ])]
 
 customInclude :: String -> String -> Action BFMutator
 customInclude envvar postfix = do
   storePath <- getEnv envvar
   let dir = fromMaybe "ERR" storePath
-  return $ append systemIncludes [ dir </> postfix ]
+  pure $ append systemIncludes [ dir </> postfix ]
 
 main :: IO ()
-main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
+main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
   let inFlags x = x `elem` flags
 
   let (_, nativeToolchain) = Development.Shake.Language.C.Host.defaultToolChain
@@ -60,7 +65,7 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
                           nt <- nativeToolchain
                           nt |> set linkerCommand cxx
                              |> set compilerCommand cc
-                             |> return
+                             |> pure
 
   let toolchain = if inFlags Main.Windows
                   then crossToolchain
@@ -70,7 +75,7 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
 
   let debugOption = if inFlags Debug
                     then []
-                    else [ return $ append defines [("QT_NO_DEBUG", Nothing)] ]
+                    else [ pure $ append defines [("QT_NO_DEBUG", Nothing)] ]
 
   let loadPkgConfig = pkgConfig defaultOptions
 
@@ -85,7 +90,7 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
                            , ("gstreamermmdev", "include/gstreamermm-1.0")
                            , ("gstreamermm", "lib/gstreamermm-1.0/include")
                            ]))
-                         ++ [ return $ append userIncludes ["_build"] ]
+                         ++ [ pure $ append userIncludes ["_build"] ]
                          ++ debugOption
 
   let qObject name = [ "src" </> name <.> "cpp"
@@ -111,7 +116,7 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
                             , "_build/ui_chatwidget.h"
                             ] ++ cs
 
-                     return $ cs
+                     pure $ cs
 
   "_build//ui_*.h" %> \out -> do
     let name = drop 3 (dropDirectory1 out) -<.> "ui"
@@ -154,16 +159,18 @@ main = shakeArgsWith soptions options $ \flags targets -> return $ Just $ do
                      , "libtoxcore", "libsodium" ]
 
   arcaneChat <- (executable toolchain ("_build/arcane-chat" <.> exe)
-                 (composeBFMutators $
-                  [ fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"
-                  , cxx14, extraIncludeDirs
-                  , return $ append defines [("ARCANE_CHAT_VERSION", Just "0")]
-                  ] ++ pkgConfigSet ++ [
-                    return $ append libraries [
-                      "ws2_32", "z", "pcre", "gstapp-1.0", "gstreamer-1.0"
-                      , "gmodule-2.0", "glib-2.0", "gstbase-1.0", "gstcheck-1.0"
-                      , "ole32", "iphlpapi", "dnsapi", "ffi", "winmm", "pthread"
-                      , "orc-0.4"
+                 (composeBFMutators $ concat
+                  [ [ fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"
+                    , cxx14, extraIncludeDirs
+                    , pure $ append defines [("ARCANE_CHAT_VERSION", Just "0")]
+                    ]
+                  , pkgConfigSet
+                  , [ pure $ append libraries
+                      [ "gstapp-1.0", "gstreamer-1.0", "gmodule-2.0", "glib-2.0"
+                      , "gstbase-1.0", "gstcheck-1.0" ]
+                    , whenBFM (inFlags Main.Windows) $ pure $ append libraries
+                      [ "orc-0.4", "ws2_32", "ole32", "iphlpapi", "dnsapi", "winmm" ]
+                    , pure $ append libraries [ "z", "pcre", "ffi", "pthread" ]
                     ]
                   ])
                  client_cs)
