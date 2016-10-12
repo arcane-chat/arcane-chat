@@ -1,5 +1,7 @@
-{ stdenv, chat-shaker, qtbase, pkgconfig, protobuf3_0, strace, libtoxcore-dev,
-  glib, glibmm, gst_all_1, libsigcxx, qtscript, libsodium, sqlite, openssl } @ args:
+{ stdenv, chat-shaker, pkgconfig, qtbase, qtscript, libtoxcore-dev
+, libsodium, sqlite, openssl, glib, glibmm, gst_all_1, libsigcxx
+, protobuf3_0, zeromq4, cppzmq
+} @ args:
 
 stdenv.mkDerivation rec {
   name = "arcane-chat-not-stirred";
@@ -12,11 +14,10 @@ stdenv.mkDerivation rec {
   ];
   buildInputs = with gst_all_1; [
     qtbase qtscript
-    gstreamer gst_all_1.gstreamermm gst-plugins-base
-    qt-gstreamer
-    libtoxcore-dev libsodium sqlite
-    glib glibmm protobuf3_0
+    glib glibmm gstreamer gst_all_1.gstreamermm gst-plugins-base qt-gstreamer
+    zeromq4 cppzmq protobuf3_0 libtoxcore-dev libsodium sqlite
   ];
+
   inherit glibmm libsigcxx;
   glibmmdev = glibmm.dev;
   gstreamermmdev = gst_all_1.gstreamermm.dev;

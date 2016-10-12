@@ -1,8 +1,8 @@
 # Build dependencies
 { stdenv, cmake, pkgconfig, ghostscript, ninja, makeWrapper
 # Program dependencies
-, zeromq4, libmsgpack, libtoxcore-dev, nlohmann_json, obs-studio
-, gst_all_1, protobuf3_0, qtbase, qtscript, libsodium
+, zeromq4, cppzmq, libtoxcore-dev, nlohmann_json, obs-studio, gst_all_1
+, protobuf3_0, libsodium, qtbase, qtscript
 # Misc dependencies
 , guile, parallel, buildEnv, glib, glibmm, libsigcxx, enableDebugging
 , include-what-you-use, rtags, python, writeText
@@ -19,7 +19,7 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = with gst_all_1; [
-    zeromq4 libmsgpack nlohmann_json libtoxcore-dev obs-studio
+    zeromq4 cppzmq nlohmann_json libtoxcore-dev obs-studio
     glib glibmm libsigcxx gstreamermm gstreamer gst-plugins-base
     gst-plugins-good gst-plugins-ugly gst-plugins-bad qt-gstreamer
     protobuf3_0 qtbase qtscript libsodium
