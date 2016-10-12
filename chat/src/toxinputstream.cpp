@@ -9,7 +9,6 @@ struct ToxInputStreamClass {
     GInputStreamClass parent_class;
 };
 
-
 static gssize tox_read_fn(GInputStream* stream,
                           void* buffer,
                           gsize count,

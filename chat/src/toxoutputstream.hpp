@@ -11,12 +11,10 @@ G_BEGIN_DECLS
 
 #define TOX_TYPE_OUTPUT (tox_output_stream_get_type())
 
-typedef struct _ToxOutputStream ToxOutputStream;
-
-struct _ToxOutputStream {
+typedef struct ToxOutputStream {
     GOutputStream parent_class;
     AudioCall *call;
-};
+} ToxOutputStream;
 
 GType tox_output_stream_get_type();
 

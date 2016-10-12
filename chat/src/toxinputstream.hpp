@@ -7,12 +7,9 @@ G_BEGIN_DECLS
 
 #define TOX_TYPE_INPUT (tox_input_stream_get_type())
 
-typedef struct _ToxInputStream ToxInputStream;
-
-struct _ToxInputStream {
+typedef struct ToxInputStream {
     GInputStream parent_class;
-
-};
+} ToxInputStream;
 
 GType tox_input_stream_get_type();
 

@@ -7,11 +7,9 @@ G_BEGIN_DECLS
 
 #define TOX_TYPE_SOURCE (tox_source_stream_get_type())
 
-typedef struct _ToxSourceStream ToxSourceStream;
-
-struct _ToxSourceStream {
+typedef struct ToxSourceStream {
 	GstElement parent;
-};
+} ToxSourceStream;
 
 GType tox_source_stream_get_type();
 
