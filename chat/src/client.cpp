@@ -17,6 +17,7 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QDir>
 #include <QCommandLineParser>
 #include <Qt5GStreamer/QGst/Init>
 
@@ -68,6 +69,8 @@ int main(int argc, char** argv) {
     int ret = 1;
 
     {
+        QDir::root().mkpath("/tmp/client");
+
         chat::Core core { "/tmp/client/" };
 
         if(parser.isSet(sendFriendRequestOption)) {
