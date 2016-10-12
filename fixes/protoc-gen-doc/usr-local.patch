@@ -1,0 +1,12 @@
+diff --git a/protoc-gen-doc.pro b/protoc-gen-doc.pro
+index 138913e..7608acf 100644
+--- a/protoc-gen-doc.pro
++++ b/protoc-gen-doc.pro
+@@ -9,7 +9,6 @@ HEADERS += src/mustache.h
+ SOURCES += src/mustache.cpp src/main.cpp
+ RESOURCES += protoc-gen-doc.qrc
+ 
+-isEmpty(PREFIX):PREFIX = /usr/local
+ target.path = $$PREFIX/bin
+ INSTALLS += target
+ 
