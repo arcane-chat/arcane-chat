@@ -134,9 +134,12 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
     copyFile' ("_build/arcane-chat" <.> exe) (dest </> "bin/arcane-chat" <.> exe)
     copyFile' "shakeReport" $ dest </> "shake/report.html"
 
-  ["_build/network.pb.h", "_build/network.pb.cc"] |%> \out -> do
-    need ["network.proto"]
-    cmd "protoc --cpp_out=_build network.proto"
+  "_build//*.pb.cc" %> \out -> do
+    let proto = dropExtension (dropDirectory1 out) -<.> "proto"
+    need ["proto/" ++ proto]
+    command_ [Cwd "proto"] "protoc" ["--cpp_out=../_build", proto]
+
+  "_build//*.pb.h" %> \out -> need [out -<.> "cc"]
 
   "_build//*.moc" %> \out -> do
     let name = dropDirectory1 $ out -<.> "cpp"
