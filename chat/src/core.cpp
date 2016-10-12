@@ -398,13 +398,13 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
 
     uint8_t header_size = message[0];
     QByteArray header = message.mid(1,header_size);
-    Arcane::RpcMessage rpc;
+    arcane::network::RpcMessage rpc;
     rpc.ParseFromString(header.toStdString());
     uint32_t typecode = rpc.method_id();
     payload = message.mid(1+header_size, rpc.data_size());
 
     switch (typecode) {
-    case Arcane::call_start: {
+    case arcane::network::call_start: {
         auto it = calls_.find(fr);
         if (it == calls_.end()) {
             CallControl *cc = new CallControl(this,fr);
@@ -416,8 +416,8 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
             (*it)->start();
         }
         break; }
-    case Arcane::call_data: {
-        Arcane::CallData data;
+    case arcane::network::call_data: {
+        arcane::network::CallData data;
         data.ParseFromString(payload.toStdString());
         fr->on_other(data.sent());
         auto it = calls_.find(fr);
@@ -425,7 +425,7 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
             (*it)->packet(QByteArray::fromStdString(data.data()));
         }
         break; }
-    case Arcane::call_stop: {
+    case arcane::network::call_stop: {
         auto it = calls_.find(fr);
         if (it != calls_.end()) {
             (*it)->stop();
@@ -433,15 +433,15 @@ void Core::handle_lossy_packet(Friend* fr, QByteArray message) {
             //calls.remove(fr);
         }
         break; }
-    case Arcane::ping: {
-        Arcane::PingPayload data;
+    case arcane::network::ping: {
+        arcane::network::PingPayload data;
         data.ParseFromString(payload.toStdString());
         data.set_received(get_uptime());
-        send_packet(fr, Arcane::pong, &data);
+        send_packet(fr, arcane::network::pong, &data);
         fr->on_ping(data.sent(), QByteArray::fromStdString(data.data()));
         break; }
-    case Arcane::pong: {
-        Arcane::PingPayload data;
+    case arcane::network::pong: {
+        arcane::network::PingPayload data;
         data.ParseFromString(payload.toStdString());
         fr->on_pong(data.sent(), data.received(), QByteArray::fromStdString(data.data()));
         emit on_pong(fr, data.sent(), data.received(), QByteArray::fromStdString(data.data()));
@@ -576,8 +576,8 @@ void Core::send_lossless_packet(Friend* fr, QByteArray data) {
     }
 }
 
-void Core::send_packet(Friend *fr, Arcane::Methods methodid, ::google::protobuf::Message *payload) {
-    Arcane::RpcMessage msg;
+void Core::send_packet(Friend *fr, arcane::network::Methods methodid, ::google::protobuf::Message *payload) {
+    arcane::network::RpcMessage msg;
     msg.set_method_id(methodid);
     QByteArray data;
     if (payload) {
@@ -599,18 +599,18 @@ void Core::send_packet(Friend *fr, Arcane::Methods methodid, ::google::protobuf:
 }
 
 void Core::call_start(Friend *fr) {
-    send_packet(fr, Arcane::call_start);
+    send_packet(fr, arcane::network::call_start);
 }
 
 void Core::call_data(Friend *fr, QByteArray data) {
-    Arcane::CallData datapacket;
+    arcane::network::CallData datapacket;
     datapacket.set_data(data.toStdString());
     datapacket.set_sent(get_uptime());
-    send_packet(fr, Arcane::call_data, &datapacket);
+    send_packet(fr, arcane::network::call_data, &datapacket);
 }
 
 void Core::call_stop(Friend *fr) {
-    send_packet(fr, Arcane::call_stop);
+    send_packet(fr, arcane::network::call_stop);
 }
 
 qint64 Core::get_uptime() {
@@ -618,10 +618,10 @@ qint64 Core::get_uptime() {
 }
 
 void Core::send_ping(Friend *fr, QByteArray payload) {
-    Arcane::PingPayload p;
+    arcane::network::PingPayload p;
     p.set_sent(get_uptime());
     p.set_data(payload.toStdString());
-    send_packet(fr, Arcane::ping, &p);
+    send_packet(fr, arcane::network::ping, &p);
 }
 
 void Core::add_owned_channel(Channel *channel) {

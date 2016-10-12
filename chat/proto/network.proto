@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package Arcane;
+package arcane.network;
 
 message RpcMessage {
     int32 method_id = 1;
