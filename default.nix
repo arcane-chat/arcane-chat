@@ -62,6 +62,8 @@ rec {
       arcane-chat = self.qt56.callPackage ./redo.nix {};
       libtoxcore-dev = super.callPackage ./fixes/libtoxcore/new-api {};
       protoc-gen-doc = super.qt56.callPackage ./fixes/protoc-gen-doc {};
+      htmldoc = super.callPackage ./fixes/htmldoc {};
+      cldoc = super.callPackage ./fixes/cldoc {};
 
       rtags = self.stdenv.mkDerivation {
         name = super.rtags.name;
