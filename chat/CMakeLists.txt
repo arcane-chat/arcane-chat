@@ -143,7 +143,7 @@ set(GST_SOURCES
   src/toxsource.cpp
 )
 
-PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS network.proto)
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS proto/network.proto)
 
 add_library(chat SHARED ${CHAT_LIB_SOURCES} ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(chat ${GENERAL_LIBRARIES})
