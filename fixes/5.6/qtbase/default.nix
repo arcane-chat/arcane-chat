@@ -76,7 +76,6 @@ stdenv.mkDerivation rec {
         --replace "@mesa_inc@" "${mesa.dev or mesa}"
     '';
 
-
   setOutputFlags = false;
   preConfigure = ''
     export LD_LIBRARY_PATH="$PWD/lib:$PWD/plugins/platforms:$LD_LIBRARY_PATH"
@@ -117,7 +116,6 @@ stdenv.mkDerivation rec {
     -iconv
     -icu
     -pch
-    -glib
     -${lib.optionalString (cups == null) "no-"}cups
 
     -no-eglfs
@@ -158,7 +156,7 @@ stdenv.mkDerivation rec {
   PSQL_LIBS = lib.optionalString (postgresql != null) "-L${postgresql.lib}/lib -lpq";
 
   propagatedBuildInputs = [
-    dbus glib libxml2 libxslt openssl pcre16 sqlite udev zlib
+    dbus libxml2 libxslt openssl pcre16 sqlite udev zlib
 
     # Image formats
     libjpeg libpng libtiff
