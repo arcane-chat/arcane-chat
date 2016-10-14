@@ -1,0 +1,75 @@
+diff -ru glib-2.48.2-orig/gio/Makefile.in glib-2.48.2/gio/Makefile.in
+--- glib-2.48.2-orig/gio/Makefile.in	2016-10-10 19:27:21.425299502 -0300
++++ glib-2.48.2/gio/Makefile.in	2016-10-13 21:30:47.147313798 -0300
+@@ -191,9 +191,8 @@
+ # This is dumb.  The ObjC source file should be properly named .m
+ @OS_COCOA_TRUE@am__append_36 = -xobjective-c
+ @OS_COCOA_TRUE@am__append_37 = -Wl,-framework,Foundation -Wl,-framework,AppKit
+-bin_PROGRAMS = gio-querymodules$(EXEEXT) glib-compile-schemas$(EXEEXT) \
+-	glib-compile-resources$(EXEEXT) gsettings$(EXEEXT) \
+-	gdbus$(EXEEXT) $(am__EXEEXT_1) gresource$(EXEEXT)
++bin_PROGRAMS = glib-compile-resources$(EXEEXT) gsettings$(EXEEXT) \
++	$(am__EXEEXT_1)
+ 
+ # ------------------------------------------------------------------------
+ # gapplication(1) tool
+diff -ru glib-2.48.2-orig/glib/glib-init.c glib-2.48.2/glib/glib-init.c
+--- glib-2.48.2-orig/glib/glib-init.c	2016-10-10 19:27:21.974283286 -0300
++++ glib-2.48.2/glib/glib-init.c	2016-10-14 05:32:36.679311570 -0300
+@@ -232,6 +232,7 @@
+ glib_init (void)
+ {
+   static gboolean glib_inited;
++  fputs("glib_init called\n", stderr);
+ 
+   if (glib_inited)
+     return;
+diff -ru glib-2.48.2-orig/glib/gquark.c glib-2.48.2/glib/gquark.c
+--- glib-2.48.2-orig/glib/gquark.c	2016-10-10 19:27:21.962283640 -0300
++++ glib-2.48.2/glib/gquark.c	2016-10-14 04:48:40.604215937 -0300
+@@ -32,6 +32,7 @@
+ #include "config.h"
+ 
+ #include <string.h>
++#include <stdio.h>
+ 
+ #include "gslice.h"
+ #include "ghash.h"
+@@ -57,7 +58,9 @@
+ void
+ g_quark_init (void)
+ {
+-  g_assert (quark_seq_id == 0);
++  fprintf(stderr, "seq id %d\n",quark_seq_id);
++  quark_seq_id = 0;
++  //g_assert (quark_seq_id == 0);
+   quark_ht = g_hash_table_new (g_str_hash, g_str_equal);
+   quarks = g_new (gchar*, QUARK_BLOCK_SIZE);
+   quarks[0] = NULL;
+diff -ru glib-2.48.2-orig/gobject/gtype.c glib-2.48.2/gobject/gtype.c
+--- glib-2.48.2-orig/gobject/gtype.c	2016-10-10 19:27:22.115279120 -0300
++++ glib-2.48.2/gobject/gtype.c	2016-10-14 04:03:07.613915573 -0300
+@@ -23,6 +23,7 @@
+ 
+ #include "../glib/valgrind.h"
+ #include <string.h>
++#include <stdio.h>
+ 
+ #include "gtype.h"
+ #include "gtype-private.h"
+@@ -4371,6 +4372,7 @@
+   GTypeInfo info;
+   TypeNode *node;
+   GType type;
++  fputs("in gobject_init", stderr);
+ 
+   /* Ensure GLib is initialized first, see
+    * https://bugzilla.gnome.org/show_bug.cgi?id=756139
+@@ -4473,6 +4475,7 @@
+   switch (fdwReason)
+     {
+     case DLL_PROCESS_ATTACH:
++      printf("gobjectDllMain %d\n",fdwReason);
+       gobject_init ();
+       break;
+ 

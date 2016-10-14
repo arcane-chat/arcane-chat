@@ -36,6 +36,7 @@ stdenv.mkDerivation rec {
       ln -sv ${openssl.crossDrv.bin}/bin/libeay32.dll $out/bin/LIBEAY32.dll
       ln -sv ${openssl.crossDrv.bin}/bin/ssleay32.dll $out/bin/SSLEAY32.dll
     '';
+    dontCrossStrip = true;
   };
 
   postUnpack = ''

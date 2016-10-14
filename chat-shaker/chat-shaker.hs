@@ -168,6 +168,7 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
                     , pure $ append defines [("ARCANE_CHAT_VERSION", Just "0")]
                     ]
                   , pkgConfigSet
+                  -- , [ pure $ append compilerFlags [(Nothing, [  "-gdwarf-2", "-gstrict-dwarf" ])] ]
                   , [ pure $ append libraries
                       [ "gstapp-1.0", "gstreamer-1.0", "gmodule-2.0", "glib-2.0"
                       , "gstbase-1.0", "gstcheck-1.0" ]

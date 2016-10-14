@@ -28,6 +28,7 @@ void handler(int /* signum */) {
 }
 
 int main(int argc, char** argv) {
+    fputs("in main", stderr);
     QGst::init(&argc, &argv);
     Gio::init();
 

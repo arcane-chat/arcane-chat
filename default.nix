@@ -428,12 +428,15 @@ rec {
               #     echo "\e[31mRebuilding with shared library support\e[0m"
               #     buildPhase
               # '';
+              NIX_CROSS_CFLAGS_COMPILE = [ "-gdwarf-2" "-gstrict-dwarf" ];
+              dontCrossStrip = true;
 
               patches = old.patches ++ [
                 ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
                 ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
                 ./fixes/glib/0027-no_sys_if_nametoindex.patch
                 ./fixes/glib/0028-inode_directory.patch
+                ./fixes/glib-debug.patch
               ];
             });
           };
