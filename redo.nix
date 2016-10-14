@@ -5,7 +5,7 @@ stdenv.mkDerivation rec {
   name = "arcane-chat-not-stirred";
   src = ./chat;
   nativeBuildInputs = [
-    chat-shaker pkgconfig protobuf3_0 strace
+    chat-shaker pkgconfig protobuf3_0
   ];
   buildInputs = with gst_all_1; [
     qtbase qtscript
