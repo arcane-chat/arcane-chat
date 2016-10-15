@@ -14,6 +14,7 @@ in {
   wineWow-linux = default.linux.super.wine.override { wineBuild = "wineWow"; };
   chat-shaker = default.linux.super.chat-shaker;
   arcane-chat.linux = default.linux.arcane-chat;
+  chat-doc = default.linux.super.chat-doc;
   # darwin = default.darwin.arcane-chat;
 } // makeJobs [
   "super.arcane-chat"

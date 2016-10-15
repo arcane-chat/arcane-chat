@@ -58,6 +58,7 @@ rec {
       };
     };
     commonPackageOverrides = self: super: {
+      chat-doc = super.callPackage ./doc.nix {};
       chat-shaker = super.callPackage ./chat-shaker {};
       arcane-chat = self.qt56.callPackage ./redo.nix {};
       libtoxcore-dev = super.callPackage ./fixes/libtoxcore/new-api {};
