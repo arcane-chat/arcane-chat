@@ -475,8 +475,17 @@ rec {
     };
 
     applyOverrides = pkgs: localOverrides: pkgs.lib.fix'
-      (pkgs.lib.extends localOverrides
-        (pkgs.lib.extends commonPackageOverrides pkgs.__unfix__));
+      (pkgs.lib.extends (utils.mergeOverrides commonPackageOverrides localOverrides) pkgs.__unfix__);
+      #(pkgs.lib.extends localOverrides
+      #  (pkgs.lib.extends commonPackageOverrides pkgs.__unfix__));
+  };
+
+  utils = {
+    mergeOverrides = a: b: self: super:
+      let
+        aResult = (a self super);
+        bResult = (b self (super // aResult));
+      in aResult // bResult;
   };
 
   inherit (root) makeConfig
@@ -484,7 +493,8 @@ rec {
                  linuxPackageOverrides
                  windowsPackageOverrides;
 
-  linuxPkgs = root.applyOverrides root.origPkgs linuxPackageOverrides;
+  linuxPkgs = root.origPkgs.overridePackages
+    (utils.mergeOverrides commonPackageOverrides linuxPackageOverrides);
   linuxCallPackage = linuxPkgs.qt56.newScope linux;
   linux = rec {
     # Boilerplate
@@ -507,17 +517,7 @@ rec {
     })
     windowsPackageOverrides;
   windowsCallPackage = windowsPkgs.qt56.newScope windows;
-  windows = rec {
-    # Boilerplate
-    super = windowsPkgs;
-
-    # Our packages
-    arcane-chat = windowsCallPackage ./chat {
-      doxygen = null;
-      obs-studio = null;
-      include-what-you-use = null;
-    };
-  };
+  windows.super = windowsPkgs;
 
   darwinPkgs = import nixpkgs.outPath { system = "x86_64-darwin"; };
   darwinCallPackage = darwinPkgs.newScope darwin;
