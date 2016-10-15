@@ -13,9 +13,9 @@ let
 in {
   wineWow-linux = default.linux.super.wine.override { wineBuild = "wineWow"; };
   chat-shaker = default.linux.super.chat-shaker;
+  arcane-chat.linux = default.linux.arcane-chat;
   # darwin = default.darwin.arcane-chat;
 } // makeJobs [
-  "arcane-chat"
   "super.arcane-chat"
   "super.gst_all_1.gstreamermm"
   "super.gst_all_1.gst-plugins-good"
