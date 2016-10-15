@@ -1,5 +1,5 @@
 # Build dependencies
-{ stdenv, cmake, pkgconfig, doxygen, ghostscript, ninja, makeWrapper
+{ stdenv, cmake, pkgconfig, ghostscript, ninja, makeWrapper
 # Program dependencies
 , zeromq4, libmsgpack, libtoxcore-dev, nlohmann_json, obs-studio
 , gst_all_1, protobuf3_0, qtbase, qtscript, libsodium
@@ -14,7 +14,7 @@ stdenv.mkDerivation rec {
   src = ./.;
 
   nativeBuildInputs = [
-    cmake pkgconfig ninja doxygen ghostscript guile parallel makeWrapper
+    cmake pkgconfig ninja ghostscript guile parallel makeWrapper
     protobuf3_0 include-what-you-use rtags python
   ];
 
@@ -40,9 +40,6 @@ stdenv.mkDerivation rec {
 
   installPhase = ''
       ninja install
-      mkdir $out/nix-support
-      echo "doc manual $out/share/doc/arcane-chat index.html" \
-          >> $out/nix-support/hydra-build-products
 
       for exe in $out/bin/{client,gst}; do
           wrapProgram "$exe" \

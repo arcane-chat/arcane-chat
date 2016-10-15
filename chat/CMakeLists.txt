@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(arcane-chat VERSION 0.0.1)
 
-add_subdirectory(doc)
-
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
