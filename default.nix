@@ -191,6 +191,7 @@ rec {
         help2man = super.forceNativeDrv super.help2man;
         intltool = super.forceNativeDrv super.intltool;
         perl = super.forceNativeDrv super.perl;
+        utillinuxMinimal = super.forceNativeDrv super.utillinuxMinimal;
         mariadb = null;
         taglib = null;
         libavc1394 = null;
