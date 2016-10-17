@@ -1,18 +1,3 @@
-diff -ru glib-2.48.2-orig/gio/Makefile.in glib-2.48.2/gio/Makefile.in
---- glib-2.48.2-orig/gio/Makefile.in	2016-10-10 19:27:21.425299502 -0300
-+++ glib-2.48.2/gio/Makefile.in	2016-10-13 21:30:47.147313798 -0300
-@@ -191,9 +191,8 @@
- # This is dumb.  The ObjC source file should be properly named .m
- @OS_COCOA_TRUE@am__append_36 = -xobjective-c
- @OS_COCOA_TRUE@am__append_37 = -Wl,-framework,Foundation -Wl,-framework,AppKit
--bin_PROGRAMS = gio-querymodules$(EXEEXT) glib-compile-schemas$(EXEEXT) \
--	glib-compile-resources$(EXEEXT) gsettings$(EXEEXT) \
--	gdbus$(EXEEXT) $(am__EXEEXT_1) gresource$(EXEEXT)
-+bin_PROGRAMS = glib-compile-resources$(EXEEXT) gsettings$(EXEEXT) \
-+	$(am__EXEEXT_1)
- 
- # ------------------------------------------------------------------------
- # gapplication(1) tool
 diff -ru glib-2.48.2-orig/glib/glib-init.c glib-2.48.2/glib/glib-init.c
 --- glib-2.48.2-orig/glib/glib-init.c	2016-10-10 19:27:21.974283286 -0300
 +++ glib-2.48.2/glib/glib-init.c	2016-10-14 05:32:36.679311570 -0300
