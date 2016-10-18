@@ -4,6 +4,9 @@
 stdenv.mkDerivation rec {
   name = "arcane-chat-not-stirred";
   src = ./chat;
+
+  outputs = [ "out" "report" ];
+
   nativeBuildInputs = [
     chat-shaker pkgconfig protobuf3_0
   ];
@@ -58,10 +61,10 @@ stdenv.mkDerivation rec {
 
   installPhase = ''
     runHook preInstall
-    mkdir -pv $out/bin $out/nix-support $out/shake
+    mkdir -pv $out/bin $report/nix-support $report/shake
     chat-shaker install $shakeArgs
-    echo "doc buildReport $out/shake report.html" \
-    >> $out/nix-support/hydra-build-products
+    echo "doc buildReport $report/shake report.html" \
+    >> $report/nix-support/hydra-build-products
     runHook postInstall
   '';
 }

@@ -96,27 +96,18 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
   let qObject name = [ "src" </> name <.> "cpp"
                      , "_build/moc_" ++ name <.> "cpp" ]
 
-  let client_cs = do let qs = [ "audiocall", "core", "friend"
-                              , "utils", "channel", "kisscache"
-                              , "kiss", "toxsink", "channelmodel"
-                              , "mainwindow", "chatwidget"
-                              , "infowidget", "callcontrol" ]
-
-                     let cs = [ "src/client.cpp"
-                              , "src/db.cpp"
-                              , "src/stats.cpp"
-                              , "src/core_db.cpp"
-                              , "src/options.cpp"
-                              , "_build/network.pb.cc"
-                              ] ++ concatMap qObject qs
+  let client_cs = do
+                     makefile <- readFile' "Makefile.in"
+                     let parsed = parseMakefile makefile
+                     let Just makefile_cs = lookup "src/arcane-chat" parsed
 
                      need $ [ "_build/network.pb.h"
                             , "_build/ui_mainwindow.h"
                             , "_build/ui_infowidget.h"
                             , "_build/ui_chatwidget.h"
-                            ] ++ cs
+                            ] ++ makefile_cs
 
-                     pure $ cs
+                     pure $ makefile_cs
 
   "_build//ui_*.h" %> \out -> do
     let name = drop 3 (dropDirectory1 out) -<.> "ui"
@@ -130,9 +121,11 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
 
   phony "install" $ do
     maybeDest <- getEnv "out"
+    maybeReport <- getEnv "report";
     let dest = fromMaybe "/ERR" maybeDest
+    let dest2 = fromMaybe "/ERR" maybeReport
     copyFile' ("_build/arcane-chat" <.> exe) (dest </> "bin/arcane-chat" <.> exe)
-    copyFile' "shakeReport" $ dest </> "shake/report.html"
+    copyFile' "shakeReport" $ dest2 </> "shake/report.html"
 
   "_build//*.pb.cc" %> \out -> do
     let proto = dropExtension (dropDirectory1 out) -<.> "proto"
