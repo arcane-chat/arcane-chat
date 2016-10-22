@@ -5,14 +5,16 @@ stdenv.mkDerivation {
   src = ./chat;
   nativeBuildInputs = [ cmake doxygen ];
   postUnpack = ''
-    pwd
-    ls -ltrh
-    export sourceRoot=chat/doc
+      pwd
+      ls -ltrh
+      export sourceRoot=chat/doc
   '';
+
   cmakeFlags = [ "-DBUILD_DOCUMENTATION=1" ];
+
   postInstall = ''
-    mkdir $out/nix-support
-    echo "doc manual $out/share/doc/arcane-chat index.html" \
-        >> $out/nix-support/hydra-build-products
-'';
+      mkdir $out/nix-support
+      echo "doc manual $out/share/doc/arcane-chat index.html" \
+          >> $out/nix-support/hydra-build-products
+  '';
 }
