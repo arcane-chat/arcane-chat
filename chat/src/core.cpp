@@ -479,14 +479,6 @@ void Core::save_state() {
     QByteArray savedata;
     savedata.resize(size);
     tox_get_savedata(tox, reinterpret_cast<uint8_t*>(savedata.data()));
-    // using std::ios;
-    // std::ofstream file(savedata_path, ios::out | ios::binary | ios::trunc);
-    // assert(file.is_open());
-    // assert(file.good());
-    // file.write(reinterpret_cast<const char*>(savedata.data()), size);
-    // assert(file.good());
-    // file.flush();
-    // assert(file.good());
     db->set_data("savestate", savedata);
 }
 
