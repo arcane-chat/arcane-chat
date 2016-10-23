@@ -96,13 +96,11 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
   let qObject name = [ "src" </> name <.> "cpp"
                      , "_build/moc_" ++ name <.> "cpp" ]
 
-  let client_cs = do
-                     makefile <- readFile' "Makefile.in"
+  let client_cs = do makefile <- readFile' "Makefile.in"
                      let parsed = parseMakefile makefile
                      let Just makefile_cs = lookup "src/arcane-chat" parsed
 
-                     need $ [ "_build/network.pb.h"
-                            , "_build/ui_mainwindow.h"
+                     need $ [ "_build/ui_mainwindow.h"
                             , "_build/ui_infowidget.h"
                             , "_build/ui_chatwidget.h"
                             ] ++ makefile_cs
@@ -127,12 +125,12 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
     copyFile' ("_build/arcane-chat" <.> exe) (dest </> "bin/arcane-chat" <.> exe)
     copyFile' "shakeReport" $ dest2 </> "shake/report.html"
 
-  "_build//*.pb.cc" %> \out -> do
+  "_build//*.pb.h" %> \out -> do
     let proto = dropExtension (dropDirectory1 out) -<.> "proto"
     need ["proto/" ++ proto]
     command_ [Cwd "proto"] "protoc" ["--cpp_out=../_build", proto]
 
-  "_build//*.pb.h" %> \out -> need [out -<.> "cc"]
+  "_build//*.pb.cc" %> \out -> need [out -<.> "h"]
 
   "_build//*.moc" %> \out -> do
     let name = dropDirectory1 $ out -<.> "cpp"
@@ -152,7 +150,7 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
                      , "glib-2.0", "gstreamer-1.0", "gstreamermm-1.0"
                      , "gstreamer-audio-1.0", "sqlite3", "protobuf"
                      , "Qt5GLib-2.0", "Qt5GStreamerUtils-1.0"
-                     , "libtoxcore", "libsodium" ]
+                     , "libzmq", "libtoxcore", "libsodium" ]
 
   arcaneChat <- (executable toolchain ("_build/arcane-chat" <.> exe)
                  (composeBFMutators $ concat
