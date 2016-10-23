@@ -56,6 +56,7 @@ customInclude envvar postfix = do
 
 main :: IO ()
 main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
+  makefile_data <- parseMakefile <$> liftIO (readFile "Makefile.in")
   let inFlags x = x `elem` flags
 
   let (_, nativeToolchain) = Development.Shake.Language.C.Host.defaultToolChain
@@ -96,9 +97,8 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
   let qObject name = [ "src" </> name <.> "cpp"
                      , "_build/moc_" ++ name <.> "cpp" ]
 
-  let client_cs = do makefile <- readFile' "Makefile.in"
-                     let parsed = parseMakefile makefile
-                     let Just makefile_cs = lookup "src/arcane-chat" parsed
+  let client_cs = do
+                     let Just makefile_cs = lookup "src/arcane-chat" makefile_data
 
                      need $ [ "_build/ui_mainwindow.h"
                             , "_build/ui_infowidget.h"
