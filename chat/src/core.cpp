@@ -532,6 +532,17 @@ void Core::friend_add(const QByteArray tox_id, std::string message) {
     save_state();
 }
 
+QString enum_to_string(TOX_ERR_FRIEND_CUSTOM_PACKET error) {
+    switch (error) {
+    case TOX_ERR_FRIEND_CUSTOM_PACKET_TOO_LONG:
+        return "packet too long";
+    case TOX_ERR_FRIEND_CUSTOM_PACKET_SENDQ:
+        return "sendq overflow";
+    default:
+        return QString("unknown %1").arg(error);
+    }
+}
+
 void Core::send_lossy_packet(Friend* fr, QByteArray data) {
     TOX_ERR_FRIEND_CUSTOM_PACKET error;
     auto packet = data.prepend(arcane_lossy_packet_id);
@@ -539,13 +550,7 @@ void Core::send_lossy_packet(Friend* fr, QByteArray data) {
         tox, fr->friend_number, reinterpret_cast<const uint8_t*>(packet.data()),
         packet.length(), &error);
     if (error != TOX_ERR_FRIEND_CUSTOM_PACKET_OK) {
-        QString msg;
-        switch (error) {
-        case TOX_ERR_FRIEND_CUSTOM_PACKET_TOO_LONG:
-            msg = "packet too long";
-        default:
-            msg = QString("unknown %1").arg(error);
-        }
+        QString msg = enum_to_string(error);
         qDebug() << "send packet error" << msg;
     }
 }
@@ -557,13 +562,7 @@ void Core::send_lossless_packet(Friend* fr, QByteArray data) {
         tox, fr->friend_number, reinterpret_cast<const uint8_t*>(packet.data()),
                 packet.length(), &error);
     if (error != TOX_ERR_FRIEND_CUSTOM_PACKET_OK) {
-        QString msg;
-        switch (error) {
-        case TOX_ERR_FRIEND_CUSTOM_PACKET_TOO_LONG:
-            msg = "packet too long";
-        default:
-            msg = QString("unknown %1").arg(error);
-        }
+        QString msg = enum_to_string(error);
         qDebug() << "send packet error" << msg;
     }
 }
