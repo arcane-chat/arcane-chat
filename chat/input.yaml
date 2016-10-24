@@ -33,6 +33,7 @@ executables:
       - "_build/ui_mainwindow.h"
       - "_build/ui_infowidget.h"
       - "_build/ui_chatwidget.h"
+      - "_build/network.pb.h"
     pkg_config:
       - "Qt5GStreamer-1.0"
       - "Qt5Core"

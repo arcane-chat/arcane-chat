@@ -181,30 +181,32 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
 
   "_build//moc_*.cpp" %> \out -> do
     let name = drop 4 $ dropDirectory1 $ out -<.> "hpp"
-    let src = "src" </> name
+    let src = ("src" </> name)
     need [ src ]
     cmd "moc " src "-o" out
 
   let pkgConfigSet entry = loadPkgConfig <$> pkg_config entry
 
-  let simple_prog name = do
-              let Just entry = Map.lookup name $ executables parsed2
-              executable toolchain ("_build" </> name <.> exe)
-                 (composeBFMutators $ concat
-                  [ [ fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"
-                    , cxx14, extraIncludeDirs
-                    , pure $ append defines [("ARCANE_CHAT_VERSION", Just "0")]
-                    ]
-                  , pkgConfigSet entry
-                  -- , [ pure $ append compilerFlags [(Nothing, [  "-gdwarf-2", "-gstrict-dwarf" ])] ]
-                  , [ pure $ append libraries $ libs entry
-                    , whenBFM (inFlags Main.Windows) $ pure $ append libraries
-                      [ "orc-0.4", "ws2_32", "ole32", "iphlpapi", "dnsapi", "winmm" ]
-                    , pure $ append libraries [ "z", "pcre", "ffi", "pthread" ]
-                    ]
-                  ])
-                 (get_cs entry)
+  let simple_prog name entry =
+        executable toolchain ("_build" </> name <.> exe)
+          (composeBFMutators $ concat
+           [ [ (>>> traceShowId) <$> loadPkgConfig "glibmm-2.4"
+             , cxx14, extraIncludeDirs
+             , pure $ append defines [("ARCANE_CHAT_VERSION", Just "0")]
+             ]
+           , pkgConfigSet entry
+           -- , [ pure $ append compilerFlags [(Nothing, ["-gdwarf-2", "-gstrict-dwarf"])] ]
+           , [ pure $ append libraries $ libs entry
+             , whenBFM (inFlags Main.Windows) $ pure $ append libraries
+               [ "orc-0.4", "ws2_32", "ole32", "iphlpapi", "dnsapi", "winmm" ]
+             , pure $ append libraries [ "z", "pcre", "ffi", "pthread" ]
+             ]
+           ])
+          (get_cs entry)
 
-  arcaneChat <- simple_prog "arcane-chat"
+  allTargets <- executables parsed2
+                |> Map.mapWithKey simple_prog
+                |> Map.toList
+                |> mapM snd
 
-  want $ if null targets then [ arcaneChat ] else targets
+  want $ if null targets then allTargets else targets
