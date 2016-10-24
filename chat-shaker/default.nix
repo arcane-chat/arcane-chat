@@ -1,6 +1,6 @@
 { runCommand, haskellPackages }:
 
-let paths = p: with p; [ shake shake-language-c aeson ];
+let paths = p: with p; [ shake shake-language-c aeson yaml ];
     ghc = haskellPackages.ghcWithPackages paths;
 in runCommand "chat-shaker" { buildInputs = [ ghc ]; } ''
     mkdir -pv $out/bin

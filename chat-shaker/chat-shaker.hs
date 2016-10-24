@@ -2,7 +2,10 @@
 
 module Main where
 
-import           Data.Aeson (decode, FromJSON, Object, parseJSON)
+import           Data.Aeson                             (FromJSON, Object,
+                                                         Value (..), decode,
+                                                         parseJSON, (.:))
+import qualified Data.Yaml                              as Yaml
 
 import           Control.Applicative
 import           Control.Arrow
@@ -17,28 +20,36 @@ import           Development.Shake.Language.C.PkgConfig
 import           Development.Shake.Language.C.ToolChain
 import           Development.Shake.Util
 
-import           Data.ByteString.Lazy (ByteString, readFile)
+import           Data.ByteString                        (ByteString, readFile)
 import           Data.Label                             (get, set)
+import           Data.Map.Strict                        (Map)
+import qualified Data.Map.Strict                        as Map
 import           Data.Maybe
+import           Data.Text                              (Text)
+import qualified Data.Text                              as Text
 import           Debug.Trace
 
 import           GHC.Generics
 
 import           System.Console.GetOpt
 
-data Project = Project {
-      executables :: [ Executable ] -- todo: change to a name->Executable map
-    } deriving (Generic, Show)
+data Project =
+  MkProject
+  { executables :: Map String Executable
+  } deriving (Show)
 
-instance FromJSON Project
+instance FromJSON Project where
+  parseJSON (Object o) = do execs <- (o .: Text.pack "executables")
+                            MkProject <$> parseJSON execs
+  parseJSON _          = empty
 
-data Executable = Executable {
-      name :: String
-    , sources  :: [ String ]
-    , required_headers :: [ String ]
-    , pkg_config :: [ String ]
-    , libs :: [ String ]
-    } deriving (Generic, Show)
+data Executable =
+  MkExecutable
+  { sources  :: [String]
+  , required_headers :: [String]
+  , pkg_config :: [String]
+  , libs :: [String]
+  } deriving (Generic, Show)
 
 instance FromJSON Executable
 
@@ -78,10 +89,7 @@ customInclude envvar postfix = do
   pure $ append systemIncludes [ dir </> postfix ]
 
 parseData :: ByteString -> Maybe Project
-parseData = decode
-
-hack :: Executable -> (String, Executable)
-hack e = (name e, e)
+parseData = Yaml.decode
 
 get_cs :: Executable -> Action [ FilePath ]
 get_cs entry = do
@@ -90,7 +98,7 @@ get_cs entry = do
 
 main :: IO ()
 main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
-  sampleData <- liftIO $ Data.ByteString.Lazy.readFile "input.json"
+  sampleData <- liftIO $ Data.ByteString.readFile "input.yaml"
   let Just parsed2 = parseData sampleData
   let inFlags x = x `elem` flags
 
@@ -150,7 +158,12 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
     maybeReport <- getEnv "report";
     let dest = fromMaybe "/ERR" maybeDest
     let dest2 = fromMaybe "/ERR" maybeReport
-    mapM_ (\e -> copyFile' ("_build" </> (name e) <.> exe) (dest </> "bin" </> (name e) <.> exe)) $ executables parsed2
+    let installExec name = copyFile'
+                           ("_build" </> name <.> exe)
+                           (dest </> "bin" </> name <.> exe)
+    executables parsed2
+      |> Map.keys
+      |> mapM_ installExec
     copyFile' "shakeReport" $ dest2 </> "shake/report.html"
 
   "_build//*.pb.h" %> \out -> do
@@ -175,8 +188,7 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
   let pkgConfigSet entry = loadPkgConfig <$> pkg_config entry
 
   let simple_prog name = do
-              let
-                Just entry = lookup name $ map hack $ executables parsed2
+              let Just entry = Map.lookup name $ executables parsed2
               executable toolchain ("_build" </> name <.> exe)
                  (composeBFMutators $ concat
                   [ [ fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"

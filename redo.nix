@@ -4,8 +4,8 @@
 , withGHC ? false
 } @ args:
 
-let paths = p: with p; [ shake shake-language-c aeson ];
-    ghc = haskellPackages.ghcWithPackages paths;
+let paths = p: with p; [ shake shake-language-c aeson yaml ];
+    ghc = haskellPackages.ghcWithHoogle paths;
 in stdenv.mkDerivation rec {
   name = "arcane-chat-not-stirred";
   src = ./chat;
