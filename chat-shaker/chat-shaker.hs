@@ -1,4 +1,8 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Main where
+
+import           Data.Aeson (decode, FromJSON, Object, parseJSON)
 
 import           Control.Applicative
 import           Control.Arrow
@@ -13,11 +17,30 @@ import           Development.Shake.Language.C.PkgConfig
 import           Development.Shake.Language.C.ToolChain
 import           Development.Shake.Util
 
+import           Data.ByteString.Lazy (ByteString, readFile)
 import           Data.Label                             (get, set)
 import           Data.Maybe
 import           Debug.Trace
 
+import           GHC.Generics
+
 import           System.Console.GetOpt
+
+data Project = Project {
+      executables :: [ Executable ] -- todo: change to a name->Executable map
+    } deriving (Generic, Show)
+
+instance FromJSON Project
+
+data Executable = Executable {
+      name :: String
+    , sources  :: [ String ]
+    , required_headers :: [ String ]
+    , pkg_config :: [ String ]
+    , libs :: [ String ]
+    } deriving (Generic, Show)
+
+instance FromJSON Executable
 
 (|>) :: a -> (a -> b) -> b
 (|>) = flip ($)
@@ -54,10 +77,25 @@ customInclude envvar postfix = do
   let dir = fromMaybe "ERR" storePath
   pure $ append systemIncludes [ dir </> postfix ]
 
+parseData :: ByteString -> Maybe Project
+parseData = decode
+
+hack :: Executable -> (String, Executable)
+hack e = (name e, e)
+
+get_cs :: Executable -> Action [ FilePath ]
+get_cs entry = do
+    need $ required_headers entry
+    pure $ sources entry
+
 main :: IO ()
 main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
-  makefile_data <- parseMakefile <$> liftIO (readFile "Makefile.in")
+  sampleData <- liftIO $ Data.ByteString.Lazy.readFile "input.json"
+  let Just parsed2 = parseData sampleData
   let inFlags x = x `elem` flags
+
+  phony "test-decode" $ do
+    liftIO $ putStrLn $ show parsed2
 
   let (_, nativeToolchain) = Development.Shake.Language.C.Host.defaultToolChain
 
@@ -97,16 +135,6 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
   let qObject name = [ "src" </> name <.> "cpp"
                      , "_build/moc_" ++ name <.> "cpp" ]
 
-  let client_cs = do
-                     let Just makefile_cs = lookup "src/arcane-chat" makefile_data
-
-                     need $ [ "_build/ui_mainwindow.h"
-                            , "_build/ui_infowidget.h"
-                            , "_build/ui_chatwidget.h"
-                            ] ++ makefile_cs
-
-                     pure $ makefile_cs
-
   "_build//ui_*.h" %> \out -> do
     let name = drop 3 (dropDirectory1 out) -<.> "ui"
     let src = "src" </> name
@@ -122,7 +150,7 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
     maybeReport <- getEnv "report";
     let dest = fromMaybe "/ERR" maybeDest
     let dest2 = fromMaybe "/ERR" maybeReport
-    copyFile' ("_build/arcane-chat" <.> exe) (dest </> "bin/arcane-chat" <.> exe)
+    mapM_ (\e -> copyFile' ("_build" </> (name e) <.> exe) (dest </> "bin" </> (name e) <.> exe)) $ executables parsed2
     copyFile' "shakeReport" $ dest2 </> "shake/report.html"
 
   "_build//*.pb.h" %> \out -> do
@@ -144,30 +172,27 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
     need [ src ]
     cmd "moc " src "-o" out
 
-  let pkgConfigSet = loadPkgConfig <$>
-                     [ "Qt5GStreamer-1.0"
-                     , "Qt5Core", "Qt5Widgets", "Qt5Network", "Qt5Script"
-                     , "glib-2.0", "gstreamer-1.0", "gstreamermm-1.0"
-                     , "gstreamer-audio-1.0", "sqlite3", "protobuf"
-                     , "Qt5GLib-2.0", "Qt5GStreamerUtils-1.0"
-                     , "libzmq", "libtoxcore", "libsodium" ]
+  let pkgConfigSet entry = loadPkgConfig <$> pkg_config entry
 
-  arcaneChat <- (executable toolchain ("_build/arcane-chat" <.> exe)
+  let simple_prog name = do
+              let
+                Just entry = lookup name $ map hack $ executables parsed2
+              executable toolchain ("_build" </> name <.> exe)
                  (composeBFMutators $ concat
                   [ [ fmap (>>> traceShowId) $ loadPkgConfig "glibmm-2.4"
                     , cxx14, extraIncludeDirs
                     , pure $ append defines [("ARCANE_CHAT_VERSION", Just "0")]
                     ]
-                  , pkgConfigSet
+                  , pkgConfigSet entry
                   -- , [ pure $ append compilerFlags [(Nothing, [  "-gdwarf-2", "-gstrict-dwarf" ])] ]
-                  , [ pure $ append libraries
-                      [ "gstapp-1.0", "gstreamer-1.0", "gmodule-2.0", "glib-2.0"
-                      , "gstbase-1.0", "gstcheck-1.0" ]
+                  , [ pure $ append libraries $ libs entry
                     , whenBFM (inFlags Main.Windows) $ pure $ append libraries
                       [ "orc-0.4", "ws2_32", "ole32", "iphlpapi", "dnsapi", "winmm" ]
                     , pure $ append libraries [ "z", "pcre", "ffi", "pthread" ]
                     ]
                   ])
-                 client_cs)
+                 (get_cs entry)
+
+  arcaneChat <- simple_prog "arcane-chat"
 
   want $ if null targets then [ arcaneChat ] else targets

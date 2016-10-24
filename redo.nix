@@ -1,9 +1,12 @@
 { stdenv, chat-shaker, pkgconfig, qtbase, qtscript, libtoxcore-dev
 , libsodium, sqlite, openssl, glib, glibmm, gst_all_1, libsigcxx
-, protobuf3_0, zeromq4, cppzmq
+, protobuf3_0, zeromq4, cppzmq, haskellPackages
+, withGHC ? false
 } @ args:
 
-stdenv.mkDerivation rec {
+let paths = p: with p; [ shake shake-language-c aeson ];
+    ghc = haskellPackages.ghcWithPackages paths;
+in stdenv.mkDerivation rec {
   name = "arcane-chat-not-stirred";
   src = ./chat;
 
@@ -11,7 +14,7 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [
     chat-shaker pkgconfig protobuf3_0
-  ];
+  ] ++ stdenv.lib.optional withGHC ghc;
   buildInputs = with gst_all_1; [
     qtbase qtscript
     glib glibmm gstreamer gst_all_1.gstreamermm gst-plugins-base qt-gstreamer
