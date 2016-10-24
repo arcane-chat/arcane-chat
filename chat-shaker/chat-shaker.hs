@@ -128,15 +128,15 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
 
   let extraIncludeDirs = composeBFMutators $
                          (uncurry customInclude <$>
-                          ([ ("libsigcxx", "include/sigc++-2.0")
-                           , ("libsigcxx", "lib/sigc++-2.0/include")
-                           , ("glibmmdev", "include/giomm-2.4")
-                           , ("glibmmdev", "include/glibmm-2.4")
-                           , ("glibmm", "lib/giomm-2.4/include")
-                           , ("glibmmdev", "lib/glibmm-2.4/include")
-                           , ("gstreamermmdev", "include/gstreamermm-1.0")
-                           , ("gstreamermm", "lib/gstreamermm-1.0/include")
-                           ]))
+                          [ ("LIBSIGCXX_OUT",   "include/sigc++-2.0")
+                          , ("LIBSIGCXX_OUT",   "lib/sigc++-2.0/include")
+                          , ("GLIBMM_DEV",      "include/giomm-2.4")
+                          , ("GLIBMM_DEV",      "include/glibmm-2.4")
+                          , ("GLIBMM_OUT",      "lib/giomm-2.4/include")
+                          , ("GLIBMM_DEV",      "lib/glibmm-2.4/include")
+                          , ("GSTREAMERMM_DEV", "include/gstreamermm-1.0")
+                          , ("GSTREAMERMM_OUT", "lib/gstreamermm-1.0/include")
+                          ])
                          ++ [ pure $ append userIncludes ["_build"] ]
                          ++ debugOption
 

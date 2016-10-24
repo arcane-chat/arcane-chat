@@ -15,22 +15,30 @@ in stdenv.mkDerivation rec {
   nativeBuildInputs = [
     chat-shaker pkgconfig protobuf3_0
   ] ++ stdenv.lib.optional withGHC ghc;
+
   buildInputs = with gst_all_1; [
     qtbase qtscript
-    glib glibmm gstreamer gst_all_1.gstreamermm gst-plugins-base qt-gstreamer
+    glib glibmm
+    gstreamer gstreamermm qt-gstreamer
+    gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugins-bad
     zeromq4 cppzmq protobuf3_0 libtoxcore-dev libsodium sqlite
   ];
 
-  inherit glibmm libsigcxx;
-  glibmmdev = glibmm.dev;
-  gstreamermmdev = gst_all_1.gstreamermm.dev;
-  gstreamermm = gst_all_1.gstreamermm.out;
+  LIBSIGCXX_OUT = libsigcxx.out;
+  GLIBMM_OUT = glibmm.out;
+  GLIBMM_DEV = glibmm.dev;
+  GSTREAMERMM_DEV = gst_all_1.gstreamermm.dev;
+  GSTREAMERMM_OUT = gst_all_1.gstreamermm.out;
+
   shakeArgs = [ "--timings" "--debug-build" ];
 
   crossAttrs = {
-    glibmmdev = args.glibmm.crossDrv.dev;
-    gstreamermmdev = gst_all_1.gstreamermm.crossDrv.dev;
-    gstreamermm = gst_all_1.gstreamermm.crossDrv.out;
+    LIBSIGCXX_OUT = libsigcxx.crossDrv.out;
+    GLIBMM_OUT = glibmm.crossDrv.out;
+    GLIBMM_DEV = glibmm.crossDrv.dev;
+    GSTREAMERMM_DEV = gst_all_1.gstreamermm.crossDrv.dev;
+    GSTREAMERMM_OUT = gst_all_1.gstreamermm.crossDrv.out;
+
     shakeArgs = shakeArgs ++ [ "--windows" ];
     # todo: store more log details to $out that a user could download
     succeedOnFailure = true;
