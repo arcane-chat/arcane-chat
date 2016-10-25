@@ -22,6 +22,7 @@ import           Development.Shake.Util
 
 import           Data.ByteString                        (ByteString, readFile)
 import           Data.Label                             (get, set)
+import           Data.List.Split                        (splitOn)
 import           Data.Map.Strict                        (Map)
 import qualified Data.Map.Strict                        as Map
 import           Data.Maybe
@@ -47,6 +48,7 @@ data Executable =
   MkExecutable
   { sources  :: [String]
   , required_headers :: [String]
+  , headers :: [ String ]
   , pkg_config :: [String]
   , libs :: [String]
   } deriving (Generic, Show)
@@ -93,8 +95,11 @@ parseData = Yaml.decode
 
 get_cs :: Executable -> Action [ FilePath ]
 get_cs entry = do
+    let moc_names = map
+          (\e -> ("_build/moc_" ++ (last $ splitOn "/" e)) -<.> "cpp")
+          $ headers entry
     need $ required_headers entry
-    pure $ sources entry
+    pure $ (sources entry) ++ moc_names
 
 main :: IO ()
 main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
