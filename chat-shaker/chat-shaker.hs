@@ -1,3 +1,4 @@
+#!/usr/bin/env runhaskell
 {-# LANGUAGE DeriveGeneric #-}
 
 module Main where
