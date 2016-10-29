@@ -57,6 +57,7 @@ rec {
         };
       };
     };
+
     commonPackageOverrides = self: super: {
       chat-doc = super.callPackage ./doc.nix {};
       chat-shaker = super.callPackage ./chat-shaker {};
@@ -122,9 +123,7 @@ rec {
 
       gst_all_1 = self.recurseIntoAttrs (self.callPackage ./fixes/gstreamer {});
 
-      pango = self.callPackage ./fixes/pango.nix {};
-
-      libsigcxx = super.libsigcxx.overrideDerivation (old: rec {
+      libsigcxx_updated = super.libsigcxx.overrideDerivation (old: rec {
         name = "libsigc++-2.9.3";
         src = self.fetchurl {
           url = "mirror://gnome/sources/libsigc++/2.9/${name}.tar.xz";
@@ -132,7 +131,7 @@ rec {
         };
       });
 
-      glibX = self.glib.overrideDerivation (old: rec {
+      glib_updated = self.glib.overrideDerivation (old: rec {
         name = "glib-2.50.0";
         src = self.fetchurl {
           url = "mirror://gnome/sources/glib/2.50/${name}.tar.xz";
@@ -142,13 +141,26 @@ rec {
         configureFlags = old.configureFlags ++ [ "--disable-libmount" ];
       });
 
-      glibmmX = self.glibmm.overrideDerivation (old: rec {
+      glibmm_updated = self.glibmm.overrideDerivation (old: rec {
         name = "glibmm-2.50.0";
         src = self.fetchurl {
           url = "mirror://gnome/sources/glibmm/2.50/${name}.tar.xz";
           sha256 = "152yz5w0lx0y5j9ml72az7pc83p4l92bc0sb8whpcazldqy6wwnz";
         };
       });
+
+      pythonPackagesGen = pp: super.callPackage ./fixes/pythonPackages.nix {
+        inherit self super; pythonPackages = pp;
+      };
+
+      pypyPackages     = self.pythonPackagesGen super.pypyPackages;
+      python27Packages = self.pythonPackagesGen super.python27Packages;
+      python33Packages = self.pythonPackagesGen super.python33Packages;
+      python34Packages = self.pythonPackagesGen super.python34Packages;
+      python35Packages = self.pythonPackagesGen super.python35Packages;
+      python2Packages  = self.python27Packages;
+      python3Packages  = self.python34Packages;
+      pythonPackages   = self.python27Packages;
     };
 
     linuxPackageOverrides = self: super: rec {
