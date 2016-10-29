@@ -61,7 +61,7 @@ rec {
     commonPackageOverrides = self: super: {
       chat-doc = self.callPackage ./doc.nix {};
       chat-shaker = self.callPackage ./chat-shaker {};
-      arcane-chat = self.qt56.callPackage ./redo.nix {};
+      arcane-chat = self.qt56.callPackage ./chat {};
 
       libtoxcore-dev = self.callPackage ./fixes/libtoxcore/new-api {};
 
@@ -519,9 +519,6 @@ rec {
   linux = rec {
     # Boilerplate
     super = linuxPkgs;
-
-    # Our packages
-    arcane-chat = linuxCallPackage ./chat {};
   };
 
   windowsPkgs = root.applyOverrides
@@ -544,8 +541,5 @@ rec {
   darwin = rec {
     # Boilerplate
     super = darwinPkgs;
-
-    # Our packages
-    arcane-chat = darwinCallPackage ./chat { qtbase = darwinPkgs.qt48Full; };
   };
 }
