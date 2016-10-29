@@ -59,11 +59,13 @@ rec {
     };
 
     commonPackageOverrides = self: super: {
-      chat-doc = super.callPackage ./doc.nix {};
-      chat-shaker = super.callPackage ./chat-shaker {};
+      chat-doc = self.callPackage ./doc.nix {};
+      chat-shaker = self.callPackage ./chat-shaker {};
       arcane-chat = self.qt56.callPackage ./redo.nix {};
-      libtoxcore-dev = super.callPackage ./fixes/libtoxcore/new-api {};
-      protoc-gen-doc = super.qt56.callPackage ./fixes/protoc-gen-doc {};
+
+      libtoxcore-dev = self.callPackage ./fixes/libtoxcore/new-api {};
+
+      protoc-gen-doc = self.qt56.callPackage ./fixes/protoc-gen-doc {};
 
       rtags = self.stdenv.mkDerivation {
         name = super.rtags.name;
@@ -149,7 +151,7 @@ rec {
         };
       });
 
-      pythonPackagesGen = pp: super.callPackage ./fixes/pythonPackages.nix {
+      pythonPackagesGen = pp: self.callPackage ./fixes/pythonPackages.nix {
         inherit self super; pythonPackages = pp;
       };
 
@@ -162,32 +164,9 @@ rec {
       python3Packages  = self.python34Packages;
       pythonPackages   = self.python27Packages;
 
-      sphinxbase = pkgs.sphinxbase.overrideDerivation (old: rec {
-        name = "sphinxbase-5prealpha";
+      sphinxbase = self.callPackage ./fixes/sphinxbase.nix {};
 
-        src = pkgs.fetchurl {
-          url = "mirror://sourceforge/cmusphinx/${name}.tar.gz";
-          sha256 = "0vr4k8pv5a8nvq9yja7kl13b5lh0f9vha8fc8znqnm8bwmcxnazp";
-        };
-
-        nativeBuildInputs = (old.nativeBuildInputs
-                             ++ [ super.swig super.python27 ]);
-      });
-
-      pocketsphinx = pkgs.pocketsphinx.overrideDerivation (old: rec {
-        name = "pocketsphinx-5prealpha";
-
-        src = pkgs.fetchurl {
-          url = "mirror://sourceforge/cmusphinx/${name}.tar.gz";
-          sha256 = "1n9yazzdgvpqgnfzsbl96ch9cirayh74jmpjf7svs4i7grabanzg";
-        };
-
-        nativeBuildInputs = with self; ([ sphinxbase pkgconfig swig python27 ]
-                                        ++ gst_all_1.gstreamer.all
-                                        ++ gst_all_1.gst-plugins-base.all);
-
-        patches = [ ./fixes/pocketsphinx-fix-caps.patch ];
-      });
+      pocketsphinx = self.callPackage ./fixes/pocketsphinx {};
     };
 
     linuxPackageOverrides = self: super: rec {
@@ -195,7 +174,9 @@ rec {
 
     windowsPackageOverrides = self: super: let
       overrideDerivation = self.stdenv.lib.overrideDerivation;
-      overrideCrossDerivation = drv: fun: drv // { crossDrv = overrideDerivation drv.crossDrv fun; };
+      overrideCrossDerivation = drv: fun: drv // {
+        crossDrv = overrideDerivation drv.crossDrv fun;
+      };
     in {
         chat-shaker = linux.super.chat-shaker;
 
