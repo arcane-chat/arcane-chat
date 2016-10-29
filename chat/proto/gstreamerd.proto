@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package arcane.gstreamerd;
+
+enum Command {
+    create = 0;
+    read = 1;
+    update = 2;
+    delete = 3;
+}
+
+message InputMessage {
+    Command command = 1;
+    string uri = 2;
+    repeated string arguments = 3;
+}
