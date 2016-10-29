@@ -3,9 +3,8 @@
 
 module Main where
 
-import           Data.Aeson                             (FromJSON, Object,
-                                                         Value (..), decode,
-                                                         parseJSON, (.:))
+import           Data.Aeson
+                 (FromJSON, Object, Value (..), decode, parseJSON, (.:))
 import qualified Data.Yaml                              as Yaml
 
 import           Control.Applicative
@@ -47,11 +46,11 @@ instance FromJSON Project where
 
 data Executable =
   MkExecutable
-  { sources  :: [String]
+  { sources          :: [String]
   , required_headers :: [String]
-  , headers :: [ String ]
-  , pkg_config :: [String]
-  , libs :: [String]
+  , headers          :: [String]
+  , pkg_config       :: [String]
+  , libs             :: [String]
   } deriving (Generic, Show)
 
 instance FromJSON Executable
@@ -71,30 +70,30 @@ whenBFM False _ = pure id
 
 data Flag = Debug | Windows deriving (Show, Eq)
 
-options :: [ OptDescr (Either String Flag) ]
+options :: [OptDescr (Either String Flag)]
 options = [ Option [] ["debug-build"] (NoArg $ Right Debug) "do a debug build"
           , Option [] ["windows"] (NoArg $ Right Main.Windows) "do a windows build"
           ]
 
 soptions :: ShakeOptions
 soptions = shakeOptions { shakeFiles = "_build"
-                        , shakeReport = [ "shakeReport" ]
+                        , shakeReport = ["shakeReport"]
                         , shakeProgress = progressSimple
                         }
 
 cxx14 :: Action BFMutator
-cxx14 = pure $ append compilerFlags [(Nothing, [ "-std=c++14" ])]
+cxx14 = pure $ append compilerFlags [(Nothing, ["-std=c++14"])]
 
 customInclude :: String -> String -> Action BFMutator
 customInclude envvar postfix = do
   storePath <- getEnv envvar
   let dir = fromMaybe "ERR" storePath
-  pure $ append systemIncludes [ dir </> postfix ]
+  pure $ append systemIncludes [dir </> postfix]
 
 parseData :: ByteString -> Maybe Project
 parseData = Yaml.decode
 
-get_cs :: Executable -> Action [ FilePath ]
+get_cs :: Executable -> Action [FilePath]
 get_cs entry = do
     let moc_names = map
           (\e -> ("_build/moc_" ++ (last $ splitOn "/" e)) -<.> "cpp")
