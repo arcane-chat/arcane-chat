@@ -30,7 +30,7 @@ in stdenv.mkDerivation rec {
   GSTREAMERMM_DEV = gst_all_1.gstreamermm.dev;
   GSTREAMERMM_OUT = gst_all_1.gstreamermm.out;
 
-  shakeArgs = [ "--timings" "--debug-build" ];
+  shakeArgs = [ "--timings" "--debugging" ];
 
   crossAttrs = {
     LIBSIGCXX_OUT = libsigcxx.crossDrv.out;

@@ -4,12 +4,16 @@
 module Main where
 
 import           Data.Aeson
-                 (FromJSON, Object, Value (..), decode, parseJSON, (.:))
+                 (FromJSON, Object, Value (..), decode, parseJSON)
+import qualified Data.Aeson                             as Aeson
+import qualified Data.Aeson.Types                       as Aeson
+
 import qualified Data.Yaml                              as Yaml
 
 import           Control.Applicative
 import           Control.Arrow
 import           Control.Monad                          (when)
+import           Data.Monoid
 
 import           Development.Shake
 import           Development.Shake.Command
@@ -20,40 +24,57 @@ import           Development.Shake.Language.C.PkgConfig
 import           Development.Shake.Language.C.ToolChain
 import           Development.Shake.Util
 
-import           Data.ByteString                        (ByteString, readFile)
-import           Data.Label                             (get, set)
-import           Data.List.Split                        (splitOn)
+import           Data.ByteString                        (ByteString)
+import qualified Data.ByteString                        as BS
 import           Data.Map.Strict                        (Map)
 import qualified Data.Map.Strict                        as Map
-import           Data.Maybe
-import           Data.Text                              (Text)
+
 import qualified Data.Text                              as Text
+
+import           Data.Label                             (get, set)
+import           Data.List.Split                        (splitOn)
+import           Data.Maybe
 import           Debug.Trace
-
 import           GHC.Generics
-
 import           System.Console.GetOpt
+
+(.:) :: FromJSON a => Object -> String -> Aeson.Parser a
+(.:) obj str = (Aeson..:) obj (Text.pack str)
+infixl 9 .:
+
+(.:?) :: FromJSON a => Object -> String -> Aeson.Parser (Maybe a)
+(.:?) obj str = (Aeson..:?) obj (Text.pack str)
+infixl 9 .:?
 
 data Project =
   MkProject
-  { executables :: Map String Executable
-  } deriving (Show)
+  { projectLibraries   :: Map String CTarget
+  , projectExecutables :: Map String CTarget
+  } deriving (Eq, Show, Read)
 
 instance FromJSON Project where
-  parseJSON (Object o) = do execs <- (o .: Text.pack "executables")
-                            MkProject <$> parseJSON execs
+  parseJSON (Object o) = MkProject
+                         <$> (fromMaybe mempty <$> o .:? "libraries")
+                         <*> (fromMaybe mempty <$> o .:? "executables")
   parseJSON _          = empty
 
-data Executable =
-  MkExecutable
-  { sources          :: [String]
-  , required_headers :: [String]
-  , headers          :: [String]
-  , pkg_config       :: [String]
-  , libs             :: [String]
-  } deriving (Generic, Show)
+data CTarget =
+  MkCTarget
+  { ctSources         :: [String]
+  , ctRequiredHeaders :: [String]
+  , ctHeaders         :: [String]
+  , ctPkgConfig       :: [String]
+  , ctLibs            :: [String]
+  } deriving (Eq, Show, Read, Generic)
 
-instance FromJSON Executable
+instance FromJSON CTarget where
+  parseJSON (Object o) = MkCTarget
+                         <$> (o .: "sources")
+                         <*> (o .: "required-headers")
+                         <*> (o .: "headers")
+                         <*> (o .: "pkg-config")
+                         <*> (o .: "libraries")
+  parseJSON _          = empty
 
 (|>) :: a -> (a -> b) -> b
 (|>) = flip ($)
@@ -68,11 +89,13 @@ whenBFM :: Bool -> Action BFMutator -> Action BFMutator
 whenBFM True  m = m
 whenBFM False _ = pure id
 
-data Flag = Debug | Windows deriving (Show, Eq)
+data Flag = FlagDebugging | FlagWindows deriving (Show, Eq)
 
-options :: [OptDescr (Either String Flag)]
-options = [ Option [] ["debug-build"] (NoArg $ Right Debug) "do a debug build"
-          , Option [] ["windows"] (NoArg $ Right Main.Windows) "do a windows build"
+options :: [ OptDescr (Either String Flag) ]
+options = [ Option [] ["debugging"] (NoArg $ Right FlagDebugging)
+            "build with debugging enabled"
+          , Option [] ["windows"] (NoArg $ Right FlagWindows)
+            "do a windows build"
           ]
 
 soptions :: ShakeOptions
@@ -93,22 +116,22 @@ customInclude envvar postfix = do
 parseData :: ByteString -> Maybe Project
 parseData = Yaml.decode
 
-get_cs :: Executable -> Action [FilePath]
+get_cs :: CTarget -> Action [FilePath]
 get_cs entry = do
-    let moc_names = map
-          (\e -> ("_build/moc_" ++ (last $ splitOn "/" e)) -<.> "cpp")
-          $ headers entry
-    need $ required_headers entry
-    pure $ (sources entry) ++ moc_names
+  let moc_names = (\e -> ("_build/moc_" ++ last (splitOn "/" e)) -<.> "cpp")
+                  <$> ctHeaders entry
+  need $ ctRequiredHeaders entry
+  pure $ ctSources entry ++ moc_names
 
 main :: IO ()
 main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
-  sampleData <- liftIO $ Data.ByteString.readFile "input.yaml"
+  sampleData <- liftIO $ BS.readFile "input.yaml"
   let Just parsed2 = parseData sampleData
   let inFlags x = x `elem` flags
 
   phony "test-decode" $ do
-    liftIO $ putStrLn $ show parsed2
+    liftIO $ print parsed2
+    pure ()
 
   let (_, nativeToolchain) = Development.Shake.Language.C.Host.defaultToolChain
 
@@ -119,15 +142,15 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
                              |> set compilerCommand cc
                              |> pure
 
-  let toolchain = if inFlags Main.Windows
+  let toolchain = if inFlags FlagWindows
                   then crossToolchain
                   else nativeToolchain
 
-  let exe = if inFlags Main.Windows then "exe" else ""
+  let exe = if inFlags FlagWindows then "exe" else ""
 
-  let debugOption = if inFlags Debug
+  let debugOption = if inFlags FlagDebugging
                     then []
-                    else [ pure $ append defines [("QT_NO_DEBUG", Nothing)] ]
+                    else [pure $ append defines [("QT_NO_DEBUG", Nothing)]]
 
   let loadPkgConfig = pkgConfig defaultOptions
 
@@ -166,7 +189,8 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
     let installExec name = copyFile'
                            ("_build" </> name <.> exe)
                            (dest </> "bin" </> name <.> exe)
-    executables parsed2
+    -- FIXME: add library install support here
+    projectExecutables parsed2
       |> Map.keys
       |> mapM_ installExec
     copyFile' "shakeReport" $ dest2 </> "shake/report.html"
@@ -190,7 +214,7 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
     need [ src ]
     cmd "moc " src "-o" out
 
-  let pkgConfigSet entry = loadPkgConfig <$> pkg_config entry
+  let pkgConfigSet entry = loadPkgConfig <$> ctPkgConfig entry
 
   let simple_prog name entry =
         executable toolchain ("_build" </> name <.> exe)
@@ -201,17 +225,22 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
              ]
            , pkgConfigSet entry
            -- , [ pure $ append compilerFlags [(Nothing, ["-gdwarf-2", "-gstrict-dwarf"])] ]
-           , [ pure $ append libraries $ libs entry
-             , whenBFM (inFlags Main.Windows) $ pure $ append libraries
+           , [ pure $ append libraries $ ctLibs entry
+             , whenBFM (inFlags FlagWindows) $ pure $ append libraries
                [ "orc-0.4", "ws2_32", "ole32", "iphlpapi", "dnsapi", "winmm" ]
              , pure $ append libraries [ "z", "pcre", "ffi", "pthread" ]
              ]
            ])
           (get_cs entry)
 
-  allTargets <- executables parsed2
+  -- FIXME: add library build support here
+  libTargets <- pure []
+
+  exeTargets <- projectExecutables parsed2
                 |> Map.mapWithKey simple_prog
                 |> Map.toList
                 |> mapM snd
+
+  let allTargets = libTargets <> exeTargets
 
   want $ if null targets then allTargets else targets
