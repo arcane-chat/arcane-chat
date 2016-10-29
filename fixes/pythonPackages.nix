@@ -100,8 +100,8 @@ in pp // rec {
     packageName = "gitlint";
     version     = "0.7.1";
     srcURL      = pypiURL packageName version;
-    srcSHA      = "0ybssbjbmx311w9jyix1ig9kkhn85n1yy0br1sa8ipp9ajgs7dcn";
-    propDeps    = [];
+    srcSHA      = "0b5whch634bz683s2p76l6wqxahpqkk355095b2m7v845wmky3dv";
+    propDeps    = with pp; [ ordereddict sh click_5 ];
     homepage    = "https://github.com/jorisroovers/gitlint";
     description = "A Git commit message linter";
     license     = with lib.licenses; [ mit.spdxId ];
