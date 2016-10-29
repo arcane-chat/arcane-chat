@@ -7,7 +7,7 @@ using namespace chat;
 using namespace db;
 
 CoreDb::CoreDb(QString path) {
-    db_ = new Db(path + "arcane-chat.sqlite");
+    db_ = new Db(path + "client.sqlite");
 
     db_->exec(QStringLiteral("CREATE TABLE IF NOT EXISTS channels (name, pubkey PRIMARY KEY, privkey)"));
     db_->exec(QStringLiteral("CREATE TABLE IF NOT EXISTS data (name PRIMARY KEY, value)"));

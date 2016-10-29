@@ -1,0 +1,142 @@
+
+* {
+    background: #f8f8f8;
+    font-size: 12px;
+    font-family: sans-serif;
+}
+
+QMenu {
+    background-color: white;
+    border-left: 1px solid #cccccc;
+    border-right: 1px solid #cccccc;
+}
+
+QMenu::item {
+    border-bottom: 1px solid #cccccc;
+    background-color: white;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+QMenu::item:selected {
+    background-color: #2470a0;
+}
+
+QMenu::item:checked, QMenu::item:unchecked {
+    padding-left: 20px;
+}
+
+QMenuBar {
+    spacing: 0px;
+    border-bottom: 1px solid #cccccc;
+}
+
+QMenuBar::item {
+    background: white;
+    border-right: 1px solid #cccccc;
+    margin-bottom: 1px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+QMenuBar::item:selected, QMenuBar::item:hover, QMenuBar::item:pressed {
+    color: #FFFFFF;
+    background: #2470a0;
+}
+
+QTreeView {
+    background: white;
+}
+
+QTreeView::item {
+    padding: 2px;
+}
+
+QTreeView::item:selected {
+}
+
+QTreeView::item:selected:active {
+}
+
+QTreeView::item:selected:!active {
+}
+
+QTreeView::branch:has-siblings:!adjoins-item {
+    /* border-image: url(res/img/vline.png) 0; */
+}
+
+QTextEdit {
+    background: white;
+}
+
+QLineEdit {
+    background: white;
+    border: 1px solid #cccccc;
+    padding: 2px;
+    margin: 0px;
+}
+
+QTabBar {
+    border: none;
+}
+
+QTabWidget::pane {
+    padding: -9px;
+}
+
+QTabBar::tab {
+    padding: 5px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-bottom: 4px;
+    margin-right: 8px;
+    border: 1px solid #cccccc;
+    border-top: none;
+}
+
+QTabBar::tab:selected {
+    margin-bottom: 0px;
+    background: #ffffff;
+}
+
+QTabBar::tab:!selected {
+    background: #eeeeee;
+}
+
+QDockWidget {
+    border: 1px solid #cccccc;
+    padding: 0px;
+    margin: 0px;
+}
+
+QMainWindow::separator {
+    width: 1px;
+    height: 1px;
+}
+
+QDockWidget::title {
+    background: white;
+    text-align: left;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-left: 44px;
+    margin-top: 10px;
+    padding-bottom: 2px;
+    margin-bottom: 0px;
+    border: 1px solid #cccccc;
+}
+
+QDockWidget::close-button, QDockWidget::float-button {
+    subcontrol-position: top left;
+    subcontrol-origin: padding;
+    left: 4px;
+    top: 4px;
+}
+
+QDockWidget::float-button {
+    left: 24px;
+}

@@ -28,7 +28,7 @@ void handler(int /* signum */) {
 }
 
 int main(int argc, char** argv) {
-    fputs("in main", stderr);
+    fputs("in main\n", stderr);
     QGst::init(&argc, &argv);
     Gio::init();
 
@@ -70,9 +70,11 @@ int main(int argc, char** argv) {
     int ret = 1;
 
     {
-        QDir::root().mkpath("/tmp/client");
+        assert(QDir::home().mkpath(".config/arcane-chat/"));
 
-        chat::Core core { "/tmp/client/" };
+        QString clientPath = QDir::homePath() + "/.config/arcane-chat/";
+
+        chat::Core core { clientPath };
 
         if(parser.isSet(sendFriendRequestOption)) {
             QByteArray hex;
