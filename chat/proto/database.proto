@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package arcane.database;
+
+message DBRequest {
+    enum DBRequestType {
+        DB_REQ_GET = 0;
+        DB_REQ_SET = 1;
+        DB_REQ_DELETE = 2;
+    }
+
+    DBRequestType type = 1;
+
+    string key = 2;
+    string value = 3;
+}
+
+message DBResponse {
+    enum DBResponseType {
+        DB_RESP_GET = 0;
+    }
+
+    DBResponseType type = 1;
+
+    string value = 2;
+}
