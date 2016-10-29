@@ -1,0 +1,13 @@
+diff --git a/src/gst-plugin/gstpocketsphinx.c b/src/gst-plugin/gstpocketsphinx.c
+index 2198e5f..3f9fb5e 100644
+--- a/src/gst-plugin/gstpocketsphinx.c
++++ b/src/gst-plugin/gstpocketsphinx.c
+@@ -172,7 +172,7 @@ static GstStaticPadTemplate src_factory =
+     GST_STATIC_PAD_TEMPLATE("src",
+                             GST_PAD_SRC,
+                             GST_PAD_ALWAYS,
+-                            GST_STATIC_CAPS("text/plain")
++                            GST_STATIC_CAPS("text/x-raw, format = (string) { utf8 }")
+ 	);
+ 
+ /*

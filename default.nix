@@ -161,6 +161,33 @@ rec {
       python2Packages  = self.python27Packages;
       python3Packages  = self.python34Packages;
       pythonPackages   = self.python27Packages;
+
+      sphinxbase = pkgs.sphinxbase.overrideDerivation (old: rec {
+        name = "sphinxbase-5prealpha";
+
+        src = pkgs.fetchurl {
+          url = "mirror://sourceforge/cmusphinx/${name}.tar.gz";
+          sha256 = "0vr4k8pv5a8nvq9yja7kl13b5lh0f9vha8fc8znqnm8bwmcxnazp";
+        };
+
+        nativeBuildInputs = (old.nativeBuildInputs
+                             ++ [ super.swig super.python27 ]);
+      });
+
+      pocketsphinx = pkgs.pocketsphinx.overrideDerivation (old: rec {
+        name = "pocketsphinx-5prealpha";
+
+        src = pkgs.fetchurl {
+          url = "mirror://sourceforge/cmusphinx/${name}.tar.gz";
+          sha256 = "1n9yazzdgvpqgnfzsbl96ch9cirayh74jmpjf7svs4i7grabanzg";
+        };
+
+        nativeBuildInputs = with self; ([ sphinxbase pkgconfig swig python27 ]
+                                        ++ gst_all_1.gstreamer.all
+                                        ++ gst_all_1.gst-plugins-base.all);
+
+        patches = [ ./fixes/pocketsphinx-fix-caps.patch ];
+      });
     };
 
     linuxPackageOverrides = self: super: rec {
