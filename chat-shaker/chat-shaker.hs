@@ -149,8 +149,8 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
   let exe = if inFlags FlagWindows then "exe" else ""
 
   let debugOption = if inFlags FlagDebugging
-                    then []
-                    else [pure $ append defines [("QT_NO_DEBUG", Nothing)]]
+                    then [ pure $ append compilerFlags [(Nothing, ["-g","-Og"])] ]
+                    else [ pure $ append defines [("QT_NO_DEBUG", Nothing)] ]
 
   let loadPkgConfig = pkgConfig defaultOptions
 

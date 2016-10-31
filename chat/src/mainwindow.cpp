@@ -54,11 +54,13 @@ MainWindow::MainWindow(chat::Core* core) : core_(core), ui(new Ui::MainWindow) {
 
     qss_timer_ = new QTimer(this);
     connect(qss_timer_, SIGNAL(timeout()), this, SLOT(on_qss_refresh()));
-    // // If uncommented, this will refresh the stylesheet twice every second:
+    // If uncommented, this will refresh the stylesheet twice every second:
     // qss_timer_->start(500);
 }
 
-MainWindow::~MainWindow() { delete qss_timer_; delete ui; }
+MainWindow::~MainWindow() {
+    delete ui;
+}
 
 void MainWindow::on_doubleclick(QModelIndex index) {
     Node* node = model->getNode(index);
