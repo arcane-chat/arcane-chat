@@ -191,10 +191,10 @@ rec {
                 $out/arcane-chat/platforms
           cd $out
           cp -v $out/arcane-chat/arcane-chat.exe $out/
-          zip -v -1 -r $out/deploy.zip ./arcane-chat
+          # zip -v -1 -r $out/deploy.zip ./arcane-chat
           echo > $out/nix-support/hydra-build-products
-          echo "file deploy $out/deploy.zip" \
-              >> $out/nix-support/hydra-build-products
+          # echo "file deploy $out/deploy.zip" \
+          #     >> $out/nix-support/hydra-build-products
           echo "file exec $out/arcane-chat.exe" \
               >> $out/nix-support/hydra-build-products
           rm -rvf $out/arcane-chat/
