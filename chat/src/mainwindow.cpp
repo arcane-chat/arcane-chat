@@ -3,6 +3,7 @@
 #include "infowidget.hpp"
 #include "channelmodel.hpp"
 #include "channel.hpp"
+#include "config.hpp"
 
 #include "ui_mainwindow.h"
 
@@ -15,7 +16,7 @@
 using namespace gui;
 
 void update_stylesheet(MainWindow* mw) {
-    std::ifstream styleSheetFile("./res/style.qss");
+    std::ifstream styleSheetFile("./res/style.css");
     std::ostringstream ss;
     ss << styleSheetFile.rdbuf();
     mw->setStyleSheet(QString::fromStdString(ss.str()));
@@ -52,10 +53,12 @@ MainWindow::MainWindow(chat::Core* core) : core_(core), ui(new Ui::MainWindow) {
 
     update_stylesheet(this);
 
-    qss_timer_ = new QTimer(this);
-    connect(qss_timer_, SIGNAL(timeout()), this, SLOT(on_qss_refresh()));
-    // If uncommented, this will refresh the stylesheet twice every second:
-    // qss_timer_->start(500);
+    css_timer_ = new QTimer(this);
+    connect(css_timer_, SIGNAL(timeout()), this, SLOT(on_css_refresh()));
+
+#if DEBUG_CSS
+    css_timer_->start(250);
+#endif
 }
 
 MainWindow::~MainWindow() {
@@ -83,6 +86,6 @@ void MainWindow::on_actionCreateChannel_triggered() {
     core_->add_owned_channel(chan);
 }
 
-void MainWindow::on_qss_refresh() {
+void MainWindow::on_css_refresh() {
     update_stylesheet(this);
 }

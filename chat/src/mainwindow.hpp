@@ -30,11 +30,11 @@ public Q_SLOTS:
     void on_actionCreateChannel_triggered();
 
 private Q_SLOTS:
-    void on_qss_refresh();
+    void on_css_refresh();
 
 private:
     chat::Core* core_;
-    QTimer* qss_timer_;
+    QTimer* css_timer_;
     Ui::MainWindow* ui;
     ChatWidget* chatWidget;
     InfoWidget* infoWidget;

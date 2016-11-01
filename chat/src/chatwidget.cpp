@@ -2,6 +2,7 @@
 #include "chatwidget.hpp"
 #include "channelmodel.hpp"
 #include "core.hpp"
+#include "config.hpp"
 
 #include <QDebug>
 #include <QThread>
@@ -12,6 +13,8 @@
 #include <Qt5GStreamer/QGlib/Error>
 #include <Qt5GStreamer/QGlib/Connect>
 #include <Qt5GStreamer/QGst/Bus>
+
+#include <sstream>
 
 using namespace gui;
 
@@ -64,16 +67,24 @@ void ChatWidget::return_pressed() {
     auto msg = ui->lineEdit->text();
     qDebug() << msg;
     ChatSection* cs = reinterpret_cast<ChatSection*>(ui->tabWidget->currentWidget());
-    if (cs) {
+    if (CSS_DEBUG && (msg == "/tab")) {
+        ChatSection* cs = new ChatSection(nullptr);
+        std::ostringstream ss;
+        ss << "tab" << rand();
+        ui->tabWidget->addTab(cs, QString::fromStdString(ss.str()));
+        ui->tabWidget->setCurrentWidget(cs);
+    } else if (cs) {
         cs->text->append(QStringLiteral("&lt;%1&gt; %2").arg(core->username).arg(msg));
-        core->send_message(cs->f->friend_number, false, msg);
-        if (msg == "!call") {
-            qDebug() << "!call was triggered";
-            core->open_call_control(cs->f);
+        if (cs->f) {
+            core->send_message(cs->f->friend_number, false, msg);
+            if (msg == "/call") {
+                qDebug() << "/call was triggered";
+                core->open_call_control(cs->f);
+            }
         }
     } else {
         QStringList words = msg.split(" ");
-        if (msg == "!foo") {
+        if (msg == "/foo") {
             video_test();
         } else if (words[0] == "/add") {
             QByteArray one = qPrintable(words[1]);
