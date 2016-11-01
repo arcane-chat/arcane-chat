@@ -170,6 +170,9 @@ rec {
     };
 
     linuxPackageOverrides = self: super: rec {
+      # # FIXME: add a deploy for linux here
+      # deploy-linux = self.runCommand "arcane-chat-deploy-linux" {} ''
+      # '';
     };
 
     windowsPackageOverrides = self: super: let
@@ -178,6 +181,26 @@ rec {
         crossDrv = overrideDerivation drv.crossDrv fun;
       };
     in {
+      deploy = self.runCommand "arcane-chat-deploy-windows" {
+        buildInputs = [ self.zip ];
+      } ''
+          mkdir -pv $out/{nix-support,arcane-chat/platforms}
+          cp -v ${self.arcane-chat.crossDrv}/bin/* \
+                $out/arcane-chat/
+          cp -v ${self.qt56.qtbase.crossDrv}/plugins/platforms/* \
+                $out/arcane-chat/platforms
+          cd $out
+          cp -v $out/arcane-chat/arcane-chat.exe $out/
+          zip -v -1 -r $out/deploy.zip ./arcane-chat
+          echo > $out/nix-support/hydra-build-products
+          echo "file deploy $out/deploy.zip" \
+              >> $out/nix-support/hydra-build-products
+          echo "file exec $out/arcane-chat.exe" \
+              >> $out/nix-support/hydra-build-products
+          rm -rvf $out/arcane-chat/
+          du -h -d 0 $out
+      '';
+
       chat-shaker = linux.super.chat-shaker;
 
       # cairo = overrideCrossDerivation (pkgs.cairo.override {
