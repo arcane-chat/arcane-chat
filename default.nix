@@ -178,350 +178,320 @@ rec {
         crossDrv = overrideDerivation drv.crossDrv fun;
       };
     in {
-        chat-shaker = linux.super.chat-shaker;
+      chat-shaker = linux.super.chat-shaker;
 
-        # cairo = overrideCrossDerivation (pkgs.cairo.override {
-        #   xcbSupport = false;
-        #   glSupport = false;
-        #   xorg = {
-        #     libXext = null;
-        #     libXrender = null;
-        #     pixman = null;
-        #   };
-        # }) (old: {
-        #   patches =
-        # });
+      # cairo = overrideCrossDerivation (pkgs.cairo.override {
+      #   xcbSupport = false;
+      #   glSupport = false;
+      #   xorg = {
+      #     libXext = null;
+      #     libXrender = null;
+      #     pixman = null;
+      #   };
+      # }) (old: {
+      #   patches =
+      # });
 
-        libtasn1 = super.libtasn1.override {
-          perl = super.forceNativeDrv super.perl;
-          texinfo = super.forceNativeDrv super.texinfo;
-        };
-
-        # the ugly fixes
-        mesaSupported = false;
-        x11Support = false;
-        cupsSupport = false;
-        xcbSupport = false;
-        glSupport = false;
-
-        ruby = null;
-        libcdio = null;
-        lzip = null;
-        systemd = null;
-        help2man = super.forceNativeDrv super.help2man;
-        intltool = super.forceNativeDrv super.intltool;
+      libtasn1 = super.libtasn1.override {
         perl = super.forceNativeDrv super.perl;
-        utillinuxMinimal = super.forceNativeDrv super.utillinuxMinimal;
-        mariadb = null;
-        taglib = null;
-        libavc1394 = null;
-        libiec61883 = null;
-        xorg = super.lib.attrsets.mapAttrs (k: v: null) super.xorg // {
-          libXcursor = super.buildEnv { name = "libXcursor-dummy"; paths = []; };
-          libX11 = super.buildEnv { name = "libX11-dummy"; paths = []; };
-          lndir = super.xorg.lndir;
-        };
-        xlibs = super.lib.attrsets.mapAttrs (k: v: null) super.xlibs // {
-          inherit (super.xorg) libXcursor libX11;
-        };
-        libXext = null;
-        libxcb = null;
-        libxkbcommon = null;
-        python = super.forceNativeDrv super.python;
-        cups = null;
-        libusb1 = null;
-        ghostscript = null;
-        coreutils = super.forceNativeDrv super.coreutils;
-        libpulseaudio = null;
-        cmake = super.forceNativeDrv super.cmake;
-        v4l_utils = null;
-        libv4l = null;
-        libvdpau = null;
-        postgresql = null;
-        vala = super.forceNativeDrv super.vala;
-        yasm = super.forceNativeDrv super.yasm;
-        ncurses = super.forceNativeDrv super.ncurses;
-        guileCross = super.guile.crossDrv;
-        guile = super.forceNativeDrv super.guile;
-        bison = super.forceNativeDrv super.bison;
-        bison2 = super.forceNativeDrv super.bison2;
-        bison3 = super.forceNativeDrv super.bison3;
-        flex = super.forceNativeDrv super.flex;
-        flex_2_5_35 = super.forceNativeDrv super.flex_2_5_35;
-        yacc = super.forceNativeDrv super.yacc;
-        autogen = super.forceNativeDrv super.autogen;
-        pkgconfig = super.forceNativeDrv super.pkgconfig;
-        m4 = super.forceNativeDrv super.m4;
-        gobjectIntrospection = super.forceNativeDrv super.gobjectIntrospection;
-        libgnome_keyring = null;
-        libgnome_keyring3 = null;
-        speex = null;
-        pango = null;
-        cairo = null;
-        mesa = null;
-        freetype = null;
-        fontconfig = null;
-        icu = null;
-        harfbuzz = null;
-        harfbuzz-icu = null;
-        libass = null;
-        libvpx = null;
-        a52dec = null;
-        libcaca = null;
-        aalib = null;
-        libshout = null;
-        openjpeg = null;
-        libdvdread = null;
-        librsvg = null;
-        libmpeg2 = null;
-        mjpegtools = null;
-        mjpegtoolsFull = null;
-        libwebp = null;
-        wildmidi = null;
-        libedit = null;
-        libdv = null;
-        libsoup = null;
-        gnutls = null;
-        alsaLib = null;
-        wayland = null;
-        include-what-you-use = null;
-        rtags = null;
-
-        gettext = overrideCrossDerivation super.gettext (old: {
-          buildInputs = [ self.libiconv.crossDrv ];
-        });
-
-        x264 = overrideCrossDerivation super.x264 (old: {
-          configureFlags = old.configureFlags ++ [
-            "--cross-prefix=x86_64-w64-mingw32-"
-          ];
-        });
-
-        giflib = super.giflib // {
-          crossDrv = (super.giflib.override { xmlto = null; }).crossDrv;
-        };
-
-        #qt56 = pkgs.qt56 // {
-        #  qtbase = overrideCrossDerivation pkgs.qt56.qtbase (old: {
-        #    configureFlags = old.configureFlags +
-        #      ''
-        #        -xplatform win32-g++
-        #        -device-option CROSS_COMPILE=x86_64-w64-mingw32-
-        #        -v
-        #        -continue
-        #        -qt-xcb
-        #      '';
-        #    dontSetConfigureCross=true;
-        #  });
-        #};
-
-        qt56 =
-          let imported = import ./fixes/5.6 { pkgs = self; };
-          in self.recurseIntoAttrs (imported.override (super: self.qt5LibsFun));
-
-        libmsgpack = self.callPackage ./fixes/libmsgpack.nix {};
-
-        nlohmann_json = self.callPackage ./fixes/nlohmann_json.nix {};
-
-        protobuf3_0 = super.callPackage ./fixes/protobuf3.nix {};
-
-        # libvpx = pkgs.libvpx.override {
-        #   stdenv = pkgs.stdenv // { isCygwin = true; };
-        #   unitTestsSupport = true;
-        #   webmIOSupport = true;
-        #   libyuvSupport = true;
-        # };
-
-        faad2 = overrideCrossDerivation super.faad2 (old: {
-          patches = [ ./fixes/faad2-frontend-off_t.patch ];
-        });
-
-        lame = overrideCrossDerivation super.lame (old: {
-          patches = old.patches ++ [ ./fixes/lame-dbl-epsilon.patch ];
-        });
-
-        libtheora = overrideCrossDerivation super.libtheora (old: {
-          configureFlags = [
-            "--disable-examples"
-            "--disable-shared"
-            "--enable-static"
-          ];
-        });
-
-        nettle = overrideCrossDerivation super.nettle (old: {
-          nativeBuildInputs = old.nativeBuildInputs ++ [ self.m4 ];
-        });
-
-        gdk_pixbuf = overrideCrossDerivation super.gdk_pixbuf (old: {
-          configureFlags = [
-            "--disable-shared"
-            "--enable-static"
-            "--without-libjasper"
-            "--without-x11"
-          ];
-
-          propagatedBuildInputs = [
-            self.pkgconfig
-            self.glib.crossDrv.dev
-            self.libtiff.crossDrv.dev
-            self.libjpeg.crossDrv.dev
-            self.libpng.crossDrv.dev
-          ];
-        });
-
-        libgsf = overrideCrossDerivation super.libgsf (old: {
-          configureFlags = [
-            "--disable-shared"
-            "--enable-static"
-            "--disable-introspection"
-          ];
-
-          patches = [ ./fixes/libgsf-dllmain.patch ];
-        });
-
-        dbus = overrideCrossDerivation super.dbus (old: {
-          configureFlags = old.configureFlags ++ [
-            "--disable-systemd"
-            "--disable-shared"
-            "--enable-static"
-          ];
-        });
-
-        dbus_libs = self.dbus;
-        dbus_tools = self.dbus;
-
-        # freetype = overrideCrossDerivation pkgs.freetype (old: {
-        #   configureFlags = [
-        #     "--disable-shared"
-        #     "--enable-static"
-        #   ];
-        #
-        #   postInstall = ''
-        #       mkdir -p $dev/bin/
-        #       mv -v $out/bin/freetype-config $dev/bin/
-        #       rmdir --ignore-fail-on-non-empty $out/bin
-        #   '';
-        # });
-
-        # fontconfig = overrideCrossDerivation pkgs.fontconfig (old: {
-        #   configureFlags = [
-        #     "--disable-shared"
-        #     "--enable-static"
-        #   ];
-        # });
-
-
-        gst_all_1 = super.gst_all_1.override { fluidsynth = null; };
-
-        glib =
-          let
-              glibOverride = super.glib.override {
-                libintlOrEmpty = [ self.gettext ];
-              };
-              glibOverrideCross = super.glib.override {
-                libintlOrEmpty = [ self.gettext.crossDrv ];
-              };
-              glibFixed = overrideDerivation glibOverride (old: {
-                configureFlags = old.configureFlags ++ [ "--with-libiconv=gnu" ];
-              });
-          in glibFixed // {
-            crossDrv = overrideDerivation glibOverrideCross.crossDrv (old: {
-              propagatedBuildInputs = old.propagatedBuildInputs ++ [
-                self.windows.mingw_w64_pthreads.crossDrv
-              ];
-
-              dontDisableStatic = true;
-
-              configureFlags = old.configureFlags ++ [
-                "--enable-static"
-                "--disable-shared"
-                "--disable-libelf"
-                "--with-threads=posix"
-                "--with-libiconv=gnu"
-                "--disable-installed-tests"
-              ];
-
-              # postBuild = ''
-              #     printf "\n\n\n\n\n\n"
-              #     echo "\e[31mReconfiguring with shared library support\e[0m"
-              #     export configureFlags="$configureFlags --enable-shared"
-              #     configurePhase
-              #     printf "\n\n\n\n\n\n"
-              #     echo "\e[31mRebuilding with shared library support\e[0m"
-              #     buildPhase
-              # '';
-              NIX_CROSS_CFLAGS_COMPILE = [ "-gdwarf-2" "-gstrict-dwarf" ];
-              dontCrossStrip = true;
-
-              patches = old.patches ++ [
-                ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
-                ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
-                ./fixes/glib/0027-no_sys_if_nametoindex.patch
-                ./fixes/glib/0028-inode_directory.patch
-                ./fixes/glib-debug.patch
-              ];
-            });
-          };
-
-        zeromq4 = let zmq4 = (super.zeromq4.override { libuuid = null; });
-                  in overrideCrossDerivation zmq4 (old: {
-                       patches = [
-                         ./fixes/zeromq/includes-consistent.patch
-                         ./fixes/zeromq/winxp-compatibility.patch
-                       ];
-                     });
-
-        glibmm = overrideCrossDerivation super.glibmm (old: {
-          configureFlags = [
-            "--enable-static"
-            "--disable-shared"
-            "--disable-documentation"
-          ];
-
-          nativeBuildInputs = old.nativeBuildInputs ++ [ self.glib.dev ];
-
-          propagatedBuildInputs = old.propagatedBuildInputs ++ [
-            self.windows.mingw-std-threads
-            self.windows.mingw_w64_pthreads.crossDrv
-          ];
-        });
+        texinfo = super.forceNativeDrv super.texinfo;
       };
 
+      # the ugly fixes
+      mesaSupported = false;
+      x11Support = false;
+      cupsSupport = false;
+      xcbSupport = false;
+      glSupport = false;
+
+      ruby = null;
+      libcdio = null;
+      lzip = null;
+      systemd = null;
+      help2man = super.forceNativeDrv super.help2man;
+      intltool = super.forceNativeDrv super.intltool;
+      perl = super.forceNativeDrv super.perl;
+      utillinuxMinimal = super.forceNativeDrv super.utillinuxMinimal;
+      mariadb = null;
+      taglib = null;
+      libavc1394 = null;
+      libiec61883 = null;
+      xorg = super.lib.attrsets.mapAttrs (k: v: null) super.xorg // {
+        libXcursor = super.buildEnv { name = "libXcursor-dummy"; paths = []; };
+        libX11 = super.buildEnv { name = "libX11-dummy"; paths = []; };
+        lndir = super.xorg.lndir;
+      };
+      xlibs = super.lib.attrsets.mapAttrs (k: v: null) super.xlibs // {
+        inherit (super.xorg) libXcursor libX11;
+      };
+      libXext = null;
+      libxcb = null;
+      libxkbcommon = null;
+      python = super.forceNativeDrv super.python;
+      cups = null;
+      libusb1 = null;
+      ghostscript = null;
+      coreutils = super.forceNativeDrv super.coreutils;
+      libpulseaudio = null;
+      cmake = super.forceNativeDrv super.cmake;
+      v4l_utils = null;
+      libv4l = null;
+      libvdpau = null;
+      postgresql = null;
+      vala = super.forceNativeDrv super.vala;
+      yasm = super.forceNativeDrv super.yasm;
+      ncurses = super.forceNativeDrv super.ncurses;
+      guileCross = super.guile.crossDrv;
+      guile = super.forceNativeDrv super.guile;
+      bison = super.forceNativeDrv super.bison;
+      bison2 = super.forceNativeDrv super.bison2;
+      bison3 = super.forceNativeDrv super.bison3;
+      flex = super.forceNativeDrv super.flex;
+      flex_2_5_35 = super.forceNativeDrv super.flex_2_5_35;
+      yacc = super.forceNativeDrv super.yacc;
+      autogen = super.forceNativeDrv super.autogen;
+      pkgconfig = super.forceNativeDrv super.pkgconfig;
+      m4 = super.forceNativeDrv super.m4;
+      gobjectIntrospection = super.forceNativeDrv super.gobjectIntrospection;
+      libgnome_keyring = null;
+      libgnome_keyring3 = null;
+      speex = null;
+      pango = null;
+      cairo = null;
+      mesa = null;
+      freetype = null;
+      fontconfig = null;
+      icu = null;
+      harfbuzz = null;
+      harfbuzz-icu = null;
+      libass = null;
+      libvpx = null;
+      a52dec = null;
+      libcaca = null;
+      aalib = null;
+      libshout = null;
+      openjpeg = null;
+      libdvdread = null;
+      librsvg = null;
+      libmpeg2 = null;
+      mjpegtools = null;
+      mjpegtoolsFull = null;
+      libwebp = null;
+      wildmidi = null;
+      libedit = null;
+      libdv = null;
+      libsoup = null;
+      gnutls = null;
+      alsaLib = null;
+      wayland = null;
+      include-what-you-use = null;
+      rtags = null;
+
+      gettext = overrideCrossDerivation super.gettext (old: {
+        buildInputs = [ self.libiconv.crossDrv ];
+      });
+
+      x264 = overrideCrossDerivation super.x264 (old: {
+        configureFlags = old.configureFlags ++ [
+          "--cross-prefix=x86_64-w64-mingw32-"
+        ];
+      });
+
+      giflib = super.giflib // {
+        crossDrv = (super.giflib.override { xmlto = null; }).crossDrv;
+      };
+
+      qt56 = (
+        let imported = import ./fixes/5.6 { pkgs = self; };
+        in self.recurseIntoAttrs (imported.override (super: self.qt5LibsFun)));
+
+      libmsgpack = self.callPackage ./fixes/libmsgpack.nix {};
+
+      nlohmann_json = self.callPackage ./fixes/nlohmann_json.nix {};
+
+      protobuf3_0 = super.callPackage ./fixes/protobuf3.nix {};
+
+      faad2 = overrideCrossDerivation super.faad2 (old: {
+        patches = [ ./fixes/faad2-frontend-off_t.patch ];
+      });
+
+      lame = overrideCrossDerivation super.lame (old: {
+        patches = old.patches ++ [ ./fixes/lame-dbl-epsilon.patch ];
+      });
+
+      libtheora = overrideCrossDerivation super.libtheora (old: {
+        configureFlags = [
+          "--disable-examples"
+          "--disable-shared"
+          "--enable-static"
+        ];
+      });
+
+      nettle = overrideCrossDerivation super.nettle (old: {
+        nativeBuildInputs = old.nativeBuildInputs ++ [ self.m4 ];
+      });
+
+      gdk_pixbuf = overrideCrossDerivation super.gdk_pixbuf (old: {
+        configureFlags = [
+          "--disable-shared"
+          "--enable-static"
+          "--without-libjasper"
+          "--without-x11"
+        ];
+
+        propagatedBuildInputs = [
+          self.pkgconfig
+          self.glib.crossDrv.dev
+          self.libtiff.crossDrv.dev
+          self.libjpeg.crossDrv.dev
+          self.libpng.crossDrv.dev
+        ];
+      });
+
+      libgsf = overrideCrossDerivation super.libgsf (old: {
+        configureFlags = [
+          "--disable-shared"
+          "--enable-static"
+          "--disable-introspection"
+        ];
+
+        patches = [ ./fixes/libgsf-dllmain.patch ];
+      });
+
+      dbus = overrideCrossDerivation super.dbus (old: {
+        configureFlags = old.configureFlags ++ [
+          "--disable-systemd"
+          "--disable-shared"
+          "--enable-static"
+        ];
+      });
+
+      dbus_libs = self.dbus;
+      dbus_tools = self.dbus;
+
+      # freetype = overrideCrossDerivation pkgs.freetype (old: {
+      #   configureFlags = [
+      #     "--disable-shared"
+      #     "--enable-static"
+      #   ];
+      #
+      #   postInstall = ''
+      #       mkdir -p $dev/bin/
+      #       mv -v $out/bin/freetype-config $dev/bin/
+      #       rmdir --ignore-fail-on-non-empty $out/bin
+      #   '';
+      # });
+
+      # fontconfig = overrideCrossDerivation pkgs.fontconfig (old: {
+      #   configureFlags = [
+      #     "--disable-shared"
+      #     "--enable-static"
+      #   ];
+      # });
+
+
+      gst_all_1 = super.gst_all_1.override { fluidsynth = null; };
+
+      glib = (
+        let
+          glibOverride = super.glib.override {
+            libintlOrEmpty = [ self.gettext ];
+          };
+          glibOverrideCross = super.glib.override {
+            libintlOrEmpty = [ self.gettext.crossDrv ];
+          };
+          glibFixed = overrideDerivation glibOverride (old: {
+            configureFlags = old.configureFlags ++ [ "--with-libiconv=gnu" ];
+          });
+        in glibFixed // {
+          crossDrv = overrideDerivation glibOverrideCross.crossDrv (old: {
+            propagatedBuildInputs = old.propagatedBuildInputs ++ [
+              self.windows.mingw_w64_pthreads.crossDrv
+            ];
+
+            dontDisableStatic = true;
+
+            configureFlags = old.configureFlags ++ [
+              "--enable-static"
+              "--disable-shared"
+              "--disable-libelf"
+              "--with-threads=posix"
+              "--with-libiconv=gnu"
+              "--disable-installed-tests"
+            ];
+
+            NIX_CROSS_CFLAGS_COMPILE = [ "-gdwarf-2" "-gstrict-dwarf" ];
+            dontCrossStrip = true;
+
+            patches = old.patches ++ [
+              ./fixes/glib/0001-Use-CreateFile-on-Win32-to-make-sure-g_unlink-always.patch
+              ./fixes/glib/0004-glib-prefer-constructors-over-DllMain.patch
+              ./fixes/glib/0027-no_sys_if_nametoindex.patch
+              ./fixes/glib/0028-inode_directory.patch
+              ./fixes/glib-debug.patch
+            ];
+          });
+        });
+
+      zeromq4 = (
+        let
+          zmq4 = (super.zeromq4.override { libuuid = null; });
+        in overrideCrossDerivation zmq4 (old: {
+          patches = [
+            ./fixes/zeromq/includes-consistent.patch
+            ./fixes/zeromq/winxp-compatibility.patch
+          ];
+        }));
+
+      glibmm = overrideCrossDerivation super.glibmm (old: {
+        configureFlags = [
+          "--enable-static"
+          "--disable-shared"
+          "--disable-documentation"
+        ];
+
+        nativeBuildInputs = old.nativeBuildInputs ++ [ self.glib.dev ];
+
+        propagatedBuildInputs = old.propagatedBuildInputs ++ [
+          self.windows.mingw-std-threads
+          self.windows.mingw_w64_pthreads.crossDrv
+        ];
+      });
+    };
+
     makeConfig = localOverrides: {
-      packageOverrides = pkgs: let
-        common = commonPackageOverrides (pkgs // common // local) pkgs;
-        local = localOverrides (pkgs // common);
-        in common // local;
+      packageOverrides = pkgs: (
+        let
+          common = commonPackageOverrides (pkgs // common // local) pkgs;
+          local = localOverrides (pkgs // common);
+        in common // local);
     };
 
     applyOverrides = pkgs: localOverrides: pkgs.lib.fix'
-      (pkgs.lib.extends (utils.mergeOverrides commonPackageOverrides localOverrides) pkgs.__unfix__);
-      #(pkgs.lib.extends localOverrides
-      #  (pkgs.lib.extends commonPackageOverrides pkgs.__unfix__));
+    (pkgs.lib.extends (utils.mergeOverrides commonPackageOverrides localOverrides) pkgs.__unfix__);
+    #(pkgs.lib.extends localOverrides
+    #  (pkgs.lib.extends commonPackageOverrides pkgs.__unfix__));
   };
 
   utils = {
     mergeOverrides = a: b: self: super:
-      let
-        aResult = (a self super);
-        bResult = (b self (super // aResult));
-      in aResult // bResult;
+    let
+      aResult = (a self super);
+      bResult = (b self (super // aResult));
+    in aResult // bResult;
   };
 
-  inherit (root) makeConfig
-                 commonPackageOverrides
-                 linuxPackageOverrides
-                 windowsPackageOverrides;
+  inherit (root) makeConfig;
+  inherit (root) commonPackageOverrides;
+  inherit (root) linuxPackageOverrides;
+  inherit (root) windowsPackageOverrides;
 
-  linuxPkgs = root.origPkgs.overridePackages
-    (utils.mergeOverrides commonPackageOverrides linuxPackageOverrides);
+  linuxPkgs = (root.origPkgs.overridePackages
+    (utils.mergeOverrides commonPackageOverrides linuxPackageOverrides));
   linuxCallPackage = linuxPkgs.qt56.newScope linux;
-  linux = rec {
-    # Boilerplate
-    super = linuxPkgs;
-  };
+  linux.super = linuxPkgs;
 
-  windowsPkgs = root.applyOverrides
+  windowsPkgs = (root.applyOverrides
     (import nixpkgs.outPath {
       crossSystem = {
         config         = "x86_64-w64-mingw32";
@@ -532,14 +502,11 @@ rec {
       };
       config.packageOverrides = root.oldOverrides;
     })
-    windowsPackageOverrides;
+    windowsPackageOverrides);
   windowsCallPackage = windowsPkgs.qt56.newScope windows;
   windows.super = windowsPkgs;
 
   darwinPkgs = import nixpkgs.outPath { system = "x86_64-darwin"; };
   darwinCallPackage = darwinPkgs.newScope darwin;
-  darwin = rec {
-    # Boilerplate
-    super = darwinPkgs;
-  };
+  darwin.super = darwinPkgs;
 }
