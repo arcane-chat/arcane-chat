@@ -456,14 +456,7 @@ rec {
           });
         });
 
-      zeromq4 = (
-        let
-          zmq4 = (super.zeromq4.override { libuuid = null; });
-        in overrideCrossDerivation zmq4 (old: {
-          patches = [
-            ./fixes/zeromq/winxp-compatibility.patch
-          ];
-        }));
+      zeromq4 = super.zeromq4.override { libuuid = null; };
 
       glibmm = overrideCrossDerivation super.glibmm (old: {
         configureFlags = [
