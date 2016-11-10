@@ -461,7 +461,6 @@ rec {
           zmq4 = (super.zeromq4.override { libuuid = null; });
         in overrideCrossDerivation zmq4 (old: {
           patches = [
-            ./fixes/zeromq/includes-consistent.patch
             ./fixes/zeromq/winxp-compatibility.patch
           ];
         }));
