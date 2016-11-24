@@ -203,6 +203,7 @@ rec {
 
       chat-shaker = linux.super.chat-shaker;
 
+
       # cairo = overrideCrossDerivation (pkgs.cairo.override {
       #   xcbSupport = false;
       #   glSupport = false;
@@ -323,6 +324,8 @@ rec {
       giflib = super.giflib // {
         crossDrv = (super.giflib.override { xmlto = null; }).crossDrv;
       };
+
+      pythonSupport = false; # for libxslt
 
       qt56 = (
         let imported = import ./fixes/5.6 { pkgs = self; };
