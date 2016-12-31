@@ -1,11 +1,12 @@
 { stdenv, chat-shaker, pkgconfig, qtbase, qtscript, libtoxcore-dev
 , libsodium, sqlite, openssl, glib, glibmm, gst_all_1, libsigcxx
 , protobuf3_0, zeromq4, cppzmq, haskellPackages
-, withGHC ? false
+, withGHC ? false, fetchpsc
 } @ args:
 
-let paths = p: with p; [ shake shake-language-c aeson yaml ];
-    ghc = haskellPackages.ghcWithHoogle paths;
+let
+  paths = p: with p; [ shake shake-language-c aeson yaml ];
+  ghc = haskellPackages.ghcWithHoogle paths;
 in stdenv.mkDerivation rec {
   name = "arcane-chat-0.0.1";
   src = ./.;
@@ -13,7 +14,7 @@ in stdenv.mkDerivation rec {
   outputs = [ "out" "report" ];
 
   nativeBuildInputs = [
-    chat-shaker pkgconfig protobuf3_0
+    chat-shaker pkgconfig protobuf3_0 haskellPackages.purescript-native
   ] ++ stdenv.lib.optional withGHC ghc;
 
   buildInputs = with gst_all_1; [
@@ -24,6 +25,7 @@ in stdenv.mkDerivation rec {
     zeromq4 cppzmq protobuf3_0 libtoxcore-dev libsodium sqlite
   ];
 
+  FOO = fetchpsc { pscJSON = ./psc-package.json; sha256 = "0bd597f1qfk27cnqp3h23vf67ympq7j5psnk7nljwxdwh3i0v54f"; };
   LIBSIGCXX_OUT = libsigcxx.out;
   GLIBMM_OUT = glibmm.out;
   GLIBMM_DEV = glibmm.dev;
@@ -66,10 +68,14 @@ in stdenv.mkDerivation rec {
 
   buildPhase = ''
     mkdir $out
-    chat-shaker ''${enableParallelBuilding:+-j''${NIX_BUILD_CORES}} $shakeArgs
+    function do_abort() {
+      ls -ltrh _build/psc/PureScript/
+      exit 1
+    }
+    chat-shaker ''${enableParallelBuilding:+-j''${NIX_BUILD_CORES}} $shakeArgs || do_abort
   '';
 
-  enableParallelBuilding = true;
+  enableParallelBuilding = false;
 
   installPhase = ''
     runHook preInstall

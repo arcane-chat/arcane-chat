@@ -63,6 +63,11 @@ rec {
       chat-shaker = self.callPackage ./chat-shaker {};
       arcane-chat = self.qt56.callPackage ./chat {};
 
+      haskellPackages = self.callPackage ./fixes/haskellPackages {
+        pkgs = self; inherit (super) haskellPackages;
+      };
+
+      fetchpsc = self.callPackage ./fixes/fetchpsc.nix {};
       libtoxcore-dev = self.callPackage ./fixes/libtoxcore/new-api {};
 
       protoc-gen-doc = self.qt56.callPackage ./fixes/protoc-gen-doc {};
