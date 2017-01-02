@@ -1,7 +1,8 @@
 { stdenv, chat-shaker, pkgconfig, qtbase, qtscript, libtoxcore-dev
 , libsodium, sqlite, openssl, glib, glibmm, gst_all_1, libsigcxx
-, protobuf3_0, zeromq4, cppzmq, haskellPackages
-, withGHC ? false, fetchpsc
+, protobuf3_0, zeromq4, cppzmq, haskellPackages, nlohmann_json
+, fetchpsc
+, withGHC ? false
 } @ args:
 
 let
@@ -23,6 +24,7 @@ in stdenv.mkDerivation rec {
     gstreamer gstreamermm qt-gstreamer
     gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugins-bad
     zeromq4 cppzmq protobuf3_0 libtoxcore-dev libsodium sqlite
+    haskellPackages.purescript-native nlohmann_json
   ];
 
   FOO = fetchpsc { pscJSON = ./psc-package.json; sha256 = "0bd597f1qfk27cnqp3h23vf67ympq7j5psnk7nljwxdwh3i0v54f"; };
