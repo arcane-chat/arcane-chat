@@ -14,11 +14,11 @@
 }:
 mkDerivation {
   pname = "purescript";
-  version = "0.10.2";
+  version = "0.10.3";
   src = fetchgit {
     url = "https://github.com/andyarvanitis/purescript-native.git";
-    sha256 = "0vzi3yipy7h2y60lrncwyliqfa9mz6f247i3s8qp375w8h2i5kmm";
-    rev = "fcd215896a53be81ee8cb9ecfea1649652ae1101";
+    sha256 = "1hzfm44qaw856f6fg73ggm4xpv902njimbdhqjap2zsr54ghj5cy";
+    rev = "da472aa444c397ddc91402e0c0fbf58404da542b";
   };
   isLibrary = true;
   isExecutable = true;
