@@ -15,7 +15,7 @@ in {
   wineWow-linux = default.linux.super.wine.override { wineBuild = "wineWow"; };
   chat-shaker = default.linux.super.chat-shaker;
   chat-doc = default.linux.super.chat-doc;
-  chat-deploy-windows = default.windows.super.deploy;
+  #chat-deploy-windows = default.windows.super.deploy;
 } // makeJobs [
   "super.arcane-chat"
   "super.gst_all_1.gstreamermm"
