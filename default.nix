@@ -497,11 +497,11 @@ rec {
   };
 
   utils = {
-    mergeOverrides = a: b: self: super:
-    let
-      aResult = (a self super);
-      bResult = (b self (super // aResult));
-    in aResult // bResult;
+    mergeOverrides = (a: b: self: super:
+      let
+        aResult = (a self super);
+        bResult = (b self (super // aResult));
+      in aResult // bResult);
   };
 
   inherit (root) makeConfig;
