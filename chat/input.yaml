@@ -22,11 +22,6 @@ executables:
       - "src/channelmodel.cpp"
       - "src/chatwidget.cpp"
       - "_build/network.pb.cc"
-      - "_build/psc/Data.Show/Show_ffi.cc"
-      - "_build/psc/Data.Show/Show.cc"
-      - "_build/psc/PureScript/PureScript.cc"
-      - "_build/psc/Main/Main.cc"
-      - "_build/psc/Main/Main_ffi.cc"
     headers:
       - "src/audiocall.hpp"
       - "src/callcontrol.hpp"

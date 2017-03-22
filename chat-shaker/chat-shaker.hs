@@ -168,7 +168,7 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
                           , ("GSTREAMERMM_DEV", "include/gstreamermm-1.0")
                           , ("GSTREAMERMM_OUT", "lib/gstreamermm-1.0/include")
                           ])
-                         ++ [ pure $ append userIncludes ["_build", "_build/psc"] ]
+                         ++ [ pure $ append userIncludes ["_build"] ]
                          ++ debugOption
 
   let qObject name = [ "src" </> name <.> "cpp"
@@ -245,23 +245,3 @@ main = shakeArgsWith soptions options $ \flags targets -> pure $ Just $ do
   let allTargets = libTargets <> exeTargets
 
   want $ if null targets then allTargets else targets
-
-
---  "_build/psc-package.json"
-
-  "_build/psc-package.json" %> \_ -> do
-    command_ [] "cp" ["-v", "psc-package.json", "_build"]
-    command_ [] "mkdir" [ "-pv", "_build/.psc-package" ]
-    Just foo <- getEnv "FOO"
-    command_ [] "cp" ["-r", foo </> "psc-0.10.2", "_build/.psc-package/psc-0.10.2" ]
-    depPS <- map ("_build/.psc-package/" <>)
-             <$> getDirectoryFiles "_build/.psc-package" ["//*.purs"]
-    srcPS <- map ("src/" <>)
-             <$> getDirectoryFiles "src" ["//*.purs"]
-    need (depPS <> srcPS)
-    command_ [] "pcc" $ mconcat
-      [["--comments", "--output", "_build/psc"], depPS, srcPS]
-
-  "_build/psc//*.cc" %> \_ -> do
-    -- command_ [Cwd "_build"] "psc-package" ["update"]
-    need [ "_build/psc-package.json" ]

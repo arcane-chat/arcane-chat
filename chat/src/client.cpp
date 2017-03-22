@@ -27,7 +27,7 @@ void handler(int /* signum */) {
     qDebug() << "signal handler finished\n";
 }
 
-int old_main(int argc, char** argv) {
+int main(int argc, char** argv) {
     fputs("in main\n", stderr);
     QGst::init(&argc, &argv);
     Gio::init();

@@ -1,7 +1,6 @@
 { stdenv, chat-shaker, pkgconfig, qtbase, qtscript, libtoxcore-dev
 , libsodium, sqlite, openssl, glib, glibmm, gst_all_1, libsigcxx
 , protobuf3_0, zeromq4, cppzmq, haskellPackages, nlohmann_json
-, fetchpsc
 , withGHC ? false
 } @ args:
 
@@ -15,7 +14,7 @@ in stdenv.mkDerivation rec {
   outputs = [ "out" "report" ];
 
   nativeBuildInputs = [
-    chat-shaker pkgconfig protobuf3_0 haskellPackages.purescript-native
+    chat-shaker pkgconfig protobuf3_0
   ] ++ stdenv.lib.optional withGHC ghc;
 
   buildInputs = with gst_all_1; [
@@ -23,11 +22,9 @@ in stdenv.mkDerivation rec {
     glib glibmm
     gstreamer gstreamermm qt-gstreamer
     gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugins-bad
-    zeromq4 cppzmq protobuf3_0 libtoxcore-dev libsodium sqlite
-    haskellPackages.purescript-native nlohmann_json
+    zeromq4 cppzmq protobuf3_0 libtoxcore-dev libsodium sqlite nlohmann_json
   ];
 
-  FOO = fetchpsc { pscJSON = ./psc-package.json; sha256 = "0bd597f1qfk27cnqp3h23vf67ympq7j5psnk7nljwxdwh3i0v54f"; };
   LIBSIGCXX_OUT = libsigcxx.out;
   GLIBMM_OUT = glibmm.out;
   GLIBMM_DEV = glibmm.dev;
@@ -70,11 +67,8 @@ in stdenv.mkDerivation rec {
 
   buildPhase = ''
     mkdir $out
-    function do_abort() {
-      ls -ltrh _build/psc/PureScript/
-      exit 1
-    }
-    chat-shaker ''${enableParallelBuilding:+-j''${NIX_BUILD_CORES}} $shakeArgs || do_abort
+    chat-shaker ''${enableParallelBuilding:+-j''${NIX_BUILD_CORES}} $shakeArgs \
+        || exit 1
   '';
 
   enableParallelBuilding = false;
