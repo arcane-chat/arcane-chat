@@ -362,12 +362,24 @@ rec {
         nativeBuildInputs = old.nativeBuildInputs ++ [ self.m4 ];
       });
 
-      gdk_pixbuf = overrideCrossDerivation super.gdk_pixbuf (old: {
+      gdk_pixbuf = overrideCrossDerivation super.gdk_pixbuf (old: rec {
+        name = "gdk-pixbuf-${verMajor}.${verMinor}";
+        verMajor = "2.36";
+        verMinor = "5";
+
+        enableParallelBuilding = false;
+
+        src = self.fetchurl {
+          url = "mirror://gnome/sources/gdk-pixbuf/${verMajor}/${name}.tar.xz";
+          sha256 = "1z209hqrm6wkb1v2z86lkgmcsbh7rsx6h9smf4bz58ci08bhdkks";
+        };
+
         configureFlags = [
           "--disable-shared"
           "--enable-static"
           "--without-libjasper"
           "--without-x11"
+          "--disable-introspection"
         ];
 
         propagatedBuildInputs = [
